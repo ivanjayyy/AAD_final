@@ -6,6 +6,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -55,6 +59,32 @@ public class MusicController {
         } catch (Exception e) {
             e.printStackTrace(); // print real error in console
             return ResponseEntity.internalServerError().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/stream/{id}")
+    public ResponseEntity<Resource> streamMusic(@PathVariable Long id) {
+
+        try {
+            Music music = musicRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Music not found"));
+
+            Path filePath = Paths.get(uploadDir + music.getFileName());
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (!resource.exists()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType("audio/mp4")) // M4A = audio/mp4
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "inline; filename=\"" + music.getFileName() + "\"")
+                    .body(resource);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
         }
     }
 }

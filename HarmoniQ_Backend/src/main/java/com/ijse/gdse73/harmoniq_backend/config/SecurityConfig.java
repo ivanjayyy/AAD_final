@@ -37,6 +37,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/music/upload").permitAll() // allow upload for now
+                        .requestMatchers("/api/v1/music/stream/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
