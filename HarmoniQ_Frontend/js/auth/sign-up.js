@@ -1,12 +1,12 @@
-const baseURL = "http://localhost:8080/api/v1/auth/sign-up";
+const baseUrl = "http://localhost:8080/api/v1/auth/sign-up";
 
 function signUp() {
-    const username=$('#regUsername').val()
-    const password=$('#regPassword').val()
+    const username=$('#username').val()
+    const password=$('#password').val()
     const role="USER"
 
     $.ajax({
-        url:baseURL,
+        url:baseUrl,
         method:'POST',
         contentType:'application/json',
 

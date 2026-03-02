@@ -1,11 +1,11 @@
-const baseURL = "http://localhost:8080/api/v1/auth/sign-in";
+const baseUrl = "http://localhost:8080/api/v1/auth/sign-in";
 
 function signIn() {
     const username=$('#username').val()
     const password=$('#password').val()
 
     $.ajax({
-        url:baseURL,
+        url:baseUrl,
         method:'POST',
         contentType:'application/json',
 
