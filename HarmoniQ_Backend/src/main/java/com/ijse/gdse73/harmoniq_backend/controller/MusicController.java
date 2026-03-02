@@ -1,7 +1,9 @@
 package com.ijse.gdse73.harmoniq_backend.controller;
 
-import com.ijse.gdse73.harmoniq_backend.entity.Music;
-import com.ijse.gdse73.harmoniq_backend.repo.MusicRepo;
+import com.ijse.gdse73.harmoniq_backend.dto.APIResponse;
+import com.ijse.gdse73.harmoniq_backend.dto.MusicDTO;
+import com.ijse.gdse73.harmoniq_backend.exception.CustomException;
+import com.ijse.gdse73.harmoniq_backend.service.MusicService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,71 +23,80 @@ import java.nio.file.Paths;
 @RequestMapping("/api/v1/music")
 @RequiredArgsConstructor
 public class MusicController {
-
-    private final MusicRepo musicRepository;
-
-    // absolute path from project root
-    private final String uploadDir = System.getProperty("user.dir") + "/uploads/music/";
+    private final MusicService musicService;
+    private final String musicDir = System.getProperty("user.dir") + "/uploads/music/";
+    private final String thumbnailDir = System.getProperty("user.dir") + "/uploads/thumbnail/";
 
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadMusic(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<APIResponse> uploadMusic(@RequestParam("musicFile") MultipartFile musicFile,
+                                                   @RequestParam("thumbnail") MultipartFile thumbnail,
+                                                   @RequestParam("musicTitle") String musicTitle,
+                                                   @RequestParam("musicArtist") String musicArtist) throws IOException {
 
-        try {
+//        Music File
+        String musicName = musicFile.getOriginalFilename();
+        File musicDirectory = new File(musicDir);
 
-            if (file.isEmpty()) {
-                return ResponseEntity.badRequest().body("File is empty");
-            }
-
-            // generate unique file name
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-
-            File directory = new File(uploadDir);
-            if (!directory.exists()) {
-                directory.mkdirs();
-            }
-
-            Path filePath = Paths.get(uploadDir + fileName);
-
-            Files.write(filePath, file.getBytes());
-
-            // Save to DB
-            Music music = new Music();
-            music.setFileName(fileName);
-            music.setFilePath("/uploads/music/" + fileName);
-
-            Music savedMusic = musicRepository.save(music);
-
-            return ResponseEntity.ok(savedMusic);
-
-        } catch (Exception e) {
-            e.printStackTrace(); // print real error in console
-            return ResponseEntity.internalServerError().body(e.getMessage());
+        if (!musicDirectory.exists()) {
+            musicDirectory.mkdirs();
         }
+        Path musicPath = Paths.get(musicDir + musicName);
+        Files.write(musicPath, musicFile.getBytes());
+
+//        Thumbnail File
+        String thumbnailName = thumbnail.getOriginalFilename();
+        File thumbnailDirectory = new File(thumbnailDir);
+
+        if (!thumbnailDirectory.exists()) {
+            thumbnailDirectory.mkdirs();
+        }
+        Path thumbnailPath = Paths.get(thumbnailDir + thumbnailName);
+        Files.write(thumbnailPath, thumbnail.getBytes());
+
+//        Save to DTO
+        MusicDTO musicDTO = new MusicDTO();
+        musicDTO.setFileName(musicName);
+        musicDTO.setMusicPath("/uploads/music/" + musicName);
+        musicDTO.setThumbnailPath("/uploads/thumbnail/" + thumbnailName);
+        musicDTO.setMusicTitle(musicTitle);
+        musicDTO.setMusicArtist(musicArtist);
+
+        musicService.saveMusic(musicDTO);
+
+        return ResponseEntity.ok(new APIResponse(
+                200,"OK",null
+        ));
     }
 
     @GetMapping("/stream/{id}")
     public ResponseEntity<Resource> streamMusic(@PathVariable Long id) {
 
         try {
-            Music music = musicRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Music not found"));
+            MusicDTO musicDTO = musicService.getMusicById(id);
 
-            Path filePath = Paths.get(uploadDir + music.getFileName());
+            Path filePath = Paths.get(musicDir + musicDTO.getFileName());
             Resource resource = new UrlResource(filePath.toUri());
 
             if (!resource.exists()) {
-                return ResponseEntity.notFound().build();
+                throw new CustomException("File not found");
             }
 
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType("audio/mp4")) // M4A = audio/mp4
                     .header(HttpHeaders.CONTENT_DISPOSITION,
-                            "inline; filename=\"" + music.getFileName() + "\"")
+                            "inline; filename=\"" + musicDTO.getFileName() + "\"")
                     .body(resource);
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    @GetMapping("/get-all")
+    public ResponseEntity<APIResponse> getAllMusic() {
+        return ResponseEntity.ok(new APIResponse(
+                200,"OK",musicService.getAllMusic()
+        ));
     }
 }

@@ -3,27 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 <body>
 
 <h2>Upload M4A File</h2>
 
-<input type="file" id="musicFile" accept=".m4a">
+<label for="musicTitle">Music Title</label><input type="text" id="musicTitle" placeholder="Music Title">
+<label for="musicArtist">Artist</label><input type="text" id="musicArtist" placeholder="Music Artist">
+<input type="file" id="musicFile" accept="audio/*">
+<input type="file" id="thumbnailFile" accept="image/*">
+<!--<label for="genre">Genre</label><select id="genre"></select>-->
+
 <button onclick="uploadMusic()">Upload</button>
 
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
     function uploadMusic() {
+        const musicFile = $('#musicFile')[0].files[0];
+        const thumbnail = $('#thumbnailFile')[0].files[0];
+        const musicTitle = $('#musicTitle').val();
+        const musicArtist = $('#musicArtist').val();
 
-        let file = $('#musicFile')[0].files[0];
-
-        if (!file) {
-            alert("Please select a file");
+        if (!musicFile) {
+            alert("Please select a music file");
+            return;
+        } else if (!thumbnail) {
+            alert("Please select a thumbnail");
+            return;
+        } else if (!musicTitle) {
+            alert("Please enter a music title");
+            return;
+        } else if (!musicArtist) {
+            alert("Please enter a music artist");
             return;
         }
 
         let formData = new FormData();
-        formData.append("file", file);
+        formData.append("musicFile", musicFile);
+        formData.append("thumbnail", thumbnail);
+        formData.append("musicTitle", musicTitle);
+        formData.append("musicArtist", musicArtist);
 
         $.ajax({
             url: "http://localhost:8080/api/v1/music/upload",

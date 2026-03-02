@@ -19,5 +19,8 @@ public class Music {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String fileName;
-    private String filePath;
+    private String musicPath;
+    private String thumbnailPath;
+    private String musicTitle;
+    private String musicArtist;
 }

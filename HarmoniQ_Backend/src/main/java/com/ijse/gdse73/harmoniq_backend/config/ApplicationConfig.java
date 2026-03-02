@@ -2,6 +2,7 @@ package com.ijse.gdse73.harmoniq_backend.config;
 
 import com.ijse.gdse73.harmoniq_backend.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,6 +17,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ApplicationConfig {
     private final UserRepo userRepository;
+
+    @Bean
+    public ModelMapper modelMapper(){
+        return new ModelMapper();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder(){
