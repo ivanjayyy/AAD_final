@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+
+<h2>Upload M4A File</h2>
+
+<input type="file" id="musicFile" accept=".m4a">
+<button onclick="uploadMusic()">Upload</button>
+
+<script>
+    function uploadMusic() {
+
+        let file = $('#musicFile')[0].files[0];
+
+        if (!file) {
+            alert("Please select a file");
+            return;
+        }
+
+        let formData = new FormData();
+        formData.append("file", file);
+
+        $.ajax({
+            url: "http://localhost:8080/api/v1/music/upload",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                alert("Upload successful!");
+                console.log(response);
+            },
+            error: function (err) {
+                alert("Upload failed");
+                console.log(err);
+            }
+        });
+    }
+</script>
+</body>
+</html>
