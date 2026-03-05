@@ -5,6 +5,7 @@ import com.ijse.gdse73.harmoniq_backend.entity.Music;
 import com.ijse.gdse73.harmoniq_backend.exception.CustomException;
 import com.ijse.gdse73.harmoniq_backend.repo.MusicRepo;
 import com.ijse.gdse73.harmoniq_backend.service.MusicService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -36,5 +37,13 @@ public class MusicServiceImpl implements MusicService {
                 .stream()
                 .map(music -> modelMapper.map(music, MusicDTO.class))
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public Music deleteMusic(Long id) {
+        Music music = musicRepo.findById(id).orElseThrow(() -> new RuntimeException("Music not found"));
+        musicRepo.deleteById(id);
+        return music;
     }
 }

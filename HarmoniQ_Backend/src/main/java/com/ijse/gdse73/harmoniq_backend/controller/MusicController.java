@@ -2,8 +2,10 @@ package com.ijse.gdse73.harmoniq_backend.controller;
 
 import com.ijse.gdse73.harmoniq_backend.dto.APIResponse;
 import com.ijse.gdse73.harmoniq_backend.dto.MusicDTO;
+import com.ijse.gdse73.harmoniq_backend.entity.Music;
 import com.ijse.gdse73.harmoniq_backend.exception.CustomException;
 import com.ijse.gdse73.harmoniq_backend.service.MusicService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -97,6 +99,29 @@ public class MusicController {
     public ResponseEntity<APIResponse> getAllMusic() {
         return ResponseEntity.ok(new APIResponse(
                 200,"OK",musicService.getAllMusic()
+        ));
+    }
+
+    @DeleteMapping("/delete/{id}")
+    @Transactional
+    public ResponseEntity<APIResponse> deleteMusic(@PathVariable Long id) {
+        Music music = musicService.deleteMusic(id);
+
+        // Delete music file
+        File musicFile = new File(musicDir + music.getFileName());
+        if (musicFile.exists()) {
+            musicFile.delete();
+        }
+
+        // Delete thumbnail file
+        String thumbnailName = new File(music.getThumbnailPath()).getName();
+        File thumbnailFile = new File(thumbnailDir + thumbnailName);
+        if (thumbnailFile.exists()) {
+            thumbnailFile.delete();
+        }
+
+        return ResponseEntity.ok(new APIResponse(
+                200,"OK",null
         ));
     }
 }

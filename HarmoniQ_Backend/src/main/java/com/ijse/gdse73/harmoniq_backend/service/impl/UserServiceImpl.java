@@ -22,4 +22,10 @@ public class UserServiceImpl implements UserService {
                 .map(user -> modelMapper.map(user, UserDTO.class))
                 .toList();
     }
+
+    @Override
+    public void deleteUser(Long id) {
+        userRepo.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        userRepo.deleteById(id);
+    }
 }

@@ -18,4 +18,12 @@ public class UserController {
         return ResponseEntity.ok(new APIResponse(
                 200,"OK",userService.getAllUsers()));
     }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<APIResponse> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.ok(new APIResponse(
+                200,"OK",null
+        ));
+    }
 }
