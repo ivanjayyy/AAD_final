@@ -4,6 +4,7 @@ import com.ijse.gdse73.harmoniq_backend.dto.APIResponse;
 import com.ijse.gdse73.harmoniq_backend.dto.SignInDTO;
 import com.ijse.gdse73.harmoniq_backend.dto.SignUpDTO;
 import com.ijse.gdse73.harmoniq_backend.service.AuthService;
+import com.ijse.gdse73.harmoniq_backend.service.impl.AuthServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
