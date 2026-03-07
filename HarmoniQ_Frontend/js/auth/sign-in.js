@@ -19,7 +19,7 @@ function signIn() {
                 console.log(response.message)
                 alert("User login Successful!")
 
-                localStorage.setItem("token",response.data)
+                localStorage.setItem("token",response.data.accessToken)
                 window.location.href = "../../index.html";
             }
         },

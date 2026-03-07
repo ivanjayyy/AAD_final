@@ -16,6 +16,8 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String username;
+    @Column(unique = true)
+    private String email;
     private String password;
     @Enumerated(EnumType.STRING) // Only save Enum types in Database
     private Role role;

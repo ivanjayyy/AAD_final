@@ -38,12 +38,23 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/music/**").permitAll() // allow upload for now
                         .requestMatchers("/api/v1/user/**").permitAll()
+                        .requestMatchers("/api/v1/playlist/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+//        http
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers("/", "/login", "/signup", "/css/**", "/js/**").permitAll()
+//                        .anyRequest().authenticated()
+//                )
+//                .oauth2Login(oauth -> oauth
+//                        .loginPage("/login")
+//                        .defaultSuccessUrl("/home", true)
+//                );
 
         return http.build();
     }

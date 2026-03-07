@@ -1,6 +1,7 @@
 package com.ijse.gdse73.harmoniq_backend.service.impl;
 
 import com.ijse.gdse73.harmoniq_backend.dto.PlaylistDTO;
+import com.ijse.gdse73.harmoniq_backend.dto.UserDTO;
 import com.ijse.gdse73.harmoniq_backend.entity.Playlist;
 import com.ijse.gdse73.harmoniq_backend.exception.CustomException;
 import com.ijse.gdse73.harmoniq_backend.repo.PlaylistRepo;
@@ -8,6 +9,8 @@ import com.ijse.gdse73.harmoniq_backend.service.PlaylistService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -21,5 +24,16 @@ public class PlaylistServiceImpl implements PlaylistService {
             throw new CustomException("PlaylistDTO is null");
         }
         playlistRepo.save(modelMapper.map(playlistDTO, Playlist.class));
+    }
+
+    @Override
+    public List<PlaylistDTO> getPlaylistsByUsername(String username) {
+        if (username == null) {
+            throw new CustomException("Username is null");
+        }
+        return playlistRepo.getAllByUsername(username)
+                .stream()
+                .map(playlist -> modelMapper.map(playlist, PlaylistDTO.class))
+                .toList();
     }
 }

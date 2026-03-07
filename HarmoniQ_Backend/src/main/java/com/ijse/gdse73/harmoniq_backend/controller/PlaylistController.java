@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("api/v1/playlist")
 @CrossOrigin
@@ -14,11 +16,20 @@ import org.springframework.web.bind.annotation.*;
 public class PlaylistController {
     private final PlaylistService playlistService;
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<APIResponse> addPlaylist(@RequestBody PlaylistDTO playlistDTO){
         playlistService.createPlaylist(playlistDTO);
         return ResponseEntity.ok(new APIResponse(
                 200,"OK",null
+        ));
+    }
+
+    @GetMapping("/load/{username}")
+    public ResponseEntity<APIResponse> getUserPlaylists(@PathVariable String username){
+        List<PlaylistDTO> playlistDTOS = playlistService.getPlaylistsByUsername(username);
+
+        return ResponseEntity.ok(new APIResponse(
+                 200,"OK",playlistDTOS
         ));
     }
 }

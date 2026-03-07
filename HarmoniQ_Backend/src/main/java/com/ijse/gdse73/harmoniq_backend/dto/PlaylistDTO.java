@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 public class PlaylistDTO {
     private Long id;
     private String playlistName;
-    private Long userId;
+    private String username;
 }
