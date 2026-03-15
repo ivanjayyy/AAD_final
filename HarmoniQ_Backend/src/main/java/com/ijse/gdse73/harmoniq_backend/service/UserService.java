@@ -9,6 +9,6 @@ public interface UserService {
     List<UserDTO> getAllUsers();
     void deleteUser(Long id);
     void updateUser(UserDTO userDTO);
-    UserDTO getUser(String username);
+    UserDTO getUser(Long id);
     void updateUserRole(Long id, String role);
 }

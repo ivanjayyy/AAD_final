@@ -74,7 +74,7 @@
   }
 
   const payload = JSON.parse(atob(token.split('.')[1]))
-  const username = payload.sub
+  const id = payload.id
 
   loadUser()
 
@@ -82,7 +82,7 @@
 
     $.ajax({
 
-      url:`http://localhost:8080/api/v1/user/get/${username}`,
+      url:`http://localhost:8080/api/v1/user/get/${id}`,
       type:"GET",
 
       headers:{

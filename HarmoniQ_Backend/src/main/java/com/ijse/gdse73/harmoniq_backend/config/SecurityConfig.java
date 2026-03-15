@@ -39,6 +39,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/music/**").permitAll() // allow upload for now
                         .requestMatchers("/api/v1/user/**").permitAll()
                         .requestMatchers("/api/v1/playlist/**").permitAll()
+                        .requestMatchers("/api/v1/liked-song/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->

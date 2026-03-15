@@ -129,6 +129,10 @@
             cursor: pointer;
         }
 
+        .liked{
+            color:#ff4d6d;
+        }
+
     </style>
 </head>
 <body>
@@ -151,6 +155,7 @@
         <i id="prevBtn" class="bi bi-skip-backward-fill control-btn" title="Previous"></i>
         <i id="playPauseBtn" class="bi bi-play-circle-fill control-btn"></i>
         <i id="nextBtn" class="bi bi-skip-forward-fill control-btn" title="Next"></i>
+        <i id="likeBtn" class="bi bi-heart control-btn" title="Like"></i>
         <div class="progress">
             <div id="progressBar" class="progress-bar"></div>
         </div>
@@ -265,6 +270,61 @@
         let min = Math.floor(time/60);
         let sec = Math.floor(time%60);
         return min + ":" + (sec<10?"0"+sec:sec);
+    }
+
+    let liked = false;
+
+    $('#likeBtn').on('click', function(){
+
+        liked = !liked;
+
+        if(liked){
+            $(this).removeClass("bi-heart");
+            $(this).addClass("bi-heart-fill liked");
+        }else{
+            $(this).removeClass("bi-heart-fill liked");
+            $(this).addClass("bi-heart");
+        }
+
+        likeSong(); // empty function for now
+    });
+
+    function likeSong(){
+        if(currentSongIndex === -1){
+            alert("No song selected");
+            return;
+        }
+
+        const token = localStorage.getItem("token");
+        const payload = JSON.parse(atob(token.split('.')[1]));
+
+        const userId = payload.id;
+        const musicId = musicList[currentSongIndex].id;
+
+        $.ajax({
+
+            url:"http://localhost:8080/api/v1/liked-song/add-or-remove",
+            type:"POST",
+            contentType:"application/json",
+
+            data: JSON.stringify({
+                userId: userId,
+                musicId: musicId
+            }),
+
+            success:function(response){
+                console.log(response.status);
+                console.log(response.data);
+                alert(response.data);
+            },
+
+            error:function(err){
+                console.log(err);
+                alert("Failed to like song");
+            }
+
+        });
+
     }
 
     // Initial fetch of music list

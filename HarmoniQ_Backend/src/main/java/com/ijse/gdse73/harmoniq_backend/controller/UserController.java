@@ -22,10 +22,10 @@ public class UserController {
     private final UserService userService;
     private final String uploadDir = "uploads/profile/";
 
-    @GetMapping("/get/{username}")
-    public ResponseEntity<APIResponse> getUser(@PathVariable String username){
+    @GetMapping("/get/{id}")
+    public ResponseEntity<APIResponse> getUser(@PathVariable Long id){
         return ResponseEntity.ok(new APIResponse(
-                200,"User Fetched Successfully!",userService.getUser(username)
+                200,"User Fetched Successfully!",userService.getUser(id)
         ));
     }
 
