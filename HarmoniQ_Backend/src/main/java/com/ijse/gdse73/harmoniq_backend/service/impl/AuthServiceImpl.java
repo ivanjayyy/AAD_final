@@ -5,6 +5,7 @@ import com.ijse.gdse73.harmoniq_backend.dto.AuthResponseDTO;
 import com.ijse.gdse73.harmoniq_backend.dto.SignUpDTO;
 import com.ijse.gdse73.harmoniq_backend.entity.Role;
 import com.ijse.gdse73.harmoniq_backend.entity.User;
+import com.ijse.gdse73.harmoniq_backend.exception.CustomException;
 import com.ijse.gdse73.harmoniq_backend.repo.UserRepo;
 import com.ijse.gdse73.harmoniq_backend.service.AuthService;
 import com.ijse.gdse73.harmoniq_backend.util.JwtUtil;
@@ -22,31 +23,31 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    public AuthResponseDTO authenticate(SignInDTO authDTO){
+    public AuthResponseDTO signIn(SignInDTO signInDTO){
         // Find user by username from database
-        User user = userRepository.findByUsername(authDTO.getUsername()).orElseThrow(
-                () -> new UsernameNotFoundException(authDTO.getUsername()));
+        User user = userRepository.findByUsername(signInDTO.getUsername()).orElseThrow(
+                () -> new UsernameNotFoundException(signInDTO.getUsername()));
 
         // Match passwords (DB and Request)
-        if (!passwordEncoder.matches(authDTO.getPassword(),user.getPassword())){
+        if (!passwordEncoder.matches(signInDTO.getPassword(),user.getPassword())){
             throw new BadCredentialsException(user.getUsername() + " is not valid");
         }
 
         // Generate new token
-        String token = jwtUtil.generateToken(user.getId(), authDTO.getUsername(), String.valueOf(user.getRole()));
+        String token = jwtUtil.generateToken(user.getId(), signInDTO.getUsername(), String.valueOf(user.getRole()));
         return new AuthResponseDTO(token);
     }
 
-    public String register(SignUpDTO registerDTO){
-        if (userRepository.findByUsername(registerDTO.getUsername()).isPresent()){
-            throw new RuntimeException("Username already exists!");
+    public String signUp(SignUpDTO signUpDTO){
+        if (userRepository.findByUsername(signUpDTO.getUsername()).isPresent()){
+            throw new CustomException("Username already exists!");
         }
 
         User user = User.builder()
-                .username(registerDTO.getUsername())
-                .email(registerDTO.getEmail())
-                .password(passwordEncoder.encode(registerDTO.getPassword()))
-                .role(Role.valueOf(registerDTO.getRole()))
+                .username(signUpDTO.getUsername())
+                .email(signUpDTO.getEmail())
+                .password(passwordEncoder.encode(signUpDTO.getPassword()))
+                .role(Role.valueOf(signUpDTO.getRole()))
                 .build();
 
         userRepository.save(user);

@@ -2,6 +2,7 @@ package com.ijse.gdse73.harmoniq_backend.service.impl;
 
 import com.ijse.gdse73.harmoniq_backend.dto.UserDTO;
 import com.ijse.gdse73.harmoniq_backend.entity.Music;
+import com.ijse.gdse73.harmoniq_backend.entity.Role;
 import com.ijse.gdse73.harmoniq_backend.entity.User;
 import com.ijse.gdse73.harmoniq_backend.repo.UserRepo;
 import com.ijse.gdse73.harmoniq_backend.service.UserService;
@@ -42,5 +43,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO getUser(String username) {
         return userRepo.findByUsername(username).map(user -> modelMapper.map(user, UserDTO.class)).orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    @Override
+    public void updateUserRole(Long id, String role) {
+        User user = userRepo.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        user.setRole(Role.valueOf(role));
+        userRepo.save(user);
     }
 }

@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/v1/user")
@@ -24,21 +25,21 @@ public class UserController {
     @GetMapping("/get/{username}")
     public ResponseEntity<APIResponse> getUser(@PathVariable String username){
         return ResponseEntity.ok(new APIResponse(
-                200,"OK",userService.getUser(username)
+                200,"User Fetched Successfully!",userService.getUser(username)
         ));
     }
 
     @GetMapping("/get-all")
     public ResponseEntity<APIResponse> getAllUser(){
         return ResponseEntity.ok(new APIResponse(
-                200,"OK",userService.getAllUsers()));
+                200,"Get All Users Successfully!",userService.getAllUsers()));
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<APIResponse> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.ok(new APIResponse(
-                200,"OK",null
+                200,"User Deleted Successfully",null
         ));
     }
 
@@ -47,6 +48,15 @@ public class UserController {
         userService.updateUser(userDTO);
         return ResponseEntity.ok(new APIResponse(
                 200, "User updated successfully", null
+        ));
+    }
+
+    @PutMapping("/update-role/{id}")
+    public ResponseEntity<APIResponse> updateUserRole(@PathVariable Long id, @RequestBody Map<String,String> body) {
+        String role = body.get("role");
+        userService.updateUserRole(id, role);
+        return ResponseEntity.ok(new APIResponse(
+                 200, "User role updated successfully", null
         ));
     }
 }

@@ -20,7 +20,7 @@ function signIn() {
                 alert("User login Successful!")
 
                 localStorage.setItem("token",response.data.accessToken)
-                window.location.href = "../../index.html";
+                window.location.href = "../../index-old.html";
             }
         },
         error: function(error) {

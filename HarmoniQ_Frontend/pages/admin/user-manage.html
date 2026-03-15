@@ -10,15 +10,28 @@
 </head>
 <body class="p-4">
 
-<h2>Admin User Management</h2>
+<h2>Admins</h2>
+<table class="table table-bordered" id="adminTable">
+    <thead>
+    <tr>
+        <th>User ID</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Admins will be populated here -->
+    </tbody>
+</table>
 
-<!-- User Table -->
+<h2>Users</h2>
 <table class="table table-bordered" id="userTable">
     <thead>
     <tr>
         <th>User ID</th>
         <th>Username</th>
-        <th>Role</th>
+        <th>Email</th>
         <th>Actions</th>
     </tr>
     </thead>
@@ -28,30 +41,36 @@
 </table>
 
 <script>
-    // Fetch all users from backend
     function fetchUsers() {
         $.ajax({
-            url: "http://localhost:8080/api/v1/user/get-all", // adjust if your endpoint is different
-            type: "GET",
+            url: "http://localhost:8080/api/v1/user/get-all",
+            method: 'GET',
+            contentType: 'application/json',
             success: function(response) {
-                const tbody = $('#userTable tbody');
-                tbody.empty();
+                const adminsTbody = $('#adminTable tbody');
+                const usersTbody = $('#userTable tbody');
+                adminsTbody.empty();
+                usersTbody.empty();
 
-                // If your backend wraps the list in "data", use response.data
-                const users = response.data;
+                const users = response.data; // assuming response.data is the user array
 
                 users.forEach(user => {
-                    tbody.append(`
+                    const row = `
                         <tr>
                             <td>${user.id}</td>
                             <td>${user.username}</td>
-                            <td>${user.role}</td>
+                            <td>${user.email}</td>
                             <td>
                                 <button class="btn btn-sm btn-info" onclick="viewUser(${user.id})">View</button>
                                 <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">Delete</button>
                             </td>
                         </tr>
-                    `);
+                    `;
+                    if (user.role === "ADMIN") {
+                        adminsTbody.append(row);
+                    } else {
+                        usersTbody.append(row);
+                    }
                 });
             },
             error: function(err) {
@@ -62,7 +81,7 @@
 
     function viewUser(id) {
         alert("View user details for ID: " + id);
-        // You can implement a modal popup to show user info
+        // Optional: implement modal popup to show user info
     }
 
     function deleteUser(id) {
@@ -72,8 +91,8 @@
             url: `http://localhost:8080/api/v1/user/delete/${id}`,
             type: "DELETE",
             success: function(response) {
-                alert("User deleted successfully!");
-                fetchUsers(); // refresh table
+                alert(response.message);
+                fetchUsers(); // refresh both tables
             },
             error: function(err) {
                 alert("Delete failed");
@@ -82,7 +101,6 @@
         });
     }
 
-    // Initial fetch on page load
     $(document).ready(function() {
         fetchUsers();
     });

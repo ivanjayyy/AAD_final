@@ -95,11 +95,11 @@
 
   <button class="btn btn-purple w-100" onclick="signIn()">Sign In</button>
 
-  <div style="margin-top: 20px;">
-    <a href="/oauth2/authorization/google" class="btn btn-danger w-100">
-      Sign in with Google
-    </a>
-  </div>
+<!--  <div style="margin-top: 20px;">-->
+<!--    <a href="/oauth2/authorization/google" class="btn btn-danger w-100">-->
+<!--      Sign in with Google-->
+<!--    </a>-->
+<!--  </div>-->
 
   <p class="mt-4 mb-0">
     Create a new acc?
@@ -107,6 +107,41 @@
   </p>
 </div>
 
-<script src="../../js/auth/sign-in.js"></script>
+<script>
+  const baseUrl = "http://localhost:8080/api/v1/auth/sign-in";
+
+  function signIn() {
+    const username=$('#username').val()
+    const password=$('#password').val()
+
+    $.ajax({
+      url:baseUrl,
+      method:'POST',
+      contentType:'application/json',
+
+      data:JSON.stringify({
+        "username":username,
+        "password":password
+      }),
+      success:function (response) {
+        if (response.status === 200) {
+          console.log(response.status)
+          console.log(response.message)
+          alert(response.message)
+
+          localStorage.setItem("token",response.data.accessToken)
+          window.location.href = "../../index-old.html";
+        }
+      },
+      error: function(error) {
+        const msg = error.responseJSON?.message || "Something went wrong";
+        const stts = error.responseJSON?.status
+        console.log(stts);
+        console.log(msg);
+        alert(msg);
+      }
+    })
+  }
+</script>
 </body>
 </html>

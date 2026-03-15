@@ -1,13 +1,10 @@
 package com.ijse.gdse73.harmoniq_backend.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Data
@@ -23,4 +20,12 @@ public class Music {
     private String thumbnailPath;
     private String musicTitle;
     private String musicArtist;
+
+//    // Music can belong to many playlists
+//    @ManyToMany(mappedBy = "musics")
+//    private Set<Playlist> playlists;
+//
+//    // Music liked by many users
+//    @ManyToMany(mappedBy = "likedMusic")
+//    private Set<User> likedByUsers;
 }
