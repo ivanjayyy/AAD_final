@@ -1,7 +1,6 @@
 package com.ijse.gdse73.harmoniq_backend.service.impl;
 
 import com.ijse.gdse73.harmoniq_backend.dto.PlaylistDTO;
-import com.ijse.gdse73.harmoniq_backend.dto.UserDTO;
 import com.ijse.gdse73.harmoniq_backend.entity.Playlist;
 import com.ijse.gdse73.harmoniq_backend.exception.CustomException;
 import com.ijse.gdse73.harmoniq_backend.repo.PlaylistRepo;
@@ -35,5 +34,15 @@ public class PlaylistServiceImpl implements PlaylistService {
                 .stream()
                 .map(playlist -> modelMapper.map(playlist, PlaylistDTO.class))
                 .toList();
+    }
+
+    @Override
+    public void deletePlaylist(Long id) {
+
+    }
+
+    @Override
+    public void updatePlaylist(PlaylistDTO playlistDTO) {
+
     }
 }

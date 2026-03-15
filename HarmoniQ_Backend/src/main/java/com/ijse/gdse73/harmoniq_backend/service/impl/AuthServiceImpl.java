@@ -29,11 +29,11 @@ public class AuthServiceImpl implements AuthService {
 
         // Match passwords (DB and Request)
         if (!passwordEncoder.matches(authDTO.getPassword(),user.getPassword())){
-            throw new BadCredentialsException(authDTO.getUsername());
+            throw new BadCredentialsException(user.getUsername() + " is not valid");
         }
 
         // Generate new token
-        String token = jwtUtil.generateToken(authDTO.getUsername());
+        String token = jwtUtil.generateToken(user.getId(), authDTO.getUsername(), String.valueOf(user.getRole()));
         return new AuthResponseDTO(token);
     }
 

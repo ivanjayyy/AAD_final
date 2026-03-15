@@ -124,4 +124,97 @@ public class MusicController {
                 200,"OK",null
         ));
     }
+
+    @PutMapping("/update/{id}")
+    @Transactional
+    public ResponseEntity<APIResponse> updateMusic(
+            @PathVariable Long id,
+            @RequestParam(value = "musicFile", required = false) MultipartFile musicFile,
+            @RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail,
+            @RequestParam("musicTitle") String musicTitle,
+            @RequestParam("musicArtist") String musicArtist) throws IOException {
+
+        // 1. Fetch existing music metadata
+        MusicDTO existingMusic = musicService.getMusicById(id);
+
+        // 2. Prepare new DTO with existing data as default
+        MusicDTO updatedDTO = new MusicDTO();
+        updatedDTO.setId(id);
+        updatedDTO.setMusicTitle(musicTitle);
+        updatedDTO.setMusicArtist(musicArtist);
+        updatedDTO.setFileName(existingMusic.getFileName());
+        updatedDTO.setMusicPath(existingMusic.getMusicPath());
+        updatedDTO.setThumbnailPath(existingMusic.getThumbnailPath());
+
+        // 3. Handle Music File Update
+        if (musicFile != null && !musicFile.isEmpty()) {
+            // Delete old file
+            Files.deleteIfExists(Paths.get(musicDir + existingMusic.getFileName()));
+
+            // Save new file
+            String newMusicName = musicFile.getOriginalFilename();
+            Files.write(Paths.get(musicDir + newMusicName), musicFile.getBytes());
+
+            updatedDTO.setFileName(newMusicName);
+            updatedDTO.setMusicPath("/uploads/music/" + newMusicName);
+        }
+
+        // 4. Handle Thumbnail File Update
+        if (thumbnail != null && !thumbnail.isEmpty()) {
+            // Delete old thumbnail
+            String oldThumbnailName = new File(existingMusic.getThumbnailPath()).getName();
+            Files.deleteIfExists(Paths.get(thumbnailDir + oldThumbnailName));
+
+            // Save new thumbnail
+            String newThumbnailName = thumbnail.getOriginalFilename();
+            Files.write(Paths.get(thumbnailDir + newThumbnailName), thumbnail.getBytes());
+
+            updatedDTO.setThumbnailPath("/uploads/thumbnail/" + newThumbnailName);
+        }
+
+        // 5. Update Database Record
+        musicService.updateMusic(updatedDTO);
+
+        return ResponseEntity.ok(new APIResponse(
+                200, "Music updated successfully", null
+        ));
+    }
+
+    @GetMapping("/thumbnail/{id}")
+    public ResponseEntity<Resource> getThumbnail(@PathVariable Long id) {
+
+        try {
+            // 1. Get music metadata
+            MusicDTO musicDTO = musicService.getMusicById(id);
+
+            if (musicDTO == null || musicDTO.getThumbnailPath() == null) {
+                throw new CustomException("Thumbnail not found");
+            }
+
+            // 2. Resolve thumbnail file path
+            String thumbnailName = new File(musicDTO.getThumbnailPath()).getName();
+            Path thumbnailPath = Paths.get(thumbnailDir + thumbnailName);
+
+            Resource resource = new UrlResource(thumbnailPath.toUri());
+
+            if (!resource.exists()) {
+                throw new CustomException("Thumbnail file not found");
+            }
+
+            // 3. Return as image resource
+            String contentType = Files.probeContentType(thumbnailPath);
+            if (contentType == null) {
+                contentType = "image/jpeg"; // default
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                    .body(resource);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }

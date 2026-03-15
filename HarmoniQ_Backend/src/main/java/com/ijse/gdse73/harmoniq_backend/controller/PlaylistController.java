@@ -32,4 +32,20 @@ public class PlaylistController {
                  200,"OK",playlistDTOS
         ));
     }
+
+    @PutMapping("/update/{playlistId}")
+    public ResponseEntity<APIResponse> updatePlaylist(@PathVariable String playlistId, @RequestBody PlaylistDTO playlistDTO) {
+//        playlistService.updatePlaylist(playlistId, playlistDTO);
+        return ResponseEntity.ok(new APIResponse(
+                200, "Playlist updated successfully", null
+        ));
+    }
+
+    @DeleteMapping("/delete/{playlistId}")
+    public ResponseEntity<APIResponse> deletePlaylist(@PathVariable String playlistId) {
+//        playlistService.deletePlaylist(playlistId);
+        return ResponseEntity.ok(new APIResponse(
+                200, "Playlist deleted successfully", null
+        ));
+    }
 }

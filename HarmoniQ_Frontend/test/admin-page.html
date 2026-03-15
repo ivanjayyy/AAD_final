@@ -40,6 +40,37 @@
     </div>
 </div>
 
+<div class="modal fade" id="updateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Music</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden" id="updateMusicId">
+
+                <label>Music Title</label>
+                <input type="text" id="updateMusicTitle" class="form-control mb-2">
+
+                <label>Artist</label>
+                <input type="text" id="updateMusicArtist" class="form-control mb-2">
+
+                <label>Music File</label>
+                <input type="file" id="updateMusicFile" class="form-control mb-2" accept="audio/*">
+
+                <label>Thumbnail</label>
+                <input type="file" id="updateThumbnailFile" class="form-control mb-2" accept="image/*">
+
+                <button class="btn btn-primary mt-2" onclick="submitUpdate()">Update</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Music Table -->
 <h4 class="mt-4">All Music</h4>
 <table class="table table-bordered" id="musicTable">
@@ -106,7 +137,7 @@
                             <td>${music.musicTitle}</td>
                             <td>${music.musicArtist}</td>
                             <td>
-                                <button class="btn btn-sm btn-warning" onclick="updateMusic(${music.id})">Update</button>
+                                <button class="btn btn-sm btn-warning" onclick="updateMusic(${music.id}, '${music.musicTitle}', '${music.musicArtist}')">Update</button>
                                 <button class="btn btn-sm btn-danger" onclick="deleteMusic(${music.id})">Delete</button>
                             </td>
                         </tr>
@@ -119,9 +150,58 @@
         });
     }
 
-    function updateMusic(id) {
-        alert("Update function for ID: " + id);
-        // You can implement an update popup later
+    function updateMusic(id, title, artist) {
+
+        $('#updateMusicId').val(id);
+        $('#updateMusicTitle').val(title);
+        $('#updateMusicArtist').val(artist);
+
+        const modal = new bootstrap.Modal(document.getElementById('updateModal'));
+        modal.show();
+    }
+
+    function submitUpdate() {
+
+        const id = $('#updateMusicId').val();
+        const musicFile = $('#updateMusicFile')[0].files[0];
+        const thumbnail = $('#updateThumbnailFile')[0].files[0];
+        const musicTitle = $('#updateMusicTitle').val();
+        const musicArtist = $('#updateMusicArtist').val();
+
+        let formData = new FormData();
+
+        formData.append("musicTitle", musicTitle);
+        formData.append("musicArtist", musicArtist);
+
+        if (musicFile) {
+            formData.append("musicFile", musicFile);
+        }
+
+        if (thumbnail) {
+            formData.append("thumbnail", thumbnail);
+        }
+
+        $.ajax({
+            url: `http://localhost:8080/api/v1/music/update/${id}`,
+            type: "PUT",
+            data: formData,
+            processData: false,
+            contentType: false,
+
+            success: function(response) {
+                alert("Music updated successfully!");
+
+                const modal = bootstrap.Modal.getInstance(document.getElementById('updateModal'));
+                modal.hide();
+
+                fetchMusic();
+            },
+
+            error: function(err) {
+                alert("Update failed");
+                console.log(err);
+            }
+        });
     }
 
     function deleteMusic(id) {

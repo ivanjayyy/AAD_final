@@ -46,4 +46,12 @@ public class MusicServiceImpl implements MusicService {
         musicRepo.deleteById(id);
         return music;
     }
+
+    @Override
+    public void updateMusic(MusicDTO musicDTO) {
+        if (musicDTO == null) {
+            throw new CustomException("MusicDTO is null");
+        }
+        musicRepo.save(modelMapper.map(musicDTO, Music.class));
+    }
 }

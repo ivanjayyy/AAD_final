@@ -10,4 +10,5 @@ public interface MusicService {
     MusicDTO getMusicById(Long id);
     List<MusicDTO> getAllMusic();
     Music deleteMusic(Long id);
+    void updateMusic(MusicDTO musicDTO);
 }

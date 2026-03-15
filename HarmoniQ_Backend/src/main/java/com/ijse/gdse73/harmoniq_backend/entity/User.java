@@ -1,5 +1,6 @@
 package com.ijse.gdse73.harmoniq_backend.entity;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
