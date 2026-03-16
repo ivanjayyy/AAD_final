@@ -40,6 +40,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/user/**").permitAll()
                         .requestMatchers("/api/v1/playlist/**").permitAll()
                         .requestMatchers("/api/v1/liked-song/**").permitAll()
+                        .requestMatchers("/api/v1/playlist-song/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
