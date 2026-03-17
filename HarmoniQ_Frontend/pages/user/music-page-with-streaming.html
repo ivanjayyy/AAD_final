@@ -137,8 +137,10 @@
 </head>
 <body>
 
-<h3 class="text-center mt-3">All Music</h3>
+<h3 class="text-center mt-3">Recent Music</h3>
+<div class="music-container" id="recentSongContainer"></div>
 
+<h3 class="text-center mt-3">All Music</h3>
 <div class="music-container" id="musicContainer"></div>
 
 <!-- Bottom Music Player -->
@@ -175,6 +177,7 @@
     let rotateInterval;
     let currentSongIndex = -1;
     let musicList = [];
+    let recentSongList = [];
 
     function fetchMusic(){
         $.ajax({
@@ -198,6 +201,32 @@
         });
     }
 
+    function loadRecentSongs(){
+        const token = localStorage.getItem("token");
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const userId = payload.id;
+
+        $.ajax({
+            url:"http://localhost:8080/api/v1/recent-song/load-all/" + userId,
+            type:"GET",
+            success:function(response){
+                recentSongList = response.data;
+                const recentSongContainer = $("#recentSongContainer");
+                recentSongContainer.empty();
+                recentSongList.forEach((music, index) => {
+                    recentSongContainer.append(`
+                    <div class="music-card" onclick="playSong(${index})">
+                        <img src="http://localhost:8080/api/v1/music/thumbnail/${music.id}" class="music-thumbnail">
+                        <div class="music-title">${music.musicTitle}</div>
+                        <div class="music-artist">${music.musicArtist}</div>
+                    </div>
+                `);
+                });
+            },
+            error:function(err){ console.log(err); }
+        });
+    }
+
     function playSong(index){
         if(index < 0 || index >= musicList.length) return;
         currentSongIndex = index;
@@ -206,6 +235,8 @@
         audio.src = "http://localhost:8080/api/v1/music/stream/" + music.id;
         audio.load();
         audio.play();
+
+        recentSong();
 
         $("#playerTitle").text(music.musicTitle);
         $("#playerArtist").text(music.musicArtist);
@@ -275,6 +306,10 @@
     let liked = false;
 
     $('#likeBtn').on('click', function(){
+        if(currentSongIndex === -1){
+            alert("No song selected");
+            return;
+        }
 
         liked = !liked;
 
@@ -290,11 +325,6 @@
     });
 
     function likeSong(){
-        if(currentSongIndex === -1){
-            alert("No song selected");
-            return;
-        }
-
         const token = localStorage.getItem("token");
         const payload = JSON.parse(atob(token.split('.')[1]));
 
@@ -327,8 +357,43 @@
 
     }
 
+    function recentSong(){
+        const token = localStorage.getItem("token");
+        const payload = JSON.parse(atob(token.split('.')[1]));
+
+        const userId = payload.id;
+        const musicId = musicList[currentSongIndex].id;
+
+        $.ajax({
+
+            url:"http://localhost:8080/api/v1/recent-song/add",
+            type:"POST",
+            contentType:"application/json",
+
+            data: JSON.stringify({
+                userId: userId,
+                musicId: musicId
+            }),
+
+            success:function(response){
+                console.log(response.status);
+                console.log(response.message);
+            },
+
+            error:function(err){
+                console.log(err);
+                alert("Failed to add Recent Song");
+            }
+
+        });
+
+    }
+
     // Initial fetch of music list
-    $(document).ready(function(){ fetchMusic(); });
+    $(document).ready(function(){
+        fetchMusic();
+        loadRecentSongs();
+    });
 </script>
 </body>
 </html>

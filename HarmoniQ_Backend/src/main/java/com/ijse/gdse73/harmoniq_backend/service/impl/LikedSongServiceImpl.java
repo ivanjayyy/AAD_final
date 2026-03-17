@@ -1,6 +1,6 @@
 package com.ijse.gdse73.harmoniq_backend.service.impl;
 
-import com.ijse.gdse73.harmoniq_backend.dto.LikedSongDTO;
+import com.ijse.gdse73.harmoniq_backend.dto.LikedOrRecentSongDTO;
 import com.ijse.gdse73.harmoniq_backend.entity.LikedSong;
 import com.ijse.gdse73.harmoniq_backend.entity.Music;
 import com.ijse.gdse73.harmoniq_backend.entity.User;
@@ -25,13 +25,13 @@ public class LikedSongServiceImpl implements LikedSongService {
     private final ModelMapper modelMapper;
 
     @Override
-    public String addOrRemoveLike(LikedSongDTO likedSongDTO) {
+    public String addOrRemoveLike(LikedOrRecentSongDTO likedOrRecentSongDTO) {
 
-        User user = userRepo.findById(likedSongDTO.getUserId()).orElseThrow(
-                () -> new UsernameNotFoundException(likedSongDTO.getUserId() + " is not valid"));
+        User user = userRepo.findById(likedOrRecentSongDTO.getUserId()).orElseThrow(
+                () -> new UsernameNotFoundException(likedOrRecentSongDTO.getUserId() + " is not valid"));
 
-        Music music = musicRepo.findById(likedSongDTO.getMusicId()).orElseThrow(
-                () -> new UsernameNotFoundException(likedSongDTO.getMusicId() + " is not valid"));
+        Music music = musicRepo.findById(likedOrRecentSongDTO.getMusicId()).orElseThrow(
+                () -> new UsernameNotFoundException(likedOrRecentSongDTO.getMusicId() + " is not valid"));
 
         Optional<LikedSong> existingLike =
                 likedSongRepo.findByUserIdAndMusicId(user.getId(), music.getId());
@@ -56,7 +56,7 @@ public class LikedSongServiceImpl implements LikedSongService {
     }
 
     @Override
-    public List<LikedSongDTO> getLikedSongsByUser(Long userId) {
+    public List<LikedOrRecentSongDTO> getLikedSongsByUser(Long userId) {
         if (userId == null) {
             throw new UsernameNotFoundException("User ID is null");
         }
@@ -67,7 +67,7 @@ public class LikedSongServiceImpl implements LikedSongService {
         return likedSongRepo.findAllByUser(user)
                 .stream()
                 .map(likedSong -> {
-                    LikedSongDTO dto = new LikedSongDTO();
+                    LikedOrRecentSongDTO dto = new LikedOrRecentSongDTO();
                     dto.setUserId(likedSong.getUser().getId());
                     dto.setMusicId(likedSong.getMusic().getId());
                     return dto;

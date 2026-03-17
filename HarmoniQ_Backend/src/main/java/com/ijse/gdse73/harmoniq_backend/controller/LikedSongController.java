@@ -1,10 +1,8 @@
 package com.ijse.gdse73.harmoniq_backend.controller;
 
 import com.ijse.gdse73.harmoniq_backend.dto.APIResponse;
-import com.ijse.gdse73.harmoniq_backend.dto.LikedSongDTO;
-import com.ijse.gdse73.harmoniq_backend.dto.PlaylistDTO;
+import com.ijse.gdse73.harmoniq_backend.dto.LikedOrRecentSongDTO;
 import com.ijse.gdse73.harmoniq_backend.service.LikedSongService;
-import com.ijse.gdse73.harmoniq_backend.service.PlaylistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,9 +15,9 @@ public class LikedSongController {
     private final LikedSongService likedSongService;
 
     @PostMapping("/add-or-remove")
-    public ResponseEntity<APIResponse> addOrRemoveLike(@RequestBody LikedSongDTO likedSongDTO){
+    public ResponseEntity<APIResponse> addOrRemoveLike(@RequestBody LikedOrRecentSongDTO likedOrRecentSongDTO){
         return ResponseEntity.ok(new APIResponse(
-                200,"OK",likedSongService.addOrRemoveLike(likedSongDTO)
+                200,"OK",likedSongService.addOrRemoveLike(likedOrRecentSongDTO)
         ));
     }
 

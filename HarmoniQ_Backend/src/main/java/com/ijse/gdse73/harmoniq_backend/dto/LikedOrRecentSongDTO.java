@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LikedSongDTO {
+public class LikedOrRecentSongDTO {
     private Long id;
     private Long userId;
     private Long musicId;
