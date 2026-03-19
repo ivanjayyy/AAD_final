@@ -4,6 +4,7 @@ import com.ijse.gdse73.harmoniq_backend.dto.UserDTO;
 import com.ijse.gdse73.harmoniq_backend.entity.Music;
 import com.ijse.gdse73.harmoniq_backend.entity.Role;
 import com.ijse.gdse73.harmoniq_backend.entity.User;
+import com.ijse.gdse73.harmoniq_backend.exception.CustomException;
 import com.ijse.gdse73.harmoniq_backend.repo.UserRepo;
 import com.ijse.gdse73.harmoniq_backend.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -28,13 +29,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long id) {
-        userRepo.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        userRepo.findById(id).orElseThrow(() -> new CustomException("User not found"));
         userRepo.deleteById(id);
     }
 
     @Override
     public void updateUser(UserDTO userDTO) {
-        User user = userRepo.findById(userDTO.getId()).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepo.findById(userDTO.getId()).orElseThrow(() -> new CustomException("User not found"));
         user.setUsername(userDTO.getUsername());
         user.setEmail(userDTO.getEmail());
         userRepo.save(user);
@@ -42,12 +43,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO getUser(Long id) {
-        return userRepo.findById(id).map(user -> modelMapper.map(user, UserDTO.class)).orElseThrow(() -> new RuntimeException("User not found"));
+        return userRepo.findById(id).map(user -> modelMapper.map(user, UserDTO.class)).orElseThrow(() -> new CustomException("User not found"));
     }
 
     @Override
     public void updateUserRole(Long id, String role) {
-        User user = userRepo.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepo.findById(id).orElseThrow(() -> new CustomException("User not found"));
         user.setRole(Role.valueOf(role));
         userRepo.save(user);
     }

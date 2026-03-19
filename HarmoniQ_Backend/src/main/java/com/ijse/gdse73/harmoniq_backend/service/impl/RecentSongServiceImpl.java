@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
@@ -96,26 +97,70 @@ public class RecentSongServiceImpl implements RecentSongService {
         Music music = musicRepo.findById(likedOrRecentSongDTO.getMusicId()).orElseThrow(
                 () -> new UsernameNotFoundException(likedOrRecentSongDTO.getMusicId() + " is not valid"));
 
-        RecentSong recentSong = RecentSong.builder()
+        // 1. Copy existing list
+        List<RecentSong> oldList = new ArrayList<>(user.getRecentSongs());
+
+        // 2. Remove duplicates (same music)
+        oldList.removeIf(song -> song.getMusic().getId().equals(music.getId()));
+
+        // 3. CLEAR existing list (this deletes from DB because of orphanRemoval)
+        user.getRecentSongs().clear();
+
+        // 4. Create new list (Deque for ordering)
+        Deque<RecentSong> newList = new ArrayDeque<>();
+
+        // 5. Add new song to front
+        RecentSong newRecent = RecentSong.builder()
                 .user(user)
                 .music(music)
                 .build();
 
-        List<RecentSong> recentSongList = user.getRecentSongs();
-        Deque<RecentSong> recentSongs = new ArrayDeque<>(recentSongList);
+        newList.addFirst(newRecent);
 
-        recentSongs.removeIf(song -> song.getMusic().getId().equals(music.getId()));
-        recentSongs.addFirst(recentSong);
-
-        if (recentSongs.size() > 10) {
-            recentSongRepo.delete(recentSongs.getLast());
-            recentSongs.removeLast();
+        // 6. Add previous songs
+        for (RecentSong song : oldList) {
+            song.setUser(user); // reattach
+            newList.addLast(song);
         }
-        recentSongList.clear();
-        recentSongList.addAll(recentSongs);
 
-        user.setRecentSongs(recentSongList);
+        // 7. Trim to max 10
+        while (newList.size() > 10) {
+            newList.removeLast();
+        }
+
+        // 8. Set back to user
+        user.getRecentSongs().addAll(newList);
+
+        // 9. Save (cascade will insert new records)
         userRepo.save(user);
+
+
+//        User user = userRepo.findById(likedOrRecentSongDTO.getUserId()).orElseThrow(
+//                () -> new UsernameNotFoundException(likedOrRecentSongDTO.getUserId() + " is not valid"));
+//
+//        Music music = musicRepo.findById(likedOrRecentSongDTO.getMusicId()).orElseThrow(
+//                () -> new UsernameNotFoundException(likedOrRecentSongDTO.getMusicId() + " is not valid"));
+//
+//        RecentSong recentSong = RecentSong.builder()
+//                .user(user)
+//                .music(music)
+//                .build();
+//
+//        List<RecentSong> recentSongList = user.getRecentSongs();
+//        Deque<RecentSong> recentSongs = new ArrayDeque<>(recentSongList);
+//
+//        recentSongs.removeIf(song -> song.getMusic().getId().equals(music.getId()));
+//        recentSongs.addFirst(recentSong);
+//
+//        if (recentSongs.size() > 10) {
+//            recentSongRepo.delete(recentSongs.getLast());
+//            recentSongs.removeLast();
+//        }
+//        recentSongList.clear();
+//        recentSongList.addAll(recentSongs);
+//
+//        user.setRecentSongs(recentSongList);
+//        userRepo.save(user);
     }
 
     @Override
