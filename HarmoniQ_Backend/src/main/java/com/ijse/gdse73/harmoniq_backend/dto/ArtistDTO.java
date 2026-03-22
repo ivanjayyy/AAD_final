@@ -11,4 +11,5 @@ public class ArtistDTO {
     private Long id;
     private String name;
     private String bio;
+    private String pfpPath;
 }

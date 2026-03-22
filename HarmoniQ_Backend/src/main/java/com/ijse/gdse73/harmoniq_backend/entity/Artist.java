@@ -14,4 +14,5 @@ public class Artist {
     private Long id;
     private String name;
     private String bio;
+    private String pfpPath;
 }

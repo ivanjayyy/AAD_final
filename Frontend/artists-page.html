@@ -2,9 +2,145 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>HarmoniQ | Artists</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <style>
+        body { background-color: #f8f9fa; color: #212529; }
+        .sidebar-sensor { width: 15px; z-index: 1060; }
+        .artist-card {
+            transition: all 0.3s ease;
+            border: none;
+            border-radius: 15px;
+            background: #fff;
+        }
+        .artist-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+        }
+        .profile-img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border: 4px solid #fff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .bio-text {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+    </style>
 </head>
-<body>
+
+<body class="overflow-x-hidden" style="padding-bottom: 50px;">
+
+<div id="sidebar-sensor" class="position-fixed top-0 start-0 vh-100 sidebar-sensor"></div>
+
+<div class="offcanvas offcanvas-start bg-white border-end shadow" tabindex="-1" id="navSidebar" style="width: 280px;">
+    <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title text-primary fw-bold">HarmoniQ 🎶</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column p-0">
+        <ul class="nav flex-column mb-auto">
+            <li><a class="nav-link text-dark p-3 fw-medium" href="user-home.html">🏠 Home</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="search-page.html">🔍 Search</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="artists-page.html">🎙️ Artists</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="user-playlists.html">📜 Playlists</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="user-profile.html">👤 Profile</a></li>
+        </ul>
+        <div class="p-3">
+            <button class="btn btn-outline-danger w-100" onclick="logout()">Logout</button>
+        </div>
+    </div>
+</div>
+
+<main class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h2 class="fw-bold mb-0">Featured Artists</h2>
+            <p class="text-muted">Discover the voices behind the music</p>
+        </div>
+        <div class="input-group w-25 d-none d-md-flex">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control border-start-0" placeholder="Filter artists...">
+        </div>
+    </div>
+
+    <div class="row g-4" id="artistContainer">
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const sidebar = new bootstrap.Offcanvas(document.getElementById('navSidebar'));
+
+    // Reveal sidebar on left edge hover
+    $('#sidebar-sensor').on('mouseenter', () => sidebar.show());
+
+    function fetchArtists() {
+        // Replace with your actual API endpoint
+        $.ajax({
+            url: "http://localhost:8080/api/v1/artist/get-all",
+            type: "GET",
+            success: function(response) {
+                renderArtists(response.data);
+            },
+            error: function() {
+                // Mock data for testing if API is not ready
+                const mockData = [
+                    { id: 1, name: "Luna Ray", bio: "Indie pop sensation from the northern lights. Bringing ethereal vibes to your ears.", songCount: 12 },
+                    { id: 2, name: "Echo Bass", bio: "Electronic producer specializing in deep house and futuristic synth soundscapes.", songCount: 8 },
+                    { id: 3, name: "The Harmonics", bio: "Alternative rock band with a passion for soulful lyrics and heavy riffs.", songCount: 15 }
+                ];
+                renderArtists(mockData);
+            }
+        });
+    }
+
+    function renderArtists(artists) {
+        const container = $("#artistContainer");
+        container.empty();
+
+        artists.forEach(artist => {
+            container.append(`
+                <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                    <div class="card h-100 artist-card shadow-sm text-center p-4">
+                        <div class="mb-3">
+                            <img src="http://localhost:8080/api/v1/artist/image/${artist.id}"
+                                 class="rounded-circle profile-img mx-auto"
+                                 onerror="this.src='https://via.placeholder.com/150?text=Artist'"
+                                 alt="${artist.name}">
+                        </div>
+                        <h5 class="fw-bold mb-1">${artist.name}</h5>
+                        <p class="bio-text mb-3 px-2">${artist.bio}</p>
+                        <div class="mt-auto">
+                            <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
+                                <i class="bi bi-music-note-beamed me-1"></i> ${artist.songCount} Songs
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `);
+        });
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = "sign-in.html";
+    }
+
+    $(document).ready(() => fetchArtists());
+</script>
 
 </body>
 </html>

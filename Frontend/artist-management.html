@@ -1,10 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+  <meta charset="UTF-8">
+  <title>HarmoniQ | Artist Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <style>
+    body { background-color: #f8f9fa; color: #212529; }
+    .card { border: none; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); }
+    .nav-link:hover { background-color: #f8f9fa; }
+    .sidebar-sensor { width: 15px; z-index: 1060; }
+    .profile-img-table { width: 45px; height: 45px; object-fit: cover; border-radius: 50%; border: 1px solid #dee2e6; }
+    .bio-truncate { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  </style>
 </head>
-<body>
+
+<body class="p-4">
+
+<div id="admin-sidebar-sensor" class="position-fixed top-0 start-0 vh-100 sidebar-sensor"></div>
+
+<div class="offcanvas offcanvas-start bg-white border-end shadow" tabindex="-1" id="adminSidebar" style="width: 280px;">
+  <div class="offcanvas-header border-bottom">
+    <h5 class="offcanvas-title text-primary fw-bold"><i class="bi bi-shield-lock-fill me-2"></i>Admin HQ</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column p-0">
+    <ul class="nav flex-column mb-auto">
+      <li><a href="admin-dashboard.html" class="nav-link p-3 text-primary fw-bold bg-light rounded"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
+      <li><a href="music-management.html" class="nav-link p-3 text-dark"><i class="bi bi-music-note-beamed me-3"></i> Music Management</a></li>
+      <li><a href="artist-management.html" class="nav-link p-3 text-dark"><i class="bi bi-mic me-3"></i> Artists</a></li>
+      <li><a href="user-management.html" class="nav-link p-3 text-dark"><i class="bi bi-people me-3"></i> User Directory</a></li>
+    </ul>
+    <div class="p-3">
+      <button class="btn btn-outline-danger w-100" onclick="logout()">Logout</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Artist Directory</h2>
+    <button class="btn btn-primary fw-bold px-4" data-bs-toggle="modal" data-bs-target="#addArtistModal">
+      <i class="bi bi-plus-lg me-1"></i> Add Artist
+    </button>
+  </div>
+
+  <div class="card overflow-hidden">
+    <div class="card-header bg-white py-3 border-bottom">
+      <h6 class="mb-0 fw-bold text-secondary"><i class="bi bi-person-lines-fill me-2"></i>Managed Artists</h6>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0" id="artistTable">
+        <thead class="small text-uppercase text-muted">
+        <tr>
+          <th class="ps-3">ID</th>
+          <th>Photo</th>
+          <th>Artist Name</th>
+          <th>Biography</th>
+          <th class="text-end pe-3">Actions</th>
+        </tr>
+        </thead>
+        <tbody class="border-top-0">
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="addArtistModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">Add New Artist</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Artist Name</label>
+          <input type="text" id="artistName" class="form-control" placeholder="e.g. Luna Ray">
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Biography</label>
+          <textarea id="artistBio" class="form-control" rows="3" placeholder="Tell us about the artist..."></textarea>
+        </div>
+        <div class="mb-4">
+          <label class="form-label small fw-bold">Profile Picture</label>
+          <input type="file" id="profilePic" class="form-control" accept="image/*">
+        </div>
+        <button class="btn btn-primary w-100 fw-bold py-2" onclick="saveArtist()">Save Artist</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  const baseUrl = "http://localhost:8080/api/v1/artist";
+  const sidebar = new bootstrap.Offcanvas(document.getElementById('adminSidebar'));
+
+  $('#admin-sidebar-sensor').on('mouseenter', () => sidebar.show());
+
+  function fetchArtists() {
+    $.ajax({
+      url: `${baseUrl}/get-all`,
+      type: "GET",
+      success: function (response) {
+        const tbody = $('#artistTable tbody').empty();
+        response.data.forEach(artist => {
+          tbody.append(`
+            <tr>
+              <td class="ps-3 text-muted">#${artist.id}</td>
+              <td>
+                <img src="${baseUrl}/profile-pic/${artist.id}" class="profile-img-table"
+                     onerror="this.src='https://via.placeholder.com/150?text=User'">
+              </td>
+              <td class="fw-bold text-dark">${artist.name}</td>
+              <td class="text-secondary small bio-truncate">${artist.bio}</td>
+              <td class="text-end pe-3">
+              <button class="btn btn-sm btn-outline-primary border-0" onclick="updateArtist(${artist.id}, '${artist.name}', '${artist.bio}')">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger border-0" onclick="deleteArtist(${artist.id})">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          `);
+        });
+      }
+    });
+  }
+
+  function saveArtist() {
+    let formData = new FormData();
+    formData.append("name", $('#artistName').val());
+    formData.append("bio", $('#artistBio').val());
+    formData.append("profilePic", $('#profilePic')[0].files[0]);
+
+    $.ajax({
+      url: `${baseUrl}/add`,
+      type: "POST",
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: () => {
+        $('#addArtistModal').modal('hide');
+        // Clear inputs
+        $('#artistName, #artistBio, #profilePic').val('');
+        fetchArtists();
+      },
+      error: () => alert("Failed to add artist")
+    });
+  }
+
+  function deleteArtist(id) {
+    if (!confirm("Delete this artist?")) return;
+    $.ajax({ url: `${baseUrl}/delete/${id}`, type: "DELETE", success: () => fetchArtists() });
+  }
+
+  function updateArtist(id, name, bio) {
+    $('#updateMusicId').val(id);
+    $('#updateMusicTitle').val(name);
+    $('#updateMusicArtist').val(bio);
+    // new bootstrap.Modal(document.getElementById('updateModal')).show();
+  }
+
+  function logout() {
+    localStorage.clear();
+    window.location.href = "sign-in.html";
+  }
+
+  $(document).ready(() => fetchArtists());
+</script>
 
 </body>
 </html>
