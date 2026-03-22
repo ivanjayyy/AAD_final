@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HarmoniQ | Playlists</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body class="bg-light text-dark">
+
+<div id="sidebar-sensor" class="position-fixed top-0 start-0 vh-100" style="width: 15px; z-index: 1060;"></div>
+
+<div class="offcanvas offcanvas-start bg-white border-end" tabindex="-1" id="navSidebar" style="width: 280px;">
+    <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title text-primary fw-bold">HarmoniQ 🎶</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+        <ul class="nav flex-column">
+            <li><a class="nav-link text-dark p-3 fw-medium" href="user-home.html">🏠 Home</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="search-page.html">🔍 Search</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="artists-page.html">🎙️ Artists</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="user-playlists.html">📜 Playlists</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="user-profile.html">👤 Profile</a></li>
+        </ul>
+        <div class="p-3 position-absolute bottom-0 w-100">
+            <button class="btn btn-outline-danger w-100" onclick="logout()">Logout</button>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">My Playlists</h2>
+            <p class="text-muted">Manage your personal music collections</p>
+        </div>
+        <button class="btn btn-primary fw-bold px-4" data-bs-toggle="modal" data-bs-target="#createModal">
+            <i class="bi bi-plus-lg me-2"></i>Create New
+        </button>
+    </div>
+
+    <hr class="mb-5">
+
+    <div id="playlistContainer" class="row g-4">
+    </div>
+</div>
+
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">New Playlist</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Playlist Name</label>
+                    <input type="text" id="playlistName" class="form-control" placeholder="e.g. Summer Hits 2026">
+                </div>
+                <button class="btn btn-primary w-100 fw-bold py-2" onclick="createPlaylist()">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const token = localStorage.getItem("token");
+    const payload = token ? JSON.parse(atob(token.split('.')[1])) : { sub: "Guest" };
+    const username = payload.sub;
+    const sidebar = new bootstrap.Offcanvas(document.getElementById('navSidebar'));
+
+    // Sidebar Hover Trigger
+    $('#sidebar-sensor').on('mouseenter', () => sidebar.show());
+
+    function loadPlaylists(){
+        $.ajax({
+            url: "http://localhost:8080/api/v1/playlist/load/" + username,
+            method: "GET",
+            success: function(response){
+                const container = $("#playlistContainer");
+                container.empty();
+
+                if(response.data.length === 0) {
+                    container.html('<div class="col-12 text-center py-5"><i class="bi bi-folder2-open display-1 text-light"></i><p class="text-muted">No playlists found. Create one to get started!</p></div>');
+                    return;
+                }
+
+                response.data.forEach(pl => {
+                    container.append(`
+                        <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+                            <div class="card h-100 border-0 shadow-sm text-center p-3 hover-effect cursor-pointer">
+                                <i class="bi bi-folder-fill text-warning display-4"></i>
+                                <div class="mt-2 fw-bold text-truncate small">${pl.playlistName}</div>
+                                <div class="text-muted extra-small">Playlist</div>
+                            </div>
+                        </div>
+                    `);
+                });
+            }
+        });
+    }
+
+    function createPlaylist(){
+        const name = $("#playlistName").val();
+        if(!name) return alert("Please enter a name");
+
+        $.ajax({
+            url: "http://localhost:8080/api/v1/playlist/create",
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ "playlistName": name, "username": username }),
+            success: function () {
+                $("#playlistName").val('');
+                bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
+                loadPlaylists();
+            }
+        });
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = "login.html";
+    }
+
+    $(document).ready(() => loadPlaylists());
+</script>
+
+<style>
+    .cursor-pointer { cursor: pointer; }
+    .extra-small { font-size: 0.75rem; }
+    .hover-effect { transition: all 0.2s ease; border: 1px solid transparent !important; }
+    .hover-effect:hover {
+        transform: translateY(-5px);
+        background-color: #fcfcfc;
+        border-color: #0d6efd !important;
+    }
+    .nav-link:hover { background-color: #f8f9fa; }
+</style>
+
+</body>
+</html>

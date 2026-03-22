@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HarmoniQ | User Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+
+<body class="bg-light text-dark overflow-x-hidden p-4">
+
+<div id="admin-sidebar-sensor" class="position-fixed top-0 start-0 vh-100" style="width: 15px; z-index: 1060;"></div>
+
+<div class="offcanvas offcanvas-start bg-white border-end" tabindex="-1" id="adminSidebar" style="width: 280px;">
+    <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title text-primary fw-bold"><i class="bi bi-shield-lock-fill me-2"></i>Admin HQ</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column p-0">
+        <ul class="nav flex-column mb-auto">
+            <li><a href="admin-dashboard.html" class="nav-link p-3 text-primary fw-bold bg-light rounded"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
+            <li><a href="music-management.html" class="nav-link p-3 text-dark"><i class="bi bi-music-note-beamed me-3"></i> Music Management</a></li>
+            <li><a href="artist-management.html" class="nav-link p-3 text-dark"><i class="bi bi-mic me-3"></i> Artists</a></li>
+            <li><a href="user-management.html" class="nav-link p-3 text-dark"><i class="bi bi-people me-3"></i> User Directory</a></li>
+        </ul>
+        <div class="p-3">
+            <button class="btn btn-outline-danger w-100" onclick="logout()">Logout</button>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <h2 class="fw-bold mb-4">User Directory</h2>
+
+    <div class="card border-0 shadow-sm mb-5">
+        <div class="card-header bg-white py-3">
+            <h6 class="mb-0 text-primary fw-bold"><i class="bi bi-shield-shaded me-2"></i>Administrators</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="adminTable">
+                <thead class="table-light">
+                <tr class="small text-uppercase">
+                    <th class="ps-3">ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th class="text-end pe-3">Actions</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h6 class="mb-0 text-secondary fw-bold"><i class="bi bi-person-fill me-2"></i>Standard Users</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="userTable">
+                <thead class="table-light">
+                <tr class="small text-uppercase">
+                    <th class="ps-3">ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th class="text-end pe-3">Actions</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="userModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Manage Permissions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" id="modalUserId">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Username</label>
+                    <input type="text" id="modalUsername" class="form-control bg-light" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Email Address</label>
+                    <input type="text" id="modalEmail" class="form-control bg-light" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Assign Role</label>
+                    <select id="modalRole" class="form-select">
+                        <option value="USER">USER</option>
+                        <option value="ADMIN">ADMIN</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-3">
+                <button class="btn btn-primary w-100 fw-bold" onclick="updateUser()">Apply Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const baseUrl = "http://localhost:8080/api/v1/user";
+    const sidebar = new bootstrap.Offcanvas(document.getElementById('adminSidebar'));
+
+    $('#admin-sidebar-sensor').on('mouseenter', () => sidebar.show());
+
+    function fetchUsers() {
+        $.ajax({
+            url: `${baseUrl}/get-all`,
+            method: "GET",
+            success: function(response) {
+                const adminsTbody = $("#adminTable tbody").empty();
+                const usersTbody = $("#userTable tbody").empty();
+
+                response.data.forEach(user => {
+                    const row = `
+                        <tr>
+                            <td class="ps-3 text-muted">#${user.id}</td>
+                            <td class="fw-bold">${user.username}</td>
+                            <td>${user.email}</td>
+                            <td class="text-end pe-3">
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewUser('${user.id}')"><i class="bi bi-pencil"></i> Edit</button>
+                                <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteUser(${user.id})"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>`;
+
+                    if (user.role === "ADMIN") adminsTbody.append(row);
+                    else usersTbody.append(row);
+                });
+            }
+        });
+    }
+
+    function viewUser(id) {
+        $.ajax({
+            url: `${baseUrl}/get/${id}`,
+            type: "GET",
+            success: function(response) {
+                const user = response.data;
+                $("#modalUserId").val(user.id);
+                $("#modalUsername").val(user.username);
+                $("#modalEmail").val(user.email);
+                $("#modalRole").val(user.role);
+                new bootstrap.Modal(document.getElementById("userModal")).show();
+            }
+        });
+    }
+
+    function updateUser() {
+        $.ajax({
+            url: `${baseUrl}/update-role/${$("#modalUserId").val()}`,
+            type: "PUT",
+            contentType: "application/json",
+            data: JSON.stringify({ role: $("#modalRole").val() }),
+            success: function() {
+                bootstrap.Modal.getInstance(document.getElementById("userModal")).hide();
+                fetchUsers();
+            }
+        });
+    }
+
+    function deleteUser(id) {
+        if (!confirm("Delete user?")) return;
+        $.ajax({
+            url: `${baseUrl}/delete/${id}`,
+            type: "DELETE",
+            success: () => fetchUsers()
+        });
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = "sign-in.html";
+    }
+
+    $(document).ready(() => fetchUsers());
+</script>
+
+<style>
+    .nav-link:hover { background-color: #f8f9fa; }
+    .table-hover tbody tr:hover { background-color: #fcfcfc; }
+</style>
+
+</body>
+</html>

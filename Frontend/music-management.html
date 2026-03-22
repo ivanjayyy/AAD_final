@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HarmoniQ | Music Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <style>
+    body { background-color: #f8f9fa; color: #212529; }
+    .card { border: none; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); }
+    .table thead { background-color: #f1f3f5; }
+    .nav-link:hover { background-color: #f8f9fa; }
+    .sidebar-sensor { width: 15px; z-index: 1060; }
+  </style>
+</head>
+
+<body class="p-4">
+
+<div id="admin-sidebar-sensor" class="position-fixed top-0 start-0 vh-100 sidebar-sensor"></div>
+
+<div class="offcanvas offcanvas-start bg-white border-end" tabindex="-1" id="adminSidebar" style="width: 280px;">
+  <div class="offcanvas-header border-bottom">
+    <h5 class="offcanvas-title text-primary fw-bold"><i class="bi bi-shield-lock-fill me-2"></i>Admin HQ</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column p-0">
+    <ul class="nav flex-column mb-auto">
+      <li><a href="admin-dashboard.html" class="nav-link p-3 text-primary fw-bold bg-light rounded"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
+      <li><a href="music-management.html" class="nav-link p-3 text-dark"><i class="bi bi-music-note-beamed me-3"></i> Music Management</a></li>
+      <li><a href="artist-management.html" class="nav-link p-3 text-dark"><i class="bi bi-mic me-3"></i> Artists</a></li>
+      <li><a href="user-management.html" class="nav-link p-3 text-dark"><i class="bi bi-people me-3"></i> User Directory</a></li>
+    </ul>
+    <div class="p-3">
+      <button class="btn btn-outline-danger w-100" onclick="logout()">Logout</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Music Inventory</h2>
+    <button class="btn btn-primary fw-bold px-4" data-bs-toggle="modal" data-bs-target="#uploadModal">
+      <i class="bi bi-plus-lg me-1"></i> Upload Music
+    </button>
+  </div>
+
+  <div class="card overflow-hidden">
+    <div class="card-header bg-white py-3 border-bottom">
+      <h6 class="mb-0 fw-bold text-secondary"><i class="bi bi-list-ul me-2"></i>All Tracks</h6>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0" id="musicTable">
+        <thead class="small text-uppercase text-muted">
+        <tr>
+          <th class="ps-3">ID</th>
+          <th>Cover</th>
+          <th>Title</th>
+          <th>Artist</th>
+          <th class="text-end pe-3">Actions</th>
+        </tr>
+        </thead>
+        <tbody class="border-top-0">
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="uploadModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">New Upload</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Music Title</label>
+          <input type="text" id="musicTitle" class="form-control" placeholder="e.g. Moonlight Sonata">
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Artist</label>
+          <input type="text" id="musicArtist" class="form-control" placeholder="e.g. Beethoven">
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Audio File</label>
+          <input type="file" id="musicFile" class="form-control" accept="audio/*">
+        </div>
+        <div class="mb-4">
+          <label class="form-label small fw-bold">Thumbnail</label>
+          <input type="file" id="thumbnailFile" class="form-control" accept="image/*">
+        </div>
+        <button class="btn btn-primary w-100 fw-bold py-2" onclick="uploadMusic()">Start Upload</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="updateModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">Update Track</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <input type="hidden" id="updateMusicId">
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Title</label>
+          <input type="text" id="updateMusicTitle" class="form-control">
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Artist</label>
+          <input type="text" id="updateMusicArtist" class="form-control">
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-muted">Replace Audio (Optional)</label>
+          <input type="file" id="updateMusicFile" class="form-control" accept="audio/*">
+        </div>
+        <div class="mb-4">
+          <label class="form-label small fw-bold text-muted">Replace Thumbnail (Optional)</label>
+          <input type="file" id="updateThumbnailFile" class="form-control" accept="image/*">
+        </div>
+        <button class="btn btn-warning w-100 fw-bold py-2" onclick="submitUpdate()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  const baseUrl = "http://localhost:8080/api/v1/music";
+  const sidebar = new bootstrap.Offcanvas(document.getElementById('adminSidebar'));
+
+  $('#admin-sidebar-sensor').on('mouseenter', () => sidebar.show());
+
+  function fetchMusic() {
+    $.ajax({
+      url: `${baseUrl}/get-all`,
+      type: "GET",
+      success: function (response) {
+        const tbody = $('#musicTable tbody');
+        tbody.empty();
+        response.data.forEach(music => {
+          tbody.append(`
+            <tr>
+              <td class="ps-3 text-muted">#${music.id}</td>
+              <td>
+                <img src="${baseUrl}/thumbnail/${music.id}" class="rounded border"
+                     style="width: 40px; height: 40px; object-fit: cover;">
+              </td>
+              <td class="fw-bold text-dark">${music.musicTitle}</td>
+              <td class="text-secondary">${music.musicArtist}</td>
+              <td class="text-end pe-3">
+                <button class="btn btn-sm btn-outline-primary border-0" onclick="updateMusic(${music.id}, '${music.musicTitle}', '${music.musicArtist}')">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger border-0 ms-2" onclick="deleteMusic(${music.id})">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          `);
+        });
+      }
+    });
+  }
+
+  function uploadMusic() {
+    let formData = new FormData();
+    formData.append("musicFile", $('#musicFile')[0].files[0]);
+    formData.append("thumbnail", $('#thumbnailFile')[0].files[0]);
+    formData.append("musicTitle", $('#musicTitle').val());
+    formData.append("musicArtist", $('#musicArtist').val());
+
+    $.ajax({
+      url: `${baseUrl}/upload`,
+      type: "POST",
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: () => { $('#uploadModal').modal('hide'); fetchMusic(); },
+      error: () => alert("Upload failed")
+    });
+  }
+
+  function updateMusic(id, title, artist) {
+    $('#updateMusicId').val(id);
+    $('#updateMusicTitle').val(title);
+    $('#updateMusicArtist').val(artist);
+    new bootstrap.Modal(document.getElementById('updateModal')).show();
+  }
+
+  function submitUpdate() {
+    const id = $('#updateMusicId').val();
+    let formData = new FormData();
+    formData.append("musicTitle", $('#updateMusicTitle').val());
+    formData.append("musicArtist", $('#updateMusicArtist').val());
+
+    const mFile = $('#updateMusicFile')[0].files[0];
+    const tFile = $('#updateThumbnailFile')[0].files[0];
+    if (mFile) formData.append("musicFile", mFile);
+    if (tFile) formData.append("thumbnail", tFile);
+
+    $.ajax({
+      url: `${baseUrl}/update/${id}`,
+      type: "PUT",
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: () => { bootstrap.Modal.getInstance(document.getElementById('updateModal')).hide(); fetchMusic(); }
+    });
+  }
+
+  function deleteMusic(id) {
+    if (!confirm("Delete track?")) return;
+    $.ajax({ url: `${baseUrl}/delete/${id}`, type: "DELETE", success: () => fetchMusic() });
+  }
+
+  function logout() {
+    localStorage.clear();
+    window.location.href = "sign-in.html";
+  }
+
+  $(document).ready(() => fetchMusic());
+</script>
+
+</body>
+</html>
