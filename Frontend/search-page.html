@@ -16,12 +16,10 @@
         .search-input-lg:focus { border-color: #0d6efd; box-shadow: none; background: #fff; }
         .search-icon { position: absolute; left: 1.5rem; top: 50%; transform: translateY(-50%); color: #adb5bd; font-size: 1.2rem; }
 
-        /* Artist Circle Style */
         .artist-item { transition: 0.2s; cursor: pointer; text-align: center; padding: 10px; border-radius: 10px; }
         .artist-item:hover { background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .artist-img { width: 100px; height: 100px; object-fit: cover; border-radius: 50%; margin-bottom: 10px; border: 3px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-        /* Song Row Style */
         .song-row { transition: 0.2s; cursor: pointer; border-radius: 10px; padding: 12px; margin-bottom: 5px; }
         .song-row:hover { background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         .song-img { width: 55px; height: 55px; object-fit: cover; border-radius: 6px; }
@@ -32,6 +30,9 @@
         .empty-state { color: #adb5bd; text-align: center; margin-top: 4rem; }
         .playlist-item { transition: 0.2s; }
         .playlist-item:hover { background-color: #f0f7ff; color: #0d6efd; }
+
+        /* Liked State Style */
+        .liked { color: #dc3545 !important; }
     </style>
 </head>
 <body>
@@ -112,7 +113,8 @@
                 </div>
             </div>
             <div class="col-4 col-md-3 d-flex align-items-center justify-content-end gap-3">
-                <i class="bi bi-heart fs-5 cursor-pointer text-muted" title="Like"></i>
+                <i id="likeBtn" class="bi bi-heart fs-5 cursor-pointer text-muted" title="Like" onclick="likeSong()"></i>
+
                 <i class="bi bi-bookmark-plus fs-5 cursor-pointer text-muted" id="playlistBtn" data-bs-toggle="popover" data-bs-trigger="click" title="Add to Playlist"></i>
                 <i class="bi bi-x-lg fs-5 text-danger cursor-pointer" onclick="closePlayer()"></i>
             </div>
@@ -128,9 +130,11 @@
     const apiBase = "http://localhost:8080/api/v1";
     const audio = document.getElementById("audioPlayer");
     const sidebar = new bootstrap.Offcanvas(document.getElementById('navSidebar'));
+
     const token = localStorage.getItem("token");
-    const payload = token ? JSON.parse(atob(token.split('.')[1])) : { sub: "Guest" };
+    const payload = token ? JSON.parse(atob(token.split('.')[1])) : { sub: "Guest", id: null };
     const username = payload.sub;
+    const userId = payload.id;
 
     $.ajaxSetup({
         beforeSend: function(xhr) {
@@ -177,12 +181,10 @@
 
         $('#emptyPrompt').hide();
 
-        // Render Artists (Updated with localStorage redirect)
         if (filteredArtists.length > 0) {
             $('#artistSection').show();
             let html = '';
-            filteredArtists.forEach((a, idx) => {
-                // Pre-stringifying for the onclick handler
+            filteredArtists.forEach((a) => {
                 const artistData = JSON.stringify(a).replace(/'/g, "&apos;");
                 html += `
                     <div class="col-6 col-md-3 col-lg-2">
@@ -195,7 +197,6 @@
             $('#artistResults').html(html);
         } else { $('#artistSection').hide(); }
 
-        // Render Songs
         if (filteredSongs.length > 0) {
             $('#songSection').show();
             let html = '';
@@ -217,10 +218,48 @@
         else { $('#noResults').hide(); }
     }
 
-    // New Function: Redirects to Artist Profile
     function viewArtistProfile(artist) {
         localStorage.setItem("selectedArtist", JSON.stringify(artist));
         window.location.href = "artist-profile.html";
+    }
+
+    // --- NEW: LIKE FUNCTIONS ---
+    function checkLikeStatus() {
+        if (!token || !currentPlayingMusicId) return;
+        $.ajax({
+            url: `${apiBase}/liked-song/check-like`,
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ userId: userId, musicId: currentPlayingMusicId }),
+            success: function(response) {
+                const btn = $('#likeBtn');
+                if (response.data === "Liked") {
+                    btn.removeClass("bi-heart text-muted").addClass("bi-heart-fill text-danger liked");
+                } else {
+                    btn.removeClass("bi-heart-fill text-danger liked").addClass("bi-heart text-muted");
+                }
+            }
+        });
+    }
+
+    function likeSong() {
+        if (!token || !currentPlayingMusicId) return;
+        $.ajax({
+            url: `${apiBase}/liked-song/add-or-remove`,
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ userId: userId, musicId: currentPlayingMusicId }),
+            success: function(response) {
+                if (response.status === 200 || response.code === 200) {
+                    const btn = $('#likeBtn');
+                    if (response.data === "Liked Song") {
+                        btn.removeClass("bi-heart text-muted").addClass("bi-heart-fill text-danger liked");
+                    } else {
+                        btn.removeClass("bi-heart-fill text-danger liked").addClass("bi-heart text-muted");
+                    }
+                }
+            }
+        });
     }
 
     function playSong(id, title, artist) {
@@ -232,9 +271,11 @@
         $("#bottomPlayer").addClass("active");
         audio.play();
         $("#playPauseBtn").removeClass("bi-play-circle-fill").addClass("bi-pause-circle-fill");
+
+        checkLikeStatus(); // Check if liked when song starts
     }
 
-    // Playlist Popover Logic
+    // Popover Logic
     const playlistPopover = new bootstrap.Popover(document.getElementById('playlistBtn'), {
         html: true,
         content: function() {

@@ -21,4 +21,5 @@ public class RecentSong {
     @ManyToOne
     @JoinColumn(name = "music_id")
     private Music music;
+    private int songIndex;
 }

@@ -140,7 +140,7 @@
             }
         });
 
-        // Fetch Liked Music Preview with Randomization
+        // Fetch Liked Music Preview
         if(userId) {
             $.ajax({
                 url: `${apiBase}/liked-song/get-by-user/${userId}`,
@@ -148,44 +148,10 @@
                 headers: { "Authorization": "Bearer " + token },
                 success: function(response) {
                     likedListPreview = response.data || [];
-
-                    // Shuffle the list to pick random songs each time
-                    let randomPreview = [...likedListPreview];
-                    shuffleArray(randomPreview);
-
-                    // Show only first 3 random songs for preview
-                    renderList("#likedSongsPreviewContainer", randomPreview.slice(0, 3), "liked");
+                    // Show only first 3 songs for preview
+                    renderList("#likedSongsPreviewContainer", likedListPreview.slice(0, 3), "liked");
                 }
             });
-        }
-    }
-
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-    }
-
-    // Update the play function to handle the preview list correctly
-    function playFromSpecificList(index, listType) {
-        currentActiveListName = listType;
-
-        if (listType === "liked") {
-            // Since the preview is randomized and sliced, we play specifically from the preview items
-            // But we keep the global likedListPreview as the queue
-            const songToPlay = $(event.currentTarget); // Not ideal, better to use the specific random list
-        }
-
-        const targetList = listType === "liked" ? likedListPreview : musicList;
-
-        if (shuffleMode) {
-            const musicId = targetList[index].id;
-            shuffledList = [...targetList].sort(() => Math.random() - 0.5);
-            const shuffledIndex = shuffledList.findIndex(m => m.id === musicId);
-            playSong(shuffledIndex);
-        } else {
-            playSong(index);
         }
     }
 
@@ -209,6 +175,20 @@
                 </div>
             `);
         });
+    }
+
+    function playFromSpecificList(index, listType) {
+        currentActiveListName = listType;
+        const targetList = listType === "liked" ? likedListPreview : musicList;
+
+        if (shuffleMode) {
+            const musicId = targetList[index].id;
+            shuffledList = [...targetList].sort(() => Math.random() - 0.5);
+            const shuffledIndex = shuffledList.findIndex(m => m.id === musicId);
+            playSong(shuffledIndex);
+        } else {
+            playSong(index);
+        }
     }
 
     function playSong(index) {

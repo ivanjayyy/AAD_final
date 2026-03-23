@@ -1,6 +1,7 @@
 package com.ijse.gdse73.harmoniq_backend.service.impl;
 
 import com.ijse.gdse73.harmoniq_backend.dto.LikedOrRecentSongDTO;
+import com.ijse.gdse73.harmoniq_backend.dto.MusicDTO;
 import com.ijse.gdse73.harmoniq_backend.entity.LikedSong;
 import com.ijse.gdse73.harmoniq_backend.entity.Music;
 import com.ijse.gdse73.harmoniq_backend.entity.User;
@@ -56,7 +57,7 @@ public class LikedSongServiceImpl implements LikedSongService {
     }
 
     @Override
-    public List<LikedOrRecentSongDTO> getLikedSongsByUser(Long userId) {
+    public List<MusicDTO> getLikedSongsByUser(Long userId) {
         if (userId == null) {
             throw new UsernameNotFoundException("User ID is null");
         }
@@ -64,15 +65,25 @@ public class LikedSongServiceImpl implements LikedSongService {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException(userId + " is not valid"));
 
+        // 1. Fetch all LikedSong entities for this user
         return likedSongRepo.findAllByUser(user)
                 .stream()
-                .map(likedSong -> {
-                    LikedOrRecentSongDTO dto = new LikedOrRecentSongDTO();
-                    dto.setUserId(likedSong.getUser().getId());
-                    dto.setMusicId(likedSong.getMusic().getId());
-                    return dto;
-                })
+                // 2. Get the Music object from each LikedSong
+                .map(LikedSong::getMusic)
+                // 3. Convert each Music entity to MusicDTO
+                .map(this::convertToDto)
                 .toList();
+    }
+
+    /**
+     * Reusable helper to map Music Entity -> MusicDTO with Artist Name
+     */
+    private MusicDTO convertToDto(Music music) {
+        MusicDTO musicDTO = modelMapper.map(music, MusicDTO.class);
+        if (music.getArtist() != null) {
+            musicDTO.setMusicArtist(music.getArtist().getName());
+        }
+        return musicDTO;
     }
 
     @Override

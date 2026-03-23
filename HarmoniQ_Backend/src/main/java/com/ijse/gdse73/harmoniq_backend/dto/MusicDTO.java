@@ -14,4 +14,5 @@ public class MusicDTO {
     private String thumbnailPath;
     private String musicTitle;
     private String musicArtist;
+//    private String musicGenre;
 }

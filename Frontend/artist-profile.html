@@ -61,6 +61,17 @@
         .playlist-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 14px; }
         .playlist-item:hover { background-color: #f8f9fa; color: #0d6efd; }
         .popover-body { padding: 0; max-height: 200px; overflow-y: auto; width: 200px; }
+
+        /* Follow Button Style */
+        .btn-follow {
+            border-radius: 25px;
+            padding: 8px 30px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        /* Liked Heart Style */
+        .liked { color: #dc3545 !important; }
     </style>
 </head>
 <body>
@@ -70,7 +81,11 @@
     <div class="container">
         <img id="artistImg" src="" class="rounded-circle profile-main-img mb-4" onerror="this.src='https://via.placeholder.com/180'">
         <h1 id="artistName" class="display-5 fw-bold">Loading...</h1>
-        <p id="artistBio" class="lead opacity-75 mx-auto" style="max-width: 600px;">Artist Biography...</p>
+        <p id="artistBio" class="lead opacity-75 mx-auto mb-4" style="max-width: 600px;">Artist Biography...</p>
+
+        <button id="followBtn" class="btn btn-outline-light btn-follow" onclick="toggleFollow()">
+            <i class="bi bi-person-plus-fill me-2"></i>Follow
+        </button>
     </div>
 </div>
 
@@ -105,7 +120,7 @@
                 </div>
             </div>
             <div class="col-4 col-md-3 d-flex align-items-center justify-content-end gap-3">
-                <i class="bi bi-heart fs-5 cursor-pointer text-muted" title="Like"></i>
+                <i id="likeBtn" class="bi bi-heart fs-5 cursor-pointer text-muted" title="Like" onclick="likeSong()"></i>
                 <i class="bi bi-bookmark-plus fs-5 cursor-pointer text-muted" id="playlistBtn" data-bs-toggle="popover" data-bs-trigger="click" title="Add to Playlist"></i>
                 <i class="bi bi-x-lg fs-5 text-danger cursor-pointer" onclick="closePlayer()"></i>
             </div>
@@ -118,12 +133,15 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+    const apiBase = "http://localhost:8080/api/v1";
     const audio = document.getElementById("audioPlayer");
     const token = localStorage.getItem("token");
-    const payload = token ? JSON.parse(atob(token.split('.')[1])) : { sub: "Guest" };
+    const payload = token ? JSON.parse(atob(token.split('.')[1])) : { sub: "Guest", id: null };
     const username = payload.sub;
+    const userId = payload.id;
 
-    let artistSongs = []; // List of songs for this specific artist
+    let currentArtistId = null;
+    let artistSongs = [];
     let shuffledList = [];
     let shuffleMode = false;
     let currentMusicId = null;
@@ -143,18 +161,79 @@
         }
 
         const artist = JSON.parse(artistData);
+        currentArtistId = artist.id;
+
         $("#artistName").text(artist.name);
         $("#artistBio").text(artist.bio);
-        $("#artistImg").attr("src", `http://localhost:8080/api/v1/artist/profile-pic/${artist.id}`);
+        $("#artistImg").attr("src", `${apiBase}/artist/profile-pic/${artist.id}`);
         document.title = `HarmoniQ | ${artist.name}`;
 
         fetchArtistSongs(artist.id, artist.name);
+        checkFollowStatus(); // Load follow status on page load
         initPlaylistPopover();
     });
 
+    // --- FOLLOW LOGIC ---
+    function checkFollowStatus() {
+        if (!token || !currentArtistId) return;
+
+        // Assuming your backend has a check endpoint, otherwise we handle UI toggle on success
+        $.ajax({
+            url: `${apiBase}/follow-artist/check`,
+            type: "POST",
+            contentType: "application/json",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+            },
+            data: JSON.stringify({ userId: userId, artistId: currentArtistId }),
+            success: function(response) {
+                updateFollowUI(response.data === "Following");
+            }
+        });
+    }
+
+    function toggleFollow() {
+        if (!token || !userId || !currentArtistId) {
+            alert("Please sign in to follow artists.");
+            return;
+        }
+
+        $.ajax({
+            url: `${apiBase}/follow-artist/add`,
+            type: "POST",
+            contentType: "application/json",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+            },
+            data: JSON.stringify({
+                userId: userId,
+                artistId: currentArtistId
+            }),
+            success: function(response) {
+                // Assuming backend returns a status message or current state
+                const isFollowing = response.data === "Followed Artist";
+                updateFollowUI(isFollowing);
+            },
+            error: function() {
+                alert("Action failed. Please try again.");
+            }
+        });
+    }
+
+    function updateFollowUI(isFollowing) {
+        const btn = $("#followBtn");
+        if (isFollowing) {
+            btn.removeClass("btn-outline-light").addClass("btn-light text-primary");
+            btn.html('<i class="bi bi-person-check-fill me-2"></i>Following');
+        } else {
+            btn.removeClass("btn-light text-primary").addClass("btn-outline-light");
+            btn.html('<i class="bi bi-person-plus-fill me-2"></i>Follow');
+        }
+    }
+
+    // --- MUSIC FETCHING ---
     function fetchArtistSongs(artistId, artistName) {
-        $.get(`http://localhost:8080/api/v1/music/get-all`, (response) => {
-            // Filter global list to just this artist's tracks
+        $.get(`${apiBase}/music/get-all`, (response) => {
             artistSongs = response.data.filter(s => s.artistId == artistId || s.musicArtist === artistName);
             renderSongs(artistSongs);
         });
@@ -171,7 +250,7 @@
             container.append(`
                 <div class="song-card d-flex align-items-center p-3 shadow-sm mb-2" onclick="playFromProfile(${index})">
                     <div class="me-3 text-muted fw-bold">${index + 1}</div>
-                    <img src="http://localhost:8080/api/v1/music/thumbnail/${song.id}" class="song-thumb me-3">
+                    <img src="${apiBase}/music/thumbnail/${song.id}" class="song-thumb me-3">
                     <div class="flex-grow-1">
                         <div class="fw-bold">${song.musicTitle}</div>
                         <div class="text-muted small">${song.musicArtist}</div>
@@ -182,8 +261,58 @@
         });
     }
 
-    // --- PLAYER LOGIC ---
+    // --- LIKE LOGIC ---
+    function checkLikeStatus() {
+        if (!token || currentIndex === -1) return;
+        const activeList = shuffleMode ? shuffledList : artistSongs;
+        const musicId = activeList[currentIndex].id;
 
+        $.ajax({
+            url: `${apiBase}/liked-song/check-like`,
+            type: "POST",
+            contentType: "application/json",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+            },
+            data: JSON.stringify({ userId: userId, musicId: musicId }),
+            success: function(response) {
+                const btn = $('#likeBtn');
+                if (response.data === "Liked") {
+                    btn.removeClass("bi-heart text-muted").addClass("bi-heart-fill text-danger liked");
+                } else {
+                    btn.removeClass("bi-heart-fill text-danger liked").addClass("bi-heart text-muted");
+                }
+            }
+        });
+    }
+
+    function likeSong() {
+        if (!token || currentIndex === -1) return;
+        const activeList = shuffleMode ? shuffledList : artistSongs;
+        const musicId = activeList[currentIndex].id;
+
+        $.ajax({
+            url: `${apiBase}/liked-song/add-or-remove`,
+            type: "POST",
+            contentType: "application/json",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+            },
+            data: JSON.stringify({ userId: userId, musicId: musicId }),
+            success: function(response) {
+                if (response.status === 200 || response.code === 200) {
+                    const btn = $('#likeBtn');
+                    if (response.data === "Liked Song") {
+                        btn.removeClass("bi-heart text-muted").addClass("bi-heart-fill text-danger liked");
+                    } else {
+                        btn.removeClass("bi-heart-fill text-danger liked").addClass("bi-heart text-muted");
+                    }
+                }
+            }
+        });
+    }
+
+    // --- PLAYER LOGIC ---
     function playFromProfile(index) {
         if (shuffleMode) {
             const musicId = artistSongs[index].id;
@@ -202,14 +331,16 @@
         const music = activeList[index];
         currentMusicId = music.id;
 
-        audio.src = "http://localhost:8080/api/v1/music/stream/" + music.id;
+        audio.src = `${apiBase}/music/stream/${music.id}`;
         $("#playerTitle").text(music.musicTitle);
         $("#playerArtist").text(music.musicArtist);
-        $("#playerThumbnail").attr("src", "http://localhost:8080/api/v1/music/thumbnail/" + music.id);
+        $("#playerThumbnail").attr("src", `${apiBase}/music/thumbnail/${music.id}`);
 
         $("#bottomPlayer").addClass("active");
         audio.play();
         $("#playPauseBtn").removeClass("bi-play-circle-fill").addClass("bi-pause-circle-fill");
+
+        checkLikeStatus();
     }
 
     function toggleShuffle() {
@@ -227,21 +358,18 @@
 
     function nextSong() {
         const activeList = shuffleMode ? shuffledList : artistSongs;
-        let nextIdx = currentIndex + 1;
-        if (nextIdx >= activeList.length) nextIdx = 0;
+        let nextIdx = (currentIndex + 1) % activeList.length;
         playSong(nextIdx);
     }
 
     function prevSong() {
         const activeList = shuffleMode ? shuffledList : artistSongs;
-        let prevIdx = currentIndex - 1;
-        if (prevIdx < 0) prevIdx = activeList.length - 1;
+        let prevIdx = (currentIndex - 1 + activeList.length) % activeList.length;
         playSong(prevIdx);
     }
 
     audio.onended = () => nextSong();
 
-    // UI Controls
     $("#playPauseBtn").on("click", () => {
         if(audio.paused) {
             audio.play();
@@ -273,16 +401,15 @@
     }
 
     // --- PLAYLIST POPOVER ---
-
     function initPlaylistPopover() {
-        const playlistPopover = new bootstrap.Popover(document.getElementById('playlistBtn'), {
+        new bootstrap.Popover(document.getElementById('playlistBtn'), {
             html: true,
             sanitize: false,
             content: function() { return `<div class="text-center p-2"><div class="spinner-border spinner-border-sm text-primary"></div></div>`; }
         });
 
         document.getElementById('playlistBtn').addEventListener('shown.bs.popover', function () {
-            $.get(`http://localhost:8080/api/v1/playlist/load/${username}`, (response) => {
+            $.get(`${apiBase}/playlist/load/${username}`, (response) => {
                 let html = '<div class="list-group list-group-flush">';
                 if(!response.data || response.data.length === 0) {
                     html += '<div class="p-3 text-muted small">No playlists found</div>';
@@ -300,7 +427,7 @@
     function addToPlaylist(playlistId) {
         if (!currentMusicId) return;
         $.ajax({
-            url: "http://localhost:8080/api/v1/playlist-song/add",
+            url: `${apiBase}/playlist-song/add`,
             type: "POST",
             contentType: "application/json",
             data: JSON.stringify({ playlistId: playlistId, musicId: currentMusicId }),
