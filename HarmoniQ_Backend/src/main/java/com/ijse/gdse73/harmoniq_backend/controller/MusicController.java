@@ -38,7 +38,8 @@ public class MusicController {
     public ResponseEntity<APIResponse> uploadMusic(@RequestParam("musicFile") MultipartFile musicFile,
                                                    @RequestParam("thumbnail") MultipartFile thumbnail,
                                                    @RequestParam("musicTitle") String musicTitle,
-                                                   @RequestParam("musicArtist") String musicArtist) throws IOException {
+                                                   @RequestParam("musicArtist") String musicArtist,
+                                                   @RequestParam("genreId") Long musicGenreId) throws IOException {
 
 //        Music File
         String musicName = musicFile.getOriginalFilename();
@@ -67,6 +68,7 @@ public class MusicController {
         musicDTO.setThumbnailPath("/uploads/thumbnail/" + thumbnailName);
         musicDTO.setMusicTitle(musicTitle);
         musicDTO.setMusicArtist(musicArtist);
+        musicDTO.setMusicGenreId(musicGenreId);
 
         musicService.saveMusic(musicDTO);
 
@@ -144,7 +146,8 @@ public class MusicController {
             @RequestParam(value = "musicFile", required = false) MultipartFile musicFile,
             @RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail,
             @RequestParam("musicTitle") String musicTitle,
-            @RequestParam("musicArtist") String musicArtist) throws IOException {
+            @RequestParam("musicArtist") String musicArtist,
+            @RequestParam("genreId") Long musicGenreId) throws IOException {
 
         // 1. Fetch existing music metadata
         MusicDTO existingMusic = musicService.getMusicById(id);
@@ -154,6 +157,7 @@ public class MusicController {
         updatedDTO.setId(id);
         updatedDTO.setMusicTitle(musicTitle);
         updatedDTO.setMusicArtist(musicArtist);
+        updatedDTO.setMusicGenreId(musicGenreId);
         updatedDTO.setFileName(existingMusic.getFileName());
         updatedDTO.setMusicPath(existingMusic.getMusicPath());
         updatedDTO.setThumbnailPath(existingMusic.getThumbnailPath());
