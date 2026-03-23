@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HarmoniQ | User Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <style>
+    /* Theme Variables */
+    :root {
+      --bg-color: #f8f9fa;
+      --card-bg: #ffffff;
+      --text-main: #212529;
+      --text-muted: #6c757d;
+      --primary-accent: #198754;
+      --border-color: #dee2e6;
+      --nav-hover: #f1f3f5;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #000000;
+      --card-bg: #121212;
+      --text-main: #ffffff;
+      --text-muted: #b0b0b0;
+      --primary-accent: #d63384;
+      --border-color: #333333;
+      --nav-hover: #1e1e1e;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .sidebar-sensor { width: 15px; z-index: 1060; cursor: pointer; }
+    .card { background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); }
+    .card-header { background-color: transparent !important; border-bottom: 1px solid var(--border-color) !important; color: var(--text-main) !important; }
+
+    /* Table Styling */
+    .table { color: var(--text-main); }
+    .table thead { background-color: var(--nav-hover); color: var(--text-muted); }
+    [data-theme="dark"] .table-hover tbody tr:hover { background-color: #1a1a1a; color: white; }
+
+    /* Modal & Form Control */
+    .modal-content { background-color: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); }
+    .form-control, .form-select { background-color: var(--bg-color); border-color: var(--border-color); color: var(--text-main); }
+    .form-control[readonly] { background-color: var(--nav-hover); opacity: 0.8; }
+
+    .nav-link { color: var(--text-main) !important; }
+    .nav-link:hover { background-color: var(--nav-hover); border-radius: 8px; }
+    .offcanvas { background-color: var(--card-bg) !important; color: var(--text-main); }
+
+    #theme-toggle {
+      position: fixed; top: 20px; right: 20px; z-index: 9999;
+      padding: 8px 15px; border-radius: 50px; border: none;
+      background: var(--primary-accent); color: white; font-weight: bold;
+    }
+
+    .text-primary { color: var(--primary-accent) !important; }
+    .btn-primary { background-color: var(--primary-accent); border-color: var(--primary-accent); }
+    .btn-outline-primary { color: var(--primary-accent); border-color: var(--primary-accent); }
+    .btn-outline-primary:hover { background-color: var(--primary-accent); color: white; }
+  </style>
+</head>
+
+<body class="p-4">
+
+<button id="theme-toggle" onclick="toggleTheme()">🌙 Dark</button>
+<div id="admin-sidebar-sensor" class="position-fixed top-0 start-0 vh-100 sidebar-sensor"></div>
+
+<div class="offcanvas offcanvas-start border-end shadow" tabindex="-1" id="adminSidebar" style="width: 280px;">
+  <div class="offcanvas-header border-bottom">
+    <h5 class="offcanvas-title text-primary fw-bold"><i class="bi bi-shield-lock-fill me-2"></i>Admin HQ</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" id="closeSidebarBtn"></button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column p-0">
+    <ul class="nav flex-column mb-auto">
+      <li><a href="admin-dashboard.html" class="nav-link p-3"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
+      <li><a href="music-management.html" class="nav-link p-3"><i class="bi bi-music-note-beamed me-3"></i> Music Management</a></li>
+      <li><a href="artist-management.html" class="nav-link p-3"><i class="bi bi-mic me-3"></i> Artists</a></li>
+      <li><a href="user-management.html" class="nav-link p-3 fw-bold bg-light rounded"><i class="bi bi-people me-3"></i> User Directory</a></li>
+      <li><a href="user-profile.html" class="nav-link p-3"><i class="bi bi-person-circle me-3"></i> Profile</a></li>
+    </ul>
+    <div class="p-3 mt-auto">
+      <button class="btn btn-outline-danger w-100" onclick="logout()">Logout</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <h2 class="fw-bold mb-4">User Directory</h2>
+
+  <div class="card mb-5">
+    <div class="card-header py-3">
+      <h6 class="mb-0 text-primary fw-bold"><i class="bi bi-shield-shaded me-2"></i>Administrators</h6>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0" id="adminTable">
+        <thead class="small text-uppercase">
+        <tr>
+          <th class="ps-3">ID</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th class="text-end pe-3">Actions</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header py-3">
+      <h6 class="mb-0 text-secondary fw-bold"><i class="bi bi-person-fill me-2"></i>Standard Users</h6>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0" id="userTable">
+        <thead class="small text-uppercase">
+        <tr>
+          <th class="ps-3">ID</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th class="text-end pe-3">Actions</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="userModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">Manage Permissions</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <input type="hidden" id="modalUserId">
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-muted">Username</label>
+          <input type="text" id="modalUsername" class="form-control" readonly>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-muted">Email Address</label>
+          <input type="text" id="modalEmail" class="form-control" readonly>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-muted">Assign Role</label>
+          <select id="modalRole" class="form-select">
+            <option value="USER">USER</option>
+            <option value="ADMIN">ADMIN</option>
+          </select>
+        </div>
+      </div>
+      <div class="p-4 border-0">
+        <button class="btn btn-primary w-100 fw-bold py-2" onclick="updateUser()">Apply Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // --- Theme Logic ---
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    const btn = document.getElementById('theme-toggle');
+    btn.innerHTML = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
+    const closeBtns = document.querySelectorAll('.btn-close');
+    closeBtns.forEach(b => {
+      if(theme === 'dark') b.classList.add('btn-close-white');
+      else b.classList.remove('btn-close-white');
+    });
+  }
+
+  function toggleTheme() {
+    const currentTheme = localStorage.getItem('theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(currentTheme);
+  }
+
+  (function() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    applyTheme(savedTheme);
+  })();
+
+  // --- Sidebar & API ---
+  const baseUrl = "http://localhost:8080/api/v1/user";
+  const sidebar = new bootstrap.Offcanvas(document.getElementById('adminSidebar'));
+  const token = localStorage.getItem("token");
+
+  $('#admin-sidebar-sensor').on('mouseenter', () => sidebar.show());
+
+  function fetchUsers() {
+    $.ajax({
+      url: `${baseUrl}/get-all`,
+      method: "GET",
+      headers: { "Authorization": "Bearer " + token },
+      success: function(response) {
+        const adminsTbody = $("#adminTable tbody").empty();
+        const usersTbody = $("#userTable tbody").empty();
+
+        response.data.forEach(user => {
+          const row = `
+                        <tr>
+                            <td class="ps-3 text-muted">#${user.id}</td>
+                            <td class="fw-bold">${user.username}</td>
+                            <td>${user.email}</td>
+                            <td class="text-end pe-3">
+                                <button class="btn btn-sm btn-outline-primary border-0" onclick="viewUser('${user.id}')"><i class="bi bi-pencil-square"></i></button>
+                                <button class="btn btn-sm btn-outline-danger border-0 ms-2" onclick="deleteUser(${user.id})"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>`;
+
+          if (user.role === "ADMIN") adminsTbody.append(row);
+          else usersTbody.append(row);
+        });
+      }
+    });
+  }
+
+  function viewUser(id) {
+    $.ajax({
+      url: `${baseUrl}/get/${id}`,
+      type: "GET",
+      headers: { "Authorization": "Bearer " + token },
+      success: function(response) {
+        const user = response.data;
+        $("#modalUserId").val(user.id);
+        $("#modalUsername").val(user.username);
+        $("#modalEmail").val(user.email);
+        $("#modalRole").val(user.role);
+        new bootstrap.Modal(document.getElementById("userModal")).show();
+      }
+    });
+  }
+
+  function updateUser() {
+    $.ajax({
+      url: `${baseUrl}/update-role/${$("#modalUserId").val()}`,
+      type: "PUT",
+      headers: { "Authorization": "Bearer " + token },
+      contentType: "application/json",
+      data: JSON.stringify({ role: $("#modalRole").val() }),
+      success: function() {
+        bootstrap.Modal.getInstance(document.getElementById("userModal")).hide();
+        fetchUsers();
+      }
+    });
+  }
+
+  function deleteUser(id) {
+    if (!confirm("Are you sure you want to delete this user?")) return;
+    $.ajax({
+      url: `${baseUrl}/delete/${id}`,
+      type: "DELETE",
+      headers: { "Authorization": "Bearer " + token },
+      success: () => fetchUsers()
+    });
+  }
+
+  function logout() {
+    localStorage.clear();
+    window.location.href = "sign-in.html";
+  }
+
+  $(document).ready(() => fetchUsers());
+</script>
+
+</body>
+</html>

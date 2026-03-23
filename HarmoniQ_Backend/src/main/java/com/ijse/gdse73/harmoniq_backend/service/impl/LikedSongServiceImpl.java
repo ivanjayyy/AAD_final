@@ -74,4 +74,21 @@ public class LikedSongServiceImpl implements LikedSongService {
                 })
                 .toList();
     }
+
+    @Override
+    public String checkLikeStatus(LikedOrRecentSongDTO likedOrRecentSongDTO) {
+        User user = userRepo.findById(likedOrRecentSongDTO.getUserId()).orElseThrow(
+                () -> new UsernameNotFoundException(likedOrRecentSongDTO.getUserId() + " is not valid"));
+
+        Music music = musicRepo.findById(likedOrRecentSongDTO.getMusicId()).orElseThrow(
+                () -> new UsernameNotFoundException(likedOrRecentSongDTO.getMusicId() + " is not valid"));
+
+        Optional<LikedSong> existingLike = likedSongRepo.findByUserIdAndMusicId(user.getId(), music.getId());
+
+        if(existingLike.isPresent()) {
+            return "Liked";
+        } else {
+            return "Not Liked";
+        }
+    }
 }

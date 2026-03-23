@@ -139,6 +139,9 @@
         $.ajax({
             url: "http://localhost:8080/api/v1/playlist/load/" + username,
             method: "GET",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+            },
             success: function(response){
                 const container = $("#playlistContainer");
                 container.empty();
@@ -188,6 +191,9 @@
             url: "http://localhost:8080/api/v1/playlist/create",
             method: 'POST',
             contentType: 'application/json',
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+            },
             data: JSON.stringify({ "playlistName": name, "username": username }),
             success: function () {
                 $("#playlistName").val('');

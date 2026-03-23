@@ -92,6 +92,9 @@
         $.ajax({
             url: "http://localhost:8080/api/v1/artist/get-all",
             type: "GET",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+            },
             success: function(response) {
                 renderArtists(response.data);
             },
@@ -112,27 +115,36 @@
         container.empty();
 
         artists.forEach(artist => {
+            // We stringify the artist object so it can be stored in localStorage
+            const artistData = JSON.stringify(artist).replace(/'/g, "&apos;");
+
             container.append(`
-                <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
-                    <div class="card h-100 artist-card shadow-sm text-center p-4">
-                        <div class="mb-3">
-                            <img src="http://localhost:8080/api/v1/artist/profile-pic/${artist.id}"
-                                 class="rounded-circle profile-img mx-auto"
-                                 onerror="this.src='https://via.placeholder.com/150?text=Artist'"
-                                 alt="${artist.name}">
-                        </div>
-                        <h5 class="fw-bold mb-1">${artist.name}</h5>
-                        <p class="bio-text mb-3 px-2">${artist.bio}</p>
-                        <div class="mt-auto">
-                            <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
-<!--                                <i class="bi bi-music-note-beamed me-1"></i> ${artist.songCount} Songs-->
-                                <i class="bi bi-music-note-beamed me-1"></i> 5 Songs
-                            </span>
-                        </div>
+            <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                <div class="card h-100 artist-card shadow-sm text-center p-4"
+                     style="cursor: pointer;"
+                     onclick='viewProfile(${artistData})'>
+                    <div class="mb-3">
+                        <img src="http://localhost:8080/api/v1/artist/profile-pic/${artist.id}"
+                             class="rounded-circle profile-img mx-auto"
+                             onerror="this.src='https://via.placeholder.com/150?text=Artist'">
+                    </div>
+                    <h5 class="fw-bold mb-1">${artist.name}</h5>
+                    <p class="bio-text mb-3 px-2">${artist.bio}</p>
+                    <div class="mt-auto">
+                        <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
+                             View Profile
+                        </span>
                     </div>
                 </div>
-            `);
+            </div>
+        `);
         });
+    }
+
+    // Helper function to save to localStorage and redirect
+    function viewProfile(artist) {
+        localStorage.setItem("selectedArtist", JSON.stringify(artist));
+        window.location.href = "artist-profile.html";
     }
 
     function logout() {

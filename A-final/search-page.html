@@ -26,12 +26,20 @@
         .song-row:hover { background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         .song-img { width: 55px; height: 55px; object-fit: cover; border-radius: 6px; }
 
+        /* Bottom Player Transition from Streaming Page */
         #bottomPlayer.active { bottom: 0 !important; }
         .cursor-pointer { cursor: pointer; }
+
         .section-title { font-weight: 700; color: #6c757d; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1.2px; margin-bottom: 1.5rem; }
         .empty-state { color: #adb5bd; text-align: center; margin-top: 4rem; }
-        .playlist-item { transition: 0.2s; }
-        .playlist-item:hover { background-color: #f0f7ff; color: #0d6efd; }
+
+        .playlist-item {
+            transition: 0.2s;
+        }
+        .playlist-item:hover {
+            background-color: #f0f7ff;
+            color: #0d6efd;
+        }
     </style>
 </head>
 <body>
@@ -98,6 +106,7 @@
                     <div id="playerArtist" class="text-muted text-truncate small">Artist</div>
                 </div>
             </div>
+
             <div class="col-4 col-md-6 text-center">
                 <div class="d-flex justify-content-center align-items-center gap-3 mb-2">
                     <i class="bi bi-skip-start-fill fs-3 cursor-pointer"></i>
@@ -106,14 +115,21 @@
                 </div>
                 <div class="d-flex align-items-center gap-2 px-md-5">
                     <span id="currentTime" class="text-muted" style="font-size: 11px;">0:00</span>
-                    <div class="progress flex-grow-1 bg-light border" style="height: 6px; cursor: pointer;" onclick="seek(event)">
+                    <div class="progress flex-grow-1 bg-light border" style="height: 6px; cursor: pointer;">
                         <div id="progressBar" class="progress-bar bg-primary" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
+
             <div class="col-4 col-md-3 d-flex align-items-center justify-content-end gap-3">
                 <i class="bi bi-heart fs-5 cursor-pointer text-muted" title="Like"></i>
-                <i class="bi bi-bookmark-plus fs-5 cursor-pointer text-muted" id="playlistBtn" data-bs-toggle="popover" data-bs-trigger="click" title="Add to Playlist"></i>
+
+                <i class="bi bi-bookmark-plus fs-5 cursor-pointer text-muted"
+                   id="playlistBtn"
+                   data-bs-toggle="popover"
+                   data-bs-trigger="click"
+                   title="Add to Playlist"></i>
+
                 <i class="bi bi-x-lg fs-5 text-danger cursor-pointer" onclick="closePlayer()"></i>
             </div>
         </div>
@@ -131,28 +147,21 @@
     const token = localStorage.getItem("token");
     const payload = token ? JSON.parse(atob(token.split('.')[1])) : { sub: "Guest" };
     const username = payload.sub;
+    let currentPlayingMusicId = null; // Track what's currently in the player
 
-    $.ajaxSetup({
-        beforeSend: function(xhr) {
-            if (token) xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-        }
-    });
-
-    let currentPlayingMusicId = null;
     let allArtists = [];
     let allSongs = [];
 
     $('#sidebar-sensor').on('mouseenter', () => sidebar.show());
 
     $(document).ready(function() {
+        // Cache data exactly like before
         Promise.all([
             $.get(`${apiBase}/artist/get-all`),
             $.get(`${apiBase}/music/get-all`)
         ]).then(([artistRes, musicRes]) => {
             allArtists = artistRes.data;
             allSongs = musicRes.data;
-        }).catch(err => {
-            if(err.status === 403 || err.status === 401) logout();
         });
 
         $('#mainSearch').on('input', function() {
@@ -177,16 +186,14 @@
 
         $('#emptyPrompt').hide();
 
-        // Render Artists (Updated with localStorage redirect)
+        // Render Artists
         if (filteredArtists.length > 0) {
             $('#artistSection').show();
             let html = '';
-            filteredArtists.forEach((a, idx) => {
-                // Pre-stringifying for the onclick handler
-                const artistData = JSON.stringify(a).replace(/'/g, "&apos;");
+            filteredArtists.forEach(a => {
                 html += `
                     <div class="col-6 col-md-3 col-lg-2">
-                        <div class="artist-item" onclick='viewArtistProfile(${artistData})'>
+                        <div class="artist-item">
                             <img src="${apiBase}/artist/profile-pic/${a.id}" class="artist-img" onerror="this.src='https://via.placeholder.com/100?text=Artist'">
                             <div class="fw-bold small text-truncate">${a.name}</div>
                         </div>
@@ -217,24 +224,20 @@
         else { $('#noResults').hide(); }
     }
 
-    // New Function: Redirects to Artist Profile
-    function viewArtistProfile(artist) {
-        localStorage.setItem("selectedArtist", JSON.stringify(artist));
-        window.location.href = "artist-profile.html";
-    }
-
+    // --- STREAMING LOGIC INTEGRATED ---
     function playSong(id, title, artist) {
-        currentPlayingMusicId = id;
+        currentPlayingMusicId = id; // Set the global ID when a song starts
         audio.src = `${apiBase}/music/stream/${id}`;
+
         $("#playerTitle").text(title);
         $("#playerArtist").text(artist);
         $("#playerThumbnail").attr("src", `${apiBase}/music/thumbnail/${id}`);
+
         $("#bottomPlayer").addClass("active");
         audio.play();
         $("#playPauseBtn").removeClass("bi-play-circle-fill").addClass("bi-pause-circle-fill");
     }
 
-    // Playlist Popover Logic
     const playlistPopover = new bootstrap.Popover(document.getElementById('playlistBtn'), {
         html: true,
         content: function() {
@@ -243,31 +246,56 @@
     });
 
     document.getElementById('playlistBtn').addEventListener('shown.bs.popover', function () {
-        $.get(`${apiBase}/playlist/load/${username}`, (response) => {
-            let html = '<div class="list-group list-group-flush" style="width: 200px; max-height: 200px; overflow-y: auto;">';
-            if(!response.data || response.data.length === 0) {
-                html += '<div class="p-3 text-muted small">No playlists found</div>';
-            } else {
-                response.data.forEach(pl => {
-                    html += `<div class="playlist-item p-2 hover-bg cursor-pointer border-bottom small" onclick="addToPlaylist(${pl.id})">${pl.playlistName}</div>`;
-                });
+        $.ajax({
+            url: `${apiBase}/playlist/load/${username}`,
+            type: "GET",
+            headers: { "Authorization": "Bearer " + token }, // Fixes 403
+            success: function(response) {
+                let html = '<div class="list-group list-group-flush" style="width: 200px; max-height: 200px; overflow-y: auto;">';
+                if(!response.data || response.data.length === 0) {
+                    html += '<div class="p-3 text-muted small">No playlists found</div>';
+                } else {
+                    response.data.forEach(pl => {
+                        html += `<div class="playlist-item p-2 hover-bg cursor-pointer border-bottom small"
+                                  onclick="addToPlaylist(${pl.id})">${pl.playlistName}</div>`;
+                    });
+                }
+                html += '</div>';
+
+                const popoverBody = document.querySelector('.popover-body');
+                if (popoverBody) popoverBody.innerHTML = html;
+            },
+            error: function() {
+                const popoverBody = document.querySelector('.popover-body');
+                if (popoverBody) popoverBody.innerHTML = '<div class="p-2 text-danger small">Error loading playlists</div>';
             }
-            html += '</div>';
-            const popoverBody = document.querySelector('.popover-body');
-            if (popoverBody) popoverBody.innerHTML = html;
         });
     });
 
+    // Function to actually add the song
     function addToPlaylist(playlistId) {
-        if (!currentPlayingMusicId) return;
+        if (!currentPlayingMusicId) {
+            alert("Please play a song first!");
+            return;
+        }
+
+        const data = {
+            playlistId: playlistId,
+            musicId: currentPlayingMusicId
+        };
+
         $.ajax({
             url: `${apiBase}/playlist-song/add`,
             type: "POST",
             contentType: "application/json",
-            data: JSON.stringify({ playlistId: playlistId, musicId: currentPlayingMusicId }),
+            headers: { "Authorization": "Bearer " + token }, // Fixes 403
+            data: JSON.stringify(data),
             success: function() {
                 alert("Song added to playlist! 🎶");
                 bootstrap.Popover.getInstance(document.getElementById('playlistBtn')).hide();
+            },
+            error: function(xhr) {
+                alert("This song is already in your playlist.");
             }
         });
     }
@@ -291,21 +319,19 @@
         if(audio.duration) {
             let pct = (audio.currentTime / audio.duration) * 100;
             $("#progressBar").css("width", pct + "%");
+
+            // Format time display
             let mins = Math.floor(audio.currentTime / 60);
             let secs = Math.floor(audio.currentTime % 60);
             $("#currentTime").text(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
         }
     };
 
-    function seek(e) {
-        const percent = e.offsetX / e.currentTarget.offsetWidth;
-        audio.currentTime = percent * audio.duration;
-    }
-
     function logout() {
         localStorage.clear();
         window.location.href = "sign-in.html";
     }
 </script>
+
 </body>
 </html>

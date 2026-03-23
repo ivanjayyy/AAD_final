@@ -5,6 +5,7 @@ import com.ijse.gdse73.harmoniq_backend.dto.PlaylistDTO;
 import com.ijse.gdse73.harmoniq_backend.service.PlaylistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public class PlaylistController {
     private final PlaylistService playlistService;
 
     @PostMapping("/create")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<APIResponse> addPlaylist(@RequestBody PlaylistDTO playlistDTO){
         playlistService.createPlaylist(playlistDTO);
         return ResponseEntity.ok(new APIResponse(
@@ -25,6 +27,7 @@ public class PlaylistController {
     }
 
     @GetMapping("/load/{username}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<APIResponse> getUserPlaylists(@PathVariable String username){
         List<PlaylistDTO> playlistDTOS = playlistService.getPlaylistsByUsername(username);
 
@@ -34,6 +37,7 @@ public class PlaylistController {
     }
 
     @PutMapping("/update/{playlistId}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<APIResponse> updatePlaylist(@PathVariable String playlistId, @RequestBody PlaylistDTO playlistDTO) {
 //        playlistService.updatePlaylist(playlistId, playlistDTO);
         return ResponseEntity.ok(new APIResponse(
@@ -42,6 +46,7 @@ public class PlaylistController {
     }
 
     @DeleteMapping("/delete/{playlistId}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<APIResponse> deletePlaylist(@PathVariable Long playlistId) {
         playlistService.deletePlaylist(playlistId);
         return ResponseEntity.ok(new APIResponse(

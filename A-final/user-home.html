@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HarmoniQ | Home</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <style>
+    /* Theme Variables */
+    :root {
+      --bg-color: #f8f9fa;
+      --card-bg: #ffffff;
+      --text-main: #212529;
+      --text-muted: #6c757d;
+      --primary-accent: #198754;
+      --border-color: #dee2e6;
+      --nav-hover: #f1f3f5;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #000000;
+      --card-bg: #121212;
+      --text-main: #ffffff;
+      --text-muted: #b0b0b0;
+      --primary-accent: #d63384;
+      --border-color: #333333;
+      --nav-hover: #1e1e1e;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      transition: background-color 0.3s, color 0.3s;
+      padding-bottom: 140px;
+    }
+
+    .sidebar-sensor { width: 15px; z-index: 1060; cursor: pointer; }
+
+    /* Music Card Styling */
+    .music-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    .music-card:hover {
+      transform: translateY(-5px);
+      background: var(--nav-hover);
+      border-color: var(--primary-accent);
+    }
+
+    /* Bottom Player */
+    #bottomPlayer {
+      background-color: var(--card-bg) !important;
+      border-top: 1px solid var(--border-color);
+      color: var(--text-main);
+      bottom: -180px;
+      transition: 0.4s ease-in-out;
+      z-index: 1050;
+    }
+    #bottomPlayer.active { bottom: 0 !important; }
+    .progress { background-color: var(--nav-hover) !important; height: 6px; }
+    .progress-bar { background-color: var(--primary-accent) !important; }
+
+    /* Navigation */
+    .nav-link { color: var(--text-main) !important; }
+    .nav-link:hover { background-color: var(--nav-hover); border-radius: 8px; }
+    .offcanvas { background-color: var(--card-bg) !important; color: var(--text-main); }
+
+    /* Mobile Bottom Nav */
+    @media (max-width: 768px) {
+      #sidebar-sensor, .offcanvas { display: none !important; }
+      .mobile-bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 65px;
+        background-color: var(--card-bg);
+        display: flex !important;
+        justify-content: space-around;
+        align-items: center;
+        border-top: 1px solid var(--border-color);
+        z-index: 1060;
+      }
+      .mobile-bottom-nav a { color: var(--text-main); font-size: 1.4rem; }
+      .mobile-bottom-nav .active { color: var(--primary-accent); }
+    }
+
+    /* Theme Toggle */
+    #theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      padding: 8px 15px;
+      border-radius: 50px;
+      border: none;
+      background: var(--primary-accent);
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      font-weight: bold;
+    }
+
+    .text-primary { color: var(--primary-accent) !important; }
+    .section-header { letter-spacing: 1px; font-weight: 700; text-transform: uppercase; font-size: 0.85rem; }
+  </style>
+</head>
+
+<body>
+
+<button id="theme-toggle" onclick="toggleTheme()">🌙 Dark</button>
+<div id="sidebar-sensor" class="position-fixed top-0 start-0 vh-100 sidebar-sensor"></div>
+
+<div class="offcanvas offcanvas-start border-end shadow" tabindex="-1" id="navSidebar" style="width: 280px;">
+  <div class="offcanvas-header border-bottom">
+    <h5 class="offcanvas-title text-primary fw-bold">HarmoniQ 🎶</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" id="closeSidebarBtn"></button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column p-0">
+    <ul class="nav flex-column mb-auto">
+      <li><a class="nav-link p-3 active text-primary fw-bold" href="user-home.html">🏠 Home</a></li>
+      <li><a class="nav-link p-3" href="search-page.html">🔍 Search</a></li>
+      <li><a class="nav-link p-3" href="artists-page.html">🎙️ Artists</a></li>
+      <li><a class="nav-link p-3" href="user-playlists.html">📜 Playlists</a></li>
+      <li><a class="nav-link p-3" href="user-profile.html">👤 Profile</a></li>
+    </ul>
+    <div class="p-3 border-top">
+      <button class="btn btn-outline-danger w-100" onclick="logout()">Logout</button>
+    </div>
+  </div>
+</div>
+
+<nav class="mobile-bottom-nav d-none">
+  <a href="user-home.html" class="active"><i class="bi bi-house-door"></i></a>
+  <a href="search-page.html"><i class="bi bi-search"></i></a>
+  <a href="artists-page.html"><i class="bi bi-mic"></i></a>
+  <a href="user-playlists.html"><i class="bi bi-collection-play"></i></a>
+  <a href="user-profile.html"><i class="bi bi-person"></i></a>
+</nav>
+
+<main class="container py-5">
+  <div class="mb-5">
+    <h6 class="section-header text-muted mb-4"><i class="bi bi-stars me-2 text-primary"></i>Discover Weekly</h6>
+    <div class="row g-3" id="recentSongContainer"></div>
+  </div>
+
+  <div>
+    <h6 class="section-header text-muted mb-4"><i class="bi bi-music-note-beamed me-2 text-primary"></i>Your Library</h6>
+    <div class="row g-3" id="musicContainer"></div>
+  </div>
+</main>
+
+<div id="bottomPlayer" class="fixed-bottom py-3 px-4 shadow-lg">
+  <div class="container-fluid">
+    <div class="row align-items-center">
+      <div class="col-4 col-md-3 d-flex align-items-center">
+        <img id="playerThumbnail" src="" class="rounded border me-3" style="width: 55px; height: 55px; object-fit: cover;">
+        <div class="overflow-hidden">
+          <div id="playerTitle" class="text-truncate fw-bold small mb-0">Song Title</div>
+          <div id="playerArtist" class="text-muted text-truncate small">Artist</div>
+        </div>
+      </div>
+
+      <div class="col-4 col-md-6 text-center">
+        <div class="d-flex justify-content-center align-items-center gap-3 mb-2">
+          <i id="shuffleBtn" class="bi bi-shuffle fs-5 cursor-pointer text-muted" onclick="toggleShuffle()"></i>
+          <i class="bi bi-skip-start-fill fs-3 cursor-pointer" onclick="prevSong()"></i>
+          <i id="playPauseBtn" class="bi bi-play-circle-fill fs-1 text-primary cursor-pointer"></i>
+          <i class="bi bi-skip-end-fill fs-3 cursor-pointer" onclick="nextSong()"></i>
+          <i class="bi bi-repeat fs-5 text-muted invisible"></i>
+        </div>
+        <div class="d-flex align-items-center gap-2 px-md-5">
+          <span id="currentTime" class="text-muted" style="font-size: 11px;">0:00</span>
+          <div class="progress flex-grow-1" style="cursor: pointer;" onclick="seek(event)">
+            <div id="progressBar" class="progress-bar" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-4 col-md-3 d-flex align-items-center justify-content-end gap-3">
+        <i class="bi bi-bookmark-plus fs-5 cursor-pointer text-muted" id="playlistBtn" data-bs-toggle="popover"></i>
+        <i class="bi bi-x-lg fs-5 text-danger cursor-pointer" onclick="closePlayer()"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<audio id="audioPlayer"></audio>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // --- Theme Control ---
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    const btn = document.getElementById('theme-toggle');
+    btn.innerHTML = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
+    const closeBtn = document.getElementById('closeSidebarBtn');
+    if(theme === 'dark') closeBtn?.classList.add('btn-close-white');
+    else closeBtn?.classList.remove('btn-close-white');
+  }
+
+  function toggleTheme() {
+    const currentTheme = localStorage.getItem('theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(currentTheme);
+  }
+
+  (function() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    applyTheme(savedTheme);
+  })();
+
+  // --- Core Streaming & Sidebar ---
+  const apiBase = "http://localhost:8080/api/v1";
+  const audio = document.getElementById("audioPlayer");
+  const sidebar = new bootstrap.Offcanvas(document.getElementById('navSidebar'));
+  const token = localStorage.getItem("token");
+
+  let musicList = [];
+  let shuffledList = [];
+  let shuffleMode = false;
+  let currentIndex = -1;
+
+  $('#sidebar-sensor').on('mouseenter', () => { if(window.innerWidth > 768) sidebar.show(); });
+
+  function fetchMusic() {
+    $.ajax({
+      url: `${apiBase}/music/get-all`,
+      type: "GET",
+      headers: { "Authorization": "Bearer " + token },
+      success: function(response) {
+        musicList = response.data;
+        renderList("#musicContainer", musicList);
+        renderList("#recentSongContainer", musicList.slice().reverse().slice(0, 3));
+      }
+    });
+  }
+
+  function renderList(selector, list) {
+    const container = $(selector);
+    container.empty();
+    list.forEach((music) => {
+      container.append(`
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="music-card d-flex align-items-center p-3" onclick="playSongById(${music.id})">
+                        <img src="${apiBase}/music/thumbnail/${music.id}" class="rounded me-3 border" style="width: 50px; height: 50px; object-fit: cover;">
+                        <div class="overflow-hidden">
+                            <div class="fw-bold text-truncate small">${music.musicTitle}</div>
+                            <div class="text-muted" style="font-size: 11px;">${music.musicArtist}</div>
+                        </div>
+                    </div>
+                </div>
+            `);
+    });
+  }
+
+  function playSongById(id) {
+    const activeList = shuffleMode ? shuffledList : musicList;
+    const index = activeList.findIndex(m => m.id == id);
+    if (index !== -1) playSong(index);
+  }
+
+  function playSong(index) {
+    const activeList = shuffleMode ? shuffledList : musicList;
+    if (index < 0 || index >= activeList.length) return;
+
+    currentIndex = index;
+    const music = activeList[index];
+    audio.src = `${apiBase}/music/stream/${music.id}`;
+
+    $("#playerTitle").text(music.musicTitle);
+    $("#playerArtist").text(music.musicArtist);
+    $("#playerThumbnail").attr("src", `${apiBase}/music/thumbnail/${music.id}`);
+
+    $("#bottomPlayer").addClass("active");
+    audio.play();
+    $("#playPauseBtn").attr("class", "bi bi-pause-circle-fill fs-1 text-primary cursor-pointer");
+  }
+
+  function toggleShuffle() {
+    shuffleMode = !shuffleMode;
+    if (shuffleMode) {
+      $("#shuffleBtn").addClass("text-primary").removeClass("text-muted");
+      shuffledList = [...musicList].sort(() => Math.random() - 0.5);
+    } else {
+      $("#shuffleBtn").removeClass("text-primary").addClass("text-muted");
+    }
+  }
+
+  function nextSong() { playSong(currentIndex + 1 >= (shuffleMode ? shuffledList : musicList).length ? 0 : currentIndex + 1); }
+  function prevSong() { playSong(currentIndex - 1 < 0 ? (shuffleMode ? shuffledList : musicList).length - 1 : currentIndex - 1); }
+
+  audio.onended = () => nextSong();
+
+  $("#playPauseBtn").on("click", () => {
+    if(audio.paused) { audio.play(); $("#playPauseBtn").attr("class", "bi bi-pause-circle-fill fs-1 text-primary cursor-pointer"); }
+    else { audio.pause(); $("#playPauseBtn").attr("class", "bi bi-play-circle-fill fs-1 text-primary cursor-pointer"); }
+  });
+
+  audio.ontimeupdate = () => {
+    if(audio.duration) {
+      $("#progressBar").css("width", (audio.currentTime / audio.duration) * 100 + "%");
+      let mins = Math.floor(audio.currentTime / 60);
+      let secs = Math.floor(audio.currentTime % 60);
+      $("#currentTime").text(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
+    }
+  };
+
+  function seek(e) { audio.currentTime = (e.offsetX / e.currentTarget.offsetWidth) * audio.duration; }
+  function closePlayer() { audio.pause(); $("#bottomPlayer").removeClass("active"); }
+  function logout() { localStorage.clear(); window.location.href = "sign-in.html"; }
+
+  $(document).ready(() => fetchMusic());
+</script>
+
+</body>
+</html>

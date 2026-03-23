@@ -7,25 +7,84 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <style>
+        body { background-color: #f8f9fa; color: #212529; }
+        .cursor-pointer { cursor: pointer; }
+
+        /* Modern Playlist Card Styling */
+        .playlist-card {
+            background: white;
+            border-radius: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(0,0,0,0.05) !important;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .playlist-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1) !important;
+            border-color: #0d6efd !important;
+        }
+
+        /* The New Icon Container */
+        .icon-box {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px auto;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            box-shadow: 0 4px 15px rgba(37, 117, 252, 0.3);
+            transition: 0.3s;
+        }
+
+        .playlist-card:hover .icon-box {
+            transform: scale(1.1) rotate(5deg);
+            background: linear-gradient(135deg, #0d6efd 0%, #00d4ff 100%);
+        }
+
+        .nav-link:hover { background-color: #f8f9fa; }
+        .sidebar-sensor { width: 15px; z-index: 1060; }
+
+        /* Text styling */
+        .playlist-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 2px;
+        }
+        .playlist-subtitle {
+            font-size: 0.75rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
 </head>
-<body class="bg-light text-dark">
+<body>
 
-<div id="sidebar-sensor" class="position-fixed top-0 start-0 vh-100" style="width: 15px; z-index: 1060;"></div>
+<div id="sidebar-sensor" class="position-fixed top-0 start-0 vh-100 sidebar-sensor"></div>
 
-<div class="offcanvas offcanvas-start bg-white border-end" tabindex="-1" id="navSidebar" style="width: 280px;">
+<div class="offcanvas offcanvas-start bg-white border-end shadow" tabindex="-1" id="navSidebar" style="width: 280px;">
     <div class="offcanvas-header border-bottom">
         <h5 class="offcanvas-title text-primary fw-bold">HarmoniQ 🎶</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
     </div>
-    <div class="offcanvas-body p-0">
-        <ul class="nav flex-column">
+    <div class="offcanvas-body d-flex flex-column p-0">
+        <ul class="nav flex-column mb-auto">
             <li><a class="nav-link text-dark p-3 fw-medium" href="user-home.html">🏠 Home</a></li>
             <li><a class="nav-link text-dark p-3 fw-medium" href="search-page.html">🔍 Search</a></li>
             <li><a class="nav-link text-dark p-3 fw-medium" href="artists-page.html">🎙️ Artists</a></li>
             <li><a class="nav-link text-dark p-3 fw-medium" href="user-playlists.html">📜 Playlists</a></li>
             <li><a class="nav-link text-dark p-3 fw-medium" href="user-profile.html">👤 Profile</a></li>
         </ul>
-        <div class="p-3 position-absolute bottom-0 w-100">
+        <div class="p-3 border-top">
             <button class="btn btn-outline-danger w-100" onclick="logout()">Logout</button>
         </div>
     </div>
@@ -34,15 +93,15 @@
 <div class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold mb-0">My Playlists</h2>
-            <p class="text-muted">Manage your personal music collections</p>
+            <h2 class="fw-bold mb-0">My Library</h2>
+            <p class="text-muted">Your curated music collections</p>
         </div>
-        <button class="btn btn-primary fw-bold px-4" data-bs-toggle="modal" data-bs-target="#createModal">
-            <i class="bi bi-plus-lg me-2"></i>Create New
+        <button class="btn btn-primary fw-bold px-4 rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#createModal">
+            <i class="bi bi-plus-circle-fill me-2"></i>Create New
         </button>
     </div>
 
-    <hr class="mb-5">
+    <hr class="mb-5 opacity-75">
 
     <div id="playlistContainer" class="row g-4">
     </div>
@@ -50,17 +109,17 @@
 
 <div class="modal fade" id="createModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold">New Playlist</h5>
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-4">
-                <div class="mb-3">
-                    <label class="form-label small fw-bold text-muted">Playlist Name</label>
-                    <input type="text" id="playlistName" class="form-control" placeholder="e.g. Summer Hits 2026">
+            <div class="modal-body p-4 text-center">
+                <i class="bi bi-music-note-beamed text-primary display-4 mb-3"></i>
+                <h4 class="fw-bold mb-3">Name your playlist</h4>
+                <div class="mb-4">
+                    <input type="text" id="playlistName" class="form-control form-control-lg text-center border-0 bg-light" placeholder="e.g. Late Night Vibes">
                 </div>
-                <button class="btn btn-primary w-100 fw-bold py-2" onclick="createPlaylist()">Create</button>
+                <button class="btn btn-primary btn-lg w-100 fw-bold rounded-pill" onclick="createPlaylist()">Create Playlist</button>
             </div>
         </div>
     </div>
@@ -74,35 +133,54 @@
     const username = payload.sub;
     const sidebar = new bootstrap.Offcanvas(document.getElementById('navSidebar'));
 
-    // Sidebar Hover Trigger
     $('#sidebar-sensor').on('mouseenter', () => sidebar.show());
 
     function loadPlaylists(){
         $.ajax({
             url: "http://localhost:8080/api/v1/playlist/load/" + username,
             method: "GET",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+            },
             success: function(response){
                 const container = $("#playlistContainer");
                 container.empty();
 
-                if(response.data.length === 0) {
-                    container.html('<div class="col-12 text-center py-5"><i class="bi bi-folder2-open display-1 text-light"></i><p class="text-muted">No playlists found. Create one to get started!</p></div>');
+                if(!response.data || response.data.length === 0) {
+                    container.html(`
+                        <div class="col-12 text-center py-5">
+                            <i class="bi bi-music-note-list display-1 text-muted opacity-25"></i>
+                            <p class="text-muted mt-3">Start your journey by creating a playlist.</p>
+                        </div>
+                    `);
                     return;
                 }
 
                 response.data.forEach(pl => {
                     container.append(`
                         <div class="col-6 col-md-4 col-lg-3 col-xl-2">
-                            <div class="card h-100 border-0 shadow-sm text-center p-3 hover-effect cursor-pointer">
-                                <i class="bi bi-folder-fill text-warning display-4"></i>
-                                <div class="mt-2 fw-bold text-truncate small">${pl.playlistName}</div>
-                                <div class="text-muted extra-small">Playlist</div>
+                            <div class="card h-100 shadow-sm text-center p-4 playlist-card cursor-pointer"
+                                 onclick="openPlaylist(${pl.id}, '${pl.playlistName}')">
+                                <div class="icon-box">
+                                    <i class="bi bi-music-note-list"></i>
+                                </div>
+                                <div class="playlist-title text-truncate">${pl.playlistName}</div>
+                                <div class="playlist-subtitle">Playlist</div>
                             </div>
                         </div>
                     `);
                 });
+            },
+            error: function() {
+                $("#playlistContainer").html('<p class="text-danger text-center">Failed to load library.</p>');
             }
         });
+    }
+
+    function openPlaylist(id, name) {
+        localStorage.setItem("selectedPlaylistId", id);
+        localStorage.setItem("selectedPlaylistName", name);
+        window.location.href = "user-playlist-songs.html";
     }
 
     function createPlaylist(){
@@ -113,6 +191,9 @@
             url: "http://localhost:8080/api/v1/playlist/create",
             method: 'POST',
             contentType: 'application/json',
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+            },
             data: JSON.stringify({ "playlistName": name, "username": username }),
             success: function () {
                 $("#playlistName").val('');
@@ -124,23 +205,11 @@
 
     function logout() {
         localStorage.clear();
-        window.location.href = "login.html";
+        window.location.href = "sign-in.html";
     }
 
     $(document).ready(() => loadPlaylists());
 </script>
-
-<style>
-    .cursor-pointer { cursor: pointer; }
-    .extra-small { font-size: 0.75rem; }
-    .hover-effect { transition: all 0.2s ease; border: 1px solid transparent !important; }
-    .hover-effect:hover {
-        transform: translateY(-5px);
-        background-color: #fcfcfc;
-        border-color: #0d6efd !important;
-    }
-    .nav-link:hover { background-color: #f8f9fa; }
-</style>
 
 </body>
 </html>

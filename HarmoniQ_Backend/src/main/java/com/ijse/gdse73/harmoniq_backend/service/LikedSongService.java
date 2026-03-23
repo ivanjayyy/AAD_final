@@ -7,4 +7,6 @@ import java.util.List;
 public interface LikedSongService {
     String addOrRemoveLike(LikedOrRecentSongDTO likedOrRecentSongDTO);
     List<LikedOrRecentSongDTO> getLikedSongsByUser(Long id);
+
+    String checkLikeStatus(LikedOrRecentSongDTO likedOrRecentSongDTO);
 }

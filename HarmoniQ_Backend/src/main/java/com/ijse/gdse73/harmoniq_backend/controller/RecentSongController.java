@@ -5,6 +5,7 @@ import com.ijse.gdse73.harmoniq_backend.dto.LikedOrRecentSongDTO;
 import com.ijse.gdse73.harmoniq_backend.service.RecentSongService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,6 +16,7 @@ public class RecentSongController {
     private final RecentSongService recentSongService;
 
     @PostMapping("/add")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<APIResponse> addRecentSong(@RequestBody LikedOrRecentSongDTO likedOrRecentSongDTO){
         recentSongService.addRecentSong(likedOrRecentSongDTO);
         return ResponseEntity.ok(new APIResponse(
@@ -23,6 +25,7 @@ public class RecentSongController {
     }
 
     @GetMapping("/load-all/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<APIResponse> loadRecentSongs(@PathVariable Long id) {
         return ResponseEntity.ok(new APIResponse(
                 200,"Load Recent Songs", recentSongService.loadRecentSongs(id)

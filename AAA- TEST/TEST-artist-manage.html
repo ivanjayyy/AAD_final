@@ -223,6 +223,9 @@
         $.ajax({
             url: `${baseUrl}/get-all`,
             type: "GET",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+            },
             success: function (response) {
                 const tbody = $('#artistTable tbody').empty();
                 response.data.forEach(artist => {
@@ -265,6 +268,9 @@
         $.ajax({
             url: `${baseUrl}/add`,
             type: "POST",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+            },
             data: formData,
             processData: false,
             contentType: false,
@@ -298,6 +304,9 @@
         $.ajax({
             url: `${baseUrl}/update/${id}`,
             type: "PUT",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+            },
             data: formData,
             processData: false,
             contentType: false,
@@ -312,7 +321,9 @@
 
     function deleteArtist(id) {
         if (confirm("Delete this artist?")) {
-            $.ajax({ url: `${baseUrl}/delete/${id}`, type: "DELETE", success: () => fetchArtists() });
+            $.ajax({ url: `${baseUrl}/delete/${id}`, type: "DELETE", headers: {
+                    "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+                },success: () => fetchArtists() });
         }
     }
 

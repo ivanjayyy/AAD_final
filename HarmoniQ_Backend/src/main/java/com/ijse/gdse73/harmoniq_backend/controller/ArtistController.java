@@ -12,6 +12,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,6 +31,7 @@ public class ArtistController {
     private final String artistDir = System.getProperty("user.dir") + "/uploads/artistProfile/";
 
     @PostMapping("/add")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<APIResponse> addArtist(@RequestParam("name") String name,
                                                  @RequestParam("bio") String bio,
                                                  @RequestParam("profilePic") MultipartFile profilePic) throws IOException {
@@ -56,6 +58,7 @@ public class ArtistController {
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<APIResponse> deleteArtist(@PathVariable Long id) {
         Artist artist = artistService.deleteArtist(id);
 
@@ -71,6 +74,7 @@ public class ArtistController {
     }
 
     @PutMapping("/update/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<APIResponse> updateArtist(@PathVariable Long id,
                                                     @RequestParam("name") String name,
                                                     @RequestParam("bio") String bio,
@@ -100,6 +104,7 @@ public class ArtistController {
     }
 
     @GetMapping("/find/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<APIResponse> findArtist(@PathVariable Long id) {
         return ResponseEntity.ok(new APIResponse(
                  200,"OK",artistService.findArtist(id)
@@ -107,6 +112,7 @@ public class ArtistController {
     }
 
     @GetMapping("/get-all")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<APIResponse> getAllArtists() {
         return ResponseEntity.ok(new APIResponse(
                 200,"OK",artistService.getAllArtists()
@@ -114,6 +120,7 @@ public class ArtistController {
     }
 
     @GetMapping("/profile-pic/{id}")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Resource> getProfilePic(@PathVariable Long id) {
 
         try {

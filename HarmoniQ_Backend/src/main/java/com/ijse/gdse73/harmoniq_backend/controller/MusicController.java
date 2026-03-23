@@ -8,6 +8,7 @@ import com.ijse.gdse73.harmoniq_backend.service.MusicService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.core.io.Resource;
@@ -33,6 +34,7 @@ public class MusicController {
     private final String thumbnailDir = System.getProperty("user.dir") + "/uploads/thumbnail/";
 
     @PostMapping("/upload")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<APIResponse> uploadMusic(@RequestParam("musicFile") MultipartFile musicFile,
                                                    @RequestParam("thumbnail") MultipartFile thumbnail,
                                                    @RequestParam("musicTitle") String musicTitle,
@@ -74,6 +76,7 @@ public class MusicController {
     }
 
     @GetMapping("/stream/{id}")
+//    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Resource> streamMusic(@PathVariable Long id) {
 
         try {
@@ -102,6 +105,7 @@ public class MusicController {
     }
 
     @GetMapping("/get-all")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<APIResponse> getAllMusic() {
         return ResponseEntity.ok(new APIResponse(
                 200,"OK",musicService.getAllMusic()
@@ -109,6 +113,7 @@ public class MusicController {
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public ResponseEntity<APIResponse> deleteMusic(@PathVariable Long id) {
         Music music = musicService.deleteMusic(id);
@@ -132,6 +137,7 @@ public class MusicController {
     }
 
     @PutMapping("/update/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public ResponseEntity<APIResponse> updateMusic(
             @PathVariable Long id,

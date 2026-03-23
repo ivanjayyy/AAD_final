@@ -19,7 +19,9 @@ public class Music {
     private String musicPath;
     private String thumbnailPath;
     private String musicTitle;
-    private String musicArtist;
+    @ManyToOne
+    @JoinColumn(name = "artist_id")
+    private Artist artist;
 
 //    // Music can belong to many playlists
 //    @ManyToMany(mappedBy = "musics")

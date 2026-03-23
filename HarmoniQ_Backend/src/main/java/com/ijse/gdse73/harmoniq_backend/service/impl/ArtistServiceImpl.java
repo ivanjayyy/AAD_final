@@ -19,7 +19,7 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     public void addArtist(ArtistDTO artistDTO) {
-        if (artistRepo.findByName(artistDTO.getName()).isPresent()) {
+        if (artistRepo.findByName(artistDTO.getName()) != null) {
             return;
         }
         artistRepo.save(modelMapper.map(artistDTO, Artist.class));

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HarmoniQ | Artist Profile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #f8f9fa;
+      --card-bg: #ffffff;
+      --text-main: #212529;
+      --primary-accent: #198754;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #000000;
+      --card-bg: #121212;
+      --text-main: #ffffff;
+      --primary-accent: #d63384;
+    }
+
+    body { background-color: var(--bg-color); color: var(--text-main); transition: 0.3s; }
+    .profile-header { background: var(--card-bg); border-radius: 20px; padding: 40px; border: 1px solid rgba(0,0,0,0.1); }
+    .large-profile-img { width: 200px; height: 200px; object-fit: cover; border-radius: 50%; border: 5px solid var(--primary-accent); }
+    .back-btn { color: var(--text-main); text-decoration: none; font-weight: 600; transition: 0.2s; }
+    .back-btn:hover { color: var(--primary-accent); }
+  </style>
+</head>
+<body>
+
+<div class="container py-5">
+  <div class="mb-4">
+    <a href="artists-page.html" class="back-btn">
+      <i class="bi bi-arrow-left me-2"></i> Back to Artists
+    </a>
+  </div>
+
+  <div class="profile-header text-center shadow-sm">
+    <div id="profileDetails">
+      <div class="spinner-border text-success" role="status"></div>
+      <p>Loading artist profile...</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Sync theme with localStorage
+  (function() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  })();
+
+  $(document).ready(function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const artistId = urlParams.get('id');
+
+    if (artistId) {
+      fetchArtistDetails(artistId);
+    } else {
+      $("#profileDetails").html("<h3>Artist not found</h3>");
+    }
+  });
+
+  function fetchArtistDetails(id) {
+    $.ajax({
+      url: `http://localhost:8080/api/v1/artist/get/${id}`,
+      type: "GET",
+      headers: { "Authorization": "Bearer " + localStorage.getItem("token") },
+      success: function(response) {
+        renderProfile(response.data);
+      },
+      error: function() {
+        // Mock for demonstration
+        const mockArtist = { name: "Luna Ray", bio: "Indie pop sensation from the northern lights. Bringing ethereal vibes to your ears. Full discography includes 4 albums and 12 singles." };
+        renderProfile(mockArtist, id);
+      }
+    });
+  }
+
+  function renderProfile(artist, id) {
+    $("#profileDetails").html(`
+            <img src="http://localhost:8080/api/v1/artist/profile-pic/${id}"
+                 class="large-profile-img mb-4"
+                 onerror="this.src='https://via.placeholder.com/200'">
+            <h1 class="display-4 fw-bold">${artist.name}</h1>
+            <p class="lead mt-3 mx-auto" style="max-width: 700px;">${artist.bio}</p>
+            <div class="mt-4">
+                <button class="btn btn-success px-4 rounded-pill">Follow</button>
+                <button class="btn btn-outline-secondary px-4 rounded-pill ms-2">Share</button>
+            </div>
+        `);
+  }
+</script>
+</body>
+</html>

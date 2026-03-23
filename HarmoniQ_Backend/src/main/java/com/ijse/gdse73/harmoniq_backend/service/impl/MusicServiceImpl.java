@@ -1,8 +1,10 @@
 package com.ijse.gdse73.harmoniq_backend.service.impl;
 
 import com.ijse.gdse73.harmoniq_backend.dto.MusicDTO;
+import com.ijse.gdse73.harmoniq_backend.entity.Artist;
 import com.ijse.gdse73.harmoniq_backend.entity.Music;
 import com.ijse.gdse73.harmoniq_backend.exception.CustomException;
+import com.ijse.gdse73.harmoniq_backend.repo.ArtistRepo;
 import com.ijse.gdse73.harmoniq_backend.repo.MusicRepo;
 import com.ijse.gdse73.harmoniq_backend.service.MusicService;
 import jakarta.transaction.Transactional;
@@ -16,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MusicServiceImpl implements MusicService {
     private final MusicRepo musicRepo;
+    private final ArtistRepo artistRepo;
     private final ModelMapper modelMapper;
 
     @Override
@@ -23,20 +26,50 @@ public class MusicServiceImpl implements MusicService {
         if (musicDTO == null) {
             throw new CustomException("MusicDTO is null");
         }
-        musicRepo.save(modelMapper.map(musicDTO, Music.class));
+
+        Artist artist = artistRepo.findByName(musicDTO.getMusicArtist());
+        if (artist == null) {
+            throw new CustomException("Artist not found");
+        }
+
+        Music music = Music.builder()
+                .fileName(musicDTO.getFileName())
+                .musicPath(musicDTO.getMusicPath())
+                .thumbnailPath(musicDTO.getThumbnailPath())
+                .musicTitle(musicDTO.getMusicTitle())
+                .artist(artist)
+                .build();
+
+        musicRepo.save(music);
     }
 
     @Override
     public MusicDTO getMusicById(Long id) {
-        return musicRepo.findById(id).map(music -> modelMapper.map(music, MusicDTO.class)).orElse(null);
+        return musicRepo.findById(id)
+                .map(this::convertToDto) // Use a helper method for clean mapping
+                .orElse(null);
     }
 
     @Override
     public List<MusicDTO> getAllMusic() {
         return musicRepo.findAll()
                 .stream()
-                .map(music -> modelMapper.map(music, MusicDTO.class))
+                .map(this::convertToDto) // Map each entity to DTO
                 .toList();
+    }
+
+    /**
+     * Helper method to handle complex mapping between Music Entity and MusicDTO
+     */
+    private MusicDTO convertToDto(Music music) {
+        MusicDTO musicDTO = modelMapper.map(music, MusicDTO.class);
+
+        // Manually set the artist name string from the Artist entity
+        if (music.getArtist() != null) {
+            musicDTO.setMusicArtist(music.getArtist().getName());
+        }
+
+        return musicDTO;
     }
 
     @Override
@@ -52,6 +85,21 @@ public class MusicServiceImpl implements MusicService {
         if (musicDTO == null) {
             throw new CustomException("MusicDTO is null");
         }
-        musicRepo.save(modelMapper.map(musicDTO, Music.class));
+
+        Artist artist = artistRepo.findByName(musicDTO.getMusicArtist());
+        if (artist == null) {
+            throw new CustomException("Artist not found");
+        }
+
+        Music music = Music.builder()
+                .id(musicDTO.getId())
+                .fileName(musicDTO.getFileName())
+                .musicPath(musicDTO.getMusicPath())
+                .thumbnailPath(musicDTO.getThumbnailPath())
+                .musicTitle(musicDTO.getMusicTitle())
+                .artist(artist)
+                .build();
+
+        musicRepo.save(music);
     }
 }

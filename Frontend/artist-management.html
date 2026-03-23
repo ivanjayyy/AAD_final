@@ -16,10 +16,56 @@
     .sidebar-sensor { width: 15px; z-index: 1060; }
     .profile-img-table { width: 45px; height: 45px; object-fit: cover; border-radius: 50%; border: 1px solid #dee2e6; }
     .bio-truncate { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    /* Style for the search input to keep it clean */
+
+    /* Search Styling */
     .search-input { max-width: 250px; border-radius: 20px; padding-left: 35px; }
     .search-container { position: relative; }
     .search-container i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #adb5bd; }
+
+    /* Modern Profile Upload Styling */
+    .profile-upload-container {
+      position: relative;
+      width: 120px;
+      margin: 0 auto 1.5rem auto;
+      cursor: pointer;
+    }
+    .profile-preview-wrapper {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 4px solid #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      background: #f0f2f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .profile-upload-container:hover .profile-preview-wrapper {
+      transform: scale(1.05);
+      filter: brightness(0.9);
+    }
+    .profile-preview-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .edit-icon-badge {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      background: #0d6efd;
+      color: white;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 3px solid #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
   </style>
 </head>
 
@@ -34,10 +80,11 @@
   </div>
   <div class="offcanvas-body d-flex flex-column p-0">
     <ul class="nav flex-column mb-auto">
-      <li><a href="admin-dashboard.html" class="nav-link p-3 text-dark border-bottom"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
-      <li><a href="music-management.html" class="nav-link p-3 text-dark border-bottom"><i class="bi bi-music-note-beamed me-3"></i> Music Management</a></li>
-      <li><a href="#" class="nav-link text-primary fw-bold bg-light border-bottom"><i class="bi bi-mic me-3"></i> Artists</a></li>
-      <li><a href="user-management.html" class="nav-link p-3 text-dark border-bottom"><i class="bi bi-people me-3"></i> User Directory</a></li>
+      <li><a href="admin-dashboard.html" class="nav-link p-3 text-primary fw-bold bg-light rounded"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
+      <li><a href="music-management.html" class="nav-link p-3 text-dark"><i class="bi bi-music-note-beamed me-3"></i> Music Management</a></li>
+      <li><a href="artist-management.html" class="nav-link p-3 text-dark"><i class="bi bi-mic me-3"></i> Artists</a></li>
+      <li><a href="user-management.html" class="nav-link p-3 text-dark"><i class="bi bi-people me-3"></i> User Directory</a></li>
+      <li><a href="user-profile.html" class="nav-link p-3 text-dark"><i class="bi bi-person-circle me-3"></i> Profile</a></li>
     </ul>
     <div class="p-3">
       <button class="btn btn-outline-danger w-100" onclick="logout()">Logout</button>
@@ -48,13 +95,11 @@
 <div class="container">
   <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
     <h2 class="fw-bold mb-0">Artist Directory</h2>
-
     <div class="d-flex gap-2 align-items-center">
       <div class="search-container">
         <i class="bi bi-search"></i>
         <input type="text" id="artistSearch" class="form-control search-input" placeholder="Search artist name...">
       </div>
-
       <button class="btn btn-primary fw-bold px-4" data-bs-toggle="modal" data-bs-target="#addArtistModal">
         <i class="bi bi-plus-lg me-1"></i> Add Artist
       </button>
@@ -89,20 +134,26 @@
         <h5 class="modal-title fw-bold">Add New Artist</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body p-4">
-        <div class="mb-3">
-          <label class="form-label small fw-bold">Artist Name</label>
-          <input type="text" id="artistName" class="form-control" placeholder="e.g. Luna Ray">
+      <div class="modal-body p-4 text-center">
+        <div class="profile-upload-container" onclick="$('#profilePic').click()">
+          <div class="profile-preview-wrapper">
+            <img id="previewImage" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 24 24' fill='none' stroke='%23adb5bd' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E" alt="Preview">
+          </div>
+          <div class="edit-icon-badge"><i class="bi bi-camera-fill"></i></div>
         </div>
-        <div class="mb-3">
-          <label class="form-label small fw-bold">Biography</label>
-          <textarea id="artistBio" class="form-control" rows="3" placeholder="Tell us about the artist..."></textarea>
+        <input type="file" id="profilePic" class="d-none" accept="image/*" onchange="handleImagePreview(this, '#previewImage')">
+
+        <div class="text-start">
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Artist Name</label>
+            <input type="text" id="artistName" class="form-control" placeholder="e.g. Luna Ray">
+          </div>
+          <div class="mb-4">
+            <label class="form-label small fw-bold">Biography</label>
+            <textarea id="artistBio" class="form-control" rows="3" placeholder="Tell us about the artist..."></textarea>
+          </div>
+          <button class="btn btn-primary w-100 fw-bold py-2" onclick="saveArtist()">Save Artist</button>
         </div>
-        <div class="mb-4">
-          <label class="form-label small fw-bold">Profile Picture</label>
-          <input type="file" id="profilePic" class="form-control" accept="image/*">
-        </div>
-        <button class="btn btn-primary w-100 fw-bold py-2" onclick="saveArtist()">Save Artist</button>
       </div>
     </div>
   </div>
@@ -115,21 +166,27 @@
         <h5 class="modal-title fw-bold text-primary">Update Artist</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body p-4">
-        <input type="hidden" id="updateArtistId">
-        <div class="mb-3">
-          <label class="form-label small fw-bold">Artist Name</label>
-          <input type="text" id="updateArtistName" class="form-control">
+      <div class="modal-body p-4 text-center">
+        <div class="profile-upload-container" onclick="$('#updateProfilePic').click()">
+          <div class="profile-preview-wrapper">
+            <img id="updatePreviewImage" src="" alt="Current Profile" onerror="this.src=placeholderSVG">
+          </div>
+          <div class="edit-icon-badge bg-warning border-warning"><i class="bi bi-pencil-fill text-dark"></i></div>
         </div>
-        <div class="mb-3">
-          <label class="form-label small fw-bold">Biography</label>
-          <textarea id="updateArtistBio" class="form-control" rows="3"></textarea>
+        <input type="file" id="updateProfilePic" class="d-none" accept="image/*" onchange="handleImagePreview(this, '#updatePreviewImage')">
+
+        <div class="text-start">
+          <input type="hidden" id="updateArtistId">
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Artist Name</label>
+            <input type="text" id="updateArtistName" class="form-control">
+          </div>
+          <div class="mb-4">
+            <label class="form-label small fw-bold">Biography</label>
+            <textarea id="updateArtistBio" class="form-control" rows="3"></textarea>
+          </div>
+          <button class="btn btn-warning w-100 fw-bold py-2" onclick="submitUpdate()">Save Changes</button>
         </div>
-        <div class="mb-4">
-          <label class="form-label small fw-bold text-muted">Replace Profile Picture (Optional)</label>
-          <input type="file" id="updateProfilePic" class="form-control" accept="image/*">
-        </div>
-        <button class="btn btn-warning w-100 fw-bold py-2" onclick="submitUpdate()">Save Changes</button>
       </div>
     </div>
   </div>
@@ -140,29 +197,36 @@
 <script>
   const baseUrl = "http://localhost:8080/api/v1/artist";
   const sidebar = new bootstrap.Offcanvas(document.getElementById('adminSidebar'));
+  const placeholderSVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 24 24' fill='none' stroke='%23adb5bd' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E";
 
   $('#admin-sidebar-sensor').on('mouseenter', () => sidebar.show());
 
-  // --- NEW: Real-time Search Functionality ---
-  $(document).ready(function() {
-    $('#artistSearch').on('keyup', function() {
-      const value = $(this).val().toLowerCase();
+  $(document).ready(() => fetchArtists());
 
-      // Target the rows in the tbody
-      $('#artistTable tbody tr').filter(function() {
-        // Find the text in the 3rd column (Artist Name)
-        const artistName = $(this).find('td:eq(2)').text().toLowerCase();
-        $(this).toggle(artistName.indexOf(value) > -1);
-      });
+  // Unified Image Preview Handler
+  function handleImagePreview(input, targetImgId) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (e) => $(targetImgId).attr('src', e.target.result);
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  // Real-time Search
+  $('#artistSearch').on('keyup', function() {
+    const value = $(this).val().toLowerCase();
+    $('#artistTable tbody tr').filter(function() {
+      $(this).toggle($(this).find('td:eq(2)').text().toLowerCase().indexOf(value) > -1);
     });
-
-    fetchArtists();
   });
 
   function fetchArtists() {
     $.ajax({
       url: `${baseUrl}/get-all`,
       type: "GET",
+      headers: {
+        "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+      },
       success: function (response) {
         const tbody = $('#artistTable tbody').empty();
         response.data.forEach(artist => {
@@ -171,7 +235,7 @@
               <td class="ps-3 text-muted">#${artist.id}</td>
               <td>
                 <img src="${baseUrl}/profile-pic/${artist.id}" class="profile-img-table"
-                     onerror="this.src='https://via.placeholder.com/150?text=User'">
+                     onerror="this.src='${placeholderSVG}'">
               </td>
               <td class="fw-bold text-dark">${artist.name}</td>
               <td class="text-secondary small bio-truncate">${artist.bio}</td>
@@ -190,25 +254,34 @@
     });
   }
 
-  // saveArtist, updateArtist, submitUpdate, deleteArtist, logout functions remain the same...
   function saveArtist() {
+    const name = $('#artistName').val();
+    const bio = $('#artistBio').val();
+    const pic = $('#profilePic')[0].files[0];
+
+    if(!name || !bio) return alert("Fill in name and biography.");
+
     let formData = new FormData();
-    formData.append("name", $('#artistName').val());
-    formData.append("bio", $('#artistBio').val());
-    formData.append("profilePic", $('#profilePic')[0].files[0]);
+    formData.append("name", name);
+    formData.append("bio", bio);
+    if(pic) formData.append("profilePic", pic);
 
     $.ajax({
       url: `${baseUrl}/add`,
       type: "POST",
+      headers: {
+        "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+      },
       data: formData,
       processData: false,
       contentType: false,
       success: () => {
         $('#addArtistModal').modal('hide');
         $('#artistName, #artistBio, #profilePic').val('');
+        $('#previewImage').attr('src', placeholderSVG);
         fetchArtists();
       },
-      error: () => alert("Failed to add artist")
+      error: () => alert("Add failed")
     });
   }
 
@@ -216,6 +289,8 @@
     $('#updateArtistId').val(id);
     $('#updateArtistName').val(name);
     $('#updateArtistBio').val(bio);
+    // Load existing picture into the preview
+    $('#updatePreviewImage').attr('src', `${baseUrl}/profile-pic/${id}?t=${new Date().getTime()}`);
     new bootstrap.Modal(document.getElementById('updateArtistModal')).show();
   }
 
@@ -230,6 +305,9 @@
     $.ajax({
       url: `${baseUrl}/update/${id}`,
       type: "PUT",
+      headers: {
+        "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+      },
       data: formData,
       processData: false,
       contentType: false,
@@ -243,8 +321,11 @@
   }
 
   function deleteArtist(id) {
-    if (!confirm("Delete this artist?")) return;
-    $.ajax({ url: `${baseUrl}/delete/${id}`, type: "DELETE", success: () => fetchArtists() });
+    if (confirm("Delete this artist?")) {
+      $.ajax({ url: `${baseUrl}/delete/${id}`, type: "DELETE", headers: {
+          "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+        },success: () => fetchArtists() });
+    }
   }
 
   function logout() {

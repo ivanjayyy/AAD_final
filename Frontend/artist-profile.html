@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HarmoniQ | Artist Profile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <style>
+        body { background-color: #f8f9fa; color: #212529; padding-bottom: 120px; }
+        .profile-header {
+            background: linear-gradient(to bottom, #0d6efd, #0a58ca);
+            color: white;
+            padding: 60px 0;
+            margin-bottom: 30px;
+            border-radius: 0 0 30px 30px;
+        }
+        .profile-main-img {
+            width: 180px;
+            height: 180px;
+            object-fit: cover;
+            border: 6px solid white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .song-card {
+            background: white;
+            border: none;
+            border-radius: 12px;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .song-card:hover {
+            background: #f1f3f5;
+            transform: translateX(10px);
+        }
+        .song-thumb {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+        }
+        .back-btn:hover { color: #fff; background: rgba(255,255,255,0.3); }
+
+        /* Bottom Player Styles */
+        #bottomPlayer.active { bottom: 0 !important; }
+        .cursor-pointer { cursor: pointer; }
+        .text-primary-important { color: #0d6efd !important; }
+        .playlist-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 14px; }
+        .playlist-item:hover { background-color: #f8f9fa; color: #0d6efd; }
+        .popover-body { padding: 0; max-height: 200px; overflow-y: auto; width: 200px; }
+    </style>
+</head>
+<body>
+
+<div class="profile-header text-center position-relative">
+    <a href="artists-page.html" class="back-btn"><i class="bi bi-arrow-left"></i> Back</a>
+    <div class="container">
+        <img id="artistImg" src="" class="rounded-circle profile-main-img mb-4" onerror="this.src='https://via.placeholder.com/180'">
+        <h1 id="artistName" class="display-5 fw-bold">Loading...</h1>
+        <p id="artistBio" class="lead opacity-75 mx-auto" style="max-width: 600px;">Artist Biography...</p>
+    </div>
+</div>
+
+<main class="container">
+    <h4 class="fw-bold mb-4">Popular Tracks</h4>
+    <div id="songContainer" class="d-flex flex-column gap-2"></div>
+</main>
+
+<div id="bottomPlayer" class="fixed-bottom bg-white border-top py-3 px-4 shadow-lg" style="bottom: -150px; transition: 0.4s ease-in-out; z-index: 1050;">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-4 col-md-3 d-flex align-items-center">
+                <img id="playerThumbnail" src="" class="rounded border me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                <div class="overflow-hidden">
+                    <div id="playerTitle" class="text-truncate fw-bold small mb-0">Song Title</div>
+                    <div id="playerArtist" class="text-muted text-truncate small">Artist</div>
+                </div>
+            </div>
+            <div class="col-4 col-md-6 text-center">
+                <div class="d-flex justify-content-center align-items-center gap-3 mb-2">
+                    <i id="shuffleBtn" class="bi bi-shuffle fs-5 cursor-pointer text-muted" title="Shuffle" onclick="toggleShuffle()"></i>
+                    <i class="bi bi-skip-start-fill fs-3 cursor-pointer" onclick="prevSong()"></i>
+                    <i id="playPauseBtn" class="bi bi-play-circle-fill fs-1 text-primary cursor-pointer"></i>
+                    <i class="bi bi-skip-end-fill fs-3 cursor-pointer" onclick="nextSong()"></i>
+                    <i class="bi bi-repeat fs-5 text-muted invisible"></i>
+                </div>
+                <div class="d-flex align-items-center gap-2 px-md-5">
+                    <span id="currentTime" class="text-muted" style="font-size: 11px;">0:00</span>
+                    <div class="progress flex-grow-1 bg-light border" style="height: 6px; cursor: pointer;" onclick="seek(event)">
+                        <div id="progressBar" class="progress-bar bg-primary" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4 col-md-3 d-flex align-items-center justify-content-end gap-3">
+                <i class="bi bi-heart fs-5 cursor-pointer text-muted" title="Like"></i>
+                <i class="bi bi-bookmark-plus fs-5 cursor-pointer text-muted" id="playlistBtn" data-bs-toggle="popover" data-bs-trigger="click" title="Add to Playlist"></i>
+                <i class="bi bi-x-lg fs-5 text-danger cursor-pointer" onclick="closePlayer()"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<audio id="audioPlayer"></audio>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const audio = document.getElementById("audioPlayer");
+    const token = localStorage.getItem("token");
+    const payload = token ? JSON.parse(atob(token.split('.')[1])) : { sub: "Guest" };
+    const username = payload.sub;
+
+    let artistSongs = []; // List of songs for this specific artist
+    let shuffledList = [];
+    let shuffleMode = false;
+    let currentMusicId = null;
+    let currentIndex = -1;
+
+    $.ajaxSetup({
+        beforeSend: function(xhr) {
+            if (token) xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+        }
+    });
+
+    $(document).ready(function() {
+        const artistData = localStorage.getItem("selectedArtist");
+        if (!artistData) {
+            window.location.href = "artists-page.html";
+            return;
+        }
+
+        const artist = JSON.parse(artistData);
+        $("#artistName").text(artist.name);
+        $("#artistBio").text(artist.bio);
+        $("#artistImg").attr("src", `http://localhost:8080/api/v1/artist/profile-pic/${artist.id}`);
+        document.title = `HarmoniQ | ${artist.name}`;
+
+        fetchArtistSongs(artist.id, artist.name);
+        initPlaylistPopover();
+    });
+
+    function fetchArtistSongs(artistId, artistName) {
+        $.get(`http://localhost:8080/api/v1/music/get-all`, (response) => {
+            // Filter global list to just this artist's tracks
+            artistSongs = response.data.filter(s => s.artistId == artistId || s.musicArtist === artistName);
+            renderSongs(artistSongs);
+        });
+    }
+
+    function renderSongs(songs) {
+        const container = $("#songContainer");
+        container.empty();
+        if (songs.length === 0) {
+            container.html('<div class="text-center text-muted py-5">No tracks found.</div>');
+            return;
+        }
+        songs.forEach((song, index) => {
+            container.append(`
+                <div class="song-card d-flex align-items-center p-3 shadow-sm mb-2" onclick="playFromProfile(${index})">
+                    <div class="me-3 text-muted fw-bold">${index + 1}</div>
+                    <img src="http://localhost:8080/api/v1/music/thumbnail/${song.id}" class="song-thumb me-3">
+                    <div class="flex-grow-1">
+                        <div class="fw-bold">${song.musicTitle}</div>
+                        <div class="text-muted small">${song.musicArtist}</div>
+                    </div>
+                    <div class="text-primary fs-4"><i class="bi bi-play-circle-fill"></i></div>
+                </div>
+            `);
+        });
+    }
+
+    // --- PLAYER LOGIC ---
+
+    function playFromProfile(index) {
+        if (shuffleMode) {
+            const musicId = artistSongs[index].id;
+            const shuffledIndex = shuffledList.findIndex(m => m.id === musicId);
+            playSong(shuffledIndex);
+        } else {
+            playSong(index);
+        }
+    }
+
+    function playSong(index) {
+        const activeList = shuffleMode ? shuffledList : artistSongs;
+        if (index < 0 || index >= activeList.length) return;
+
+        currentIndex = index;
+        const music = activeList[index];
+        currentMusicId = music.id;
+
+        audio.src = "http://localhost:8080/api/v1/music/stream/" + music.id;
+        $("#playerTitle").text(music.musicTitle);
+        $("#playerArtist").text(music.musicArtist);
+        $("#playerThumbnail").attr("src", "http://localhost:8080/api/v1/music/thumbnail/" + music.id);
+
+        $("#bottomPlayer").addClass("active");
+        audio.play();
+        $("#playPauseBtn").removeClass("bi-play-circle-fill").addClass("bi-pause-circle-fill");
+    }
+
+    function toggleShuffle() {
+        shuffleMode = !shuffleMode;
+        const btn = $("#shuffleBtn");
+        if (shuffleMode) {
+            btn.addClass("text-primary-important").removeClass("text-muted");
+            shuffledList = [...artistSongs].sort(() => Math.random() - 0.5);
+            if (currentMusicId) currentIndex = shuffledList.findIndex(m => m.id === currentMusicId);
+        } else {
+            btn.removeClass("text-primary-important").addClass("text-muted");
+            if (currentMusicId) currentIndex = artistSongs.findIndex(m => m.id === currentMusicId);
+        }
+    }
+
+    function nextSong() {
+        const activeList = shuffleMode ? shuffledList : artistSongs;
+        let nextIdx = currentIndex + 1;
+        if (nextIdx >= activeList.length) nextIdx = 0;
+        playSong(nextIdx);
+    }
+
+    function prevSong() {
+        const activeList = shuffleMode ? shuffledList : artistSongs;
+        let prevIdx = currentIndex - 1;
+        if (prevIdx < 0) prevIdx = activeList.length - 1;
+        playSong(prevIdx);
+    }
+
+    audio.onended = () => nextSong();
+
+    // UI Controls
+    $("#playPauseBtn").on("click", () => {
+        if(audio.paused) {
+            audio.play();
+            $("#playPauseBtn").removeClass("bi-play-circle-fill").addClass("bi-pause-circle-fill");
+        } else {
+            audio.pause();
+            $("#playPauseBtn").removeClass("bi-pause-circle-fill").addClass("bi-play-circle-fill");
+        }
+    });
+
+    audio.ontimeupdate = () => {
+        if(audio.duration) {
+            let pct = (audio.currentTime / audio.duration) * 100;
+            $("#progressBar").css("width", pct + "%");
+            let mins = Math.floor(audio.currentTime / 60);
+            let secs = Math.floor(audio.currentTime % 60);
+            $("#currentTime").text(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
+        }
+    };
+
+    function seek(e) {
+        const percent = e.offsetX / e.currentTarget.offsetWidth;
+        audio.currentTime = percent * audio.duration;
+    }
+
+    function closePlayer() {
+        audio.pause();
+        $("#bottomPlayer").removeClass("active");
+    }
+
+    // --- PLAYLIST POPOVER ---
+
+    function initPlaylistPopover() {
+        const playlistPopover = new bootstrap.Popover(document.getElementById('playlistBtn'), {
+            html: true,
+            sanitize: false,
+            content: function() { return `<div class="text-center p-2"><div class="spinner-border spinner-border-sm text-primary"></div></div>`; }
+        });
+
+        document.getElementById('playlistBtn').addEventListener('shown.bs.popover', function () {
+            $.get(`http://localhost:8080/api/v1/playlist/load/${username}`, (response) => {
+                let html = '<div class="list-group list-group-flush">';
+                if(!response.data || response.data.length === 0) {
+                    html += '<div class="p-3 text-muted small">No playlists found</div>';
+                } else {
+                    response.data.forEach(pl => {
+                        html += `<div class="playlist-item" onclick="addToPlaylist(${pl.id})">${pl.playlistName}</div>`;
+                    });
+                }
+                html += '</div>';
+                document.querySelector('.popover-body').innerHTML = html;
+            });
+        });
+    }
+
+    function addToPlaylist(playlistId) {
+        if (!currentMusicId) return;
+        $.ajax({
+            url: "http://localhost:8080/api/v1/playlist-song/add",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ playlistId: playlistId, musicId: currentMusicId }),
+            success: function() {
+                alert("Song added!");
+                bootstrap.Popover.getInstance(document.getElementById('playlistBtn')).hide();
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

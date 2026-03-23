@@ -6,6 +6,7 @@ import com.ijse.gdse73.harmoniq_backend.entity.User;
 import com.ijse.gdse73.harmoniq_backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -23,6 +24,7 @@ public class UserController {
     private final String uploadDir = "uploads/profile/";
 
     @GetMapping("/get/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<APIResponse> getUser(@PathVariable Long id){
         return ResponseEntity.ok(new APIResponse(
                 200,"User Fetched Successfully!",userService.getUser(id)
@@ -30,12 +32,14 @@ public class UserController {
     }
 
     @GetMapping("/get-all")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<APIResponse> getAllUser(){
         return ResponseEntity.ok(new APIResponse(
                 200,"Get All Users Successfully!",userService.getAllUsers()));
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<APIResponse> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.ok(new APIResponse(
@@ -44,6 +48,7 @@ public class UserController {
     }
 
     @PutMapping("/update")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<APIResponse> updateUser(@RequestBody UserDTO userDTO) {
         userService.updateUser(userDTO);
         return ResponseEntity.ok(new APIResponse(
@@ -52,6 +57,7 @@ public class UserController {
     }
 
     @PutMapping("/update-role/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<APIResponse> updateUserRole(@PathVariable Long id, @RequestBody Map<String,String> body) {
         String role = body.get("role");
         userService.updateUserRole(id, role);

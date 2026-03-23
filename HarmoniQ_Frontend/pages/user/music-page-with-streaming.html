@@ -303,26 +303,26 @@
         return min + ":" + (sec<10?"0"+sec:sec);
     }
 
-    let liked = false;
+    // let liked = false;
 
-    $('#likeBtn').on('click', function(){
-        if(currentSongIndex === -1){
-            alert("No song selected");
-            return;
-        }
-
-        liked = !liked;
-
-        if(liked){
-            $(this).removeClass("bi-heart");
-            $(this).addClass("bi-heart-fill liked");
-        }else{
-            $(this).removeClass("bi-heart-fill liked");
-            $(this).addClass("bi-heart");
-        }
-
-        likeSong(); // empty function for now
-    });
+    // $('#likeBtn').on('click', function(){
+    //     if(currentSongIndex === -1){
+    //         alert("No song selected");
+    //         return;
+    //     }
+    //
+    //     liked = !liked;
+    //
+    //     if(liked){
+    //         $(this).removeClass("bi-heart");
+    //         $(this).addClass("bi-heart-fill liked");
+    //     }else{
+    //         $(this).removeClass("bi-heart-fill liked");
+    //         $(this).addClass("bi-heart");
+    //     }
+    //
+    //     likeSong(); // empty function for now
+    // });
 
     function likeSong(){
         const token = localStorage.getItem("token");
@@ -335,6 +335,9 @@
 
             url:"http://localhost:8080/api/v1/liked-song/add-or-remove",
             type:"POST",
+            headers: {
+                "Authorization": "Bearer " + token,
+            },
             contentType:"application/json",
 
             data: JSON.stringify({
@@ -345,7 +348,18 @@
             success:function(response){
                 console.log(response.status);
                 console.log(response.data);
-                alert(response.data);
+
+                if(response.status === 200){
+                    if(response.data === "Liked Song"){
+                        $('#likeBtn').removeClass("bi-heart");
+                        $('#likeBtn').addClass("bi-heart-fill liked");
+                    }else{
+                        $('#likeBtn').removeClass("bi-heart-fill liked");
+                        $('#likeBtn').addClass("bi-heart");
+                    }
+                }else{
+                    alert("Failed to like song");
+                }
             },
 
             error:function(err){
