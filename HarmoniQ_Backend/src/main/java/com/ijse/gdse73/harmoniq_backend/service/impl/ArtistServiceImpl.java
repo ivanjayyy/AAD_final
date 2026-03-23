@@ -34,17 +34,19 @@ public class ArtistServiceImpl implements ArtistService {
     }
 
     @Override
-    public void deleteArtist(Long id) {
-        artistRepo.findById(id).orElseThrow(() -> new CustomException("Artist not found"));
+    public Artist deleteArtist(Long id) {
+        Artist artist = artistRepo.findById(id).orElseThrow(() -> new CustomException("Artist not found"));
         artistRepo.deleteById(id);
+        return artist;
     }
 
     @Override
     public void updateArtist(ArtistDTO artistDTO) {
-        Artist artist = artistRepo.findById(artistDTO.getId()).orElseThrow(() -> new CustomException("Artist not found"));
-        artist.setName(artistDTO.getName());
-        artist.setBio(artistDTO.getBio());
-        artistRepo.save(artist);
+        if (artistDTO == null) {
+            throw new CustomException("ArtistDTO is null");
+        }
+
+        artistRepo.save(modelMapper.map(artistDTO, Artist.class));
     }
 
     @Override

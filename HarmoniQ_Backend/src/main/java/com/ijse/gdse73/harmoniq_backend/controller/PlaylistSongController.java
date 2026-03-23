@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/playlist-song")
+@CrossOrigin
 @RequiredArgsConstructor
 public class PlaylistSongController {
     private final PlaylistSongService playlistSongService;
@@ -26,6 +27,15 @@ public class PlaylistSongController {
     public ResponseEntity<APIResponse> getAllPlaylistSongs(@PathVariable Long playlist_id) {
         return ResponseEntity.ok(new APIResponse(
                 200,"OK",playlistSongService.getAllPlaylistSongs(playlist_id)
+        ));
+    }
+
+    @DeleteMapping("/remove")
+    public ResponseEntity<APIResponse> removeSongFromPlaylist(@RequestBody PlaylistSongDTO playlistSongDTO) {
+        playlistSongService.removePlaylistSong(playlistSongDTO);
+
+        return ResponseEntity.ok(new APIResponse(
+                 200,"OK",null
         ));
     }
 }

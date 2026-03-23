@@ -3,6 +3,7 @@ package com.ijse.gdse73.harmoniq_backend.controller;
 import com.ijse.gdse73.harmoniq_backend.dto.APIResponse;
 import com.ijse.gdse73.harmoniq_backend.dto.ArtistDTO;
 import com.ijse.gdse73.harmoniq_backend.dto.MusicDTO;
+import com.ijse.gdse73.harmoniq_backend.entity.Artist;
 import com.ijse.gdse73.harmoniq_backend.exception.CustomException;
 import com.ijse.gdse73.harmoniq_backend.service.ArtistService;
 import lombok.RequiredArgsConstructor;
@@ -56,15 +57,43 @@ public class ArtistController {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<APIResponse> deleteArtist(@PathVariable Long id) {
-        artistService.deleteArtist(id);
+        Artist artist = artistService.deleteArtist(id);
+
+        String artistProfileName = new File(artist.getPfpPath()).getName();
+        File artistProfile = new File(artistDir + artistProfileName);
+        if (artistProfile.exists()) {
+            artistProfile.delete();
+        }
+
         return ResponseEntity.ok(new APIResponse(
                  200,"OK",null
         ));
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<APIResponse> updateArtist(@RequestBody ArtistDTO artistDTO) {
-        artistService.updateArtist(artistDTO);
+    @PutMapping("/update/{id}")
+    public ResponseEntity<APIResponse> updateArtist(@PathVariable Long id,
+                                                    @RequestParam("name") String name,
+                                                    @RequestParam("bio") String bio,
+                                                    @RequestParam(value = "profilePic", required = false) MultipartFile profilePic) throws IOException {
+
+        ArtistDTO existingDTO = artistService.findArtist(id);
+
+        ArtistDTO updatedDTO = new ArtistDTO();
+        updatedDTO.setId(id);
+        updatedDTO.setName(name);
+        updatedDTO.setBio(bio);
+        updatedDTO.setPfpPath(existingDTO.getPfpPath());
+
+        if (profilePic != null && !profilePic.isEmpty()) {
+            String oldArtistProfileName = new File(existingDTO.getPfpPath()).getName();
+            Files.deleteIfExists(Paths.get(artistDir + oldArtistProfileName));
+
+            String newArtistProfileName = profilePic.getOriginalFilename();
+            Files.write(Paths.get(artistDir + newArtistProfileName), profilePic.getBytes());
+            updatedDTO.setPfpPath("/uploads/artistProfile/" + newArtistProfileName);
+        }
+
+        artistService.updateArtist(updatedDTO);
         return ResponseEntity.ok(new APIResponse(
                  200,"OK",null
         ));

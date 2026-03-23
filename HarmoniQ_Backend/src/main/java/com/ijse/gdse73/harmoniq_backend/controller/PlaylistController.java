@@ -42,8 +42,8 @@ public class PlaylistController {
     }
 
     @DeleteMapping("/delete/{playlistId}")
-    public ResponseEntity<APIResponse> deletePlaylist(@PathVariable String playlistId) {
-//        playlistService.deletePlaylist(playlistId);
+    public ResponseEntity<APIResponse> deletePlaylist(@PathVariable Long playlistId) {
+        playlistService.deletePlaylist(playlistId);
         return ResponseEntity.ok(new APIResponse(
                 200, "Playlist deleted successfully", null
         ));

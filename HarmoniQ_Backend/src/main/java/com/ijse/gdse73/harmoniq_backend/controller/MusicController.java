@@ -14,15 +14,18 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.web.util.UriUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/api/v1/music")
+@CrossOrigin
 @RequiredArgsConstructor
 public class MusicController {
     private final MusicService musicService;
@@ -83,10 +86,13 @@ public class MusicController {
                 throw new CustomException("File not found");
             }
 
+            String fileName = musicDTO.getFileName();
+            String encodedFileName = UriUtils.encode(fileName, StandardCharsets.UTF_8);
+
             return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType("audio/mp4")) // M4A = audio/mp4
+                    .contentType(MediaType.parseMediaType("audio/mp4"))
                     .header(HttpHeaders.CONTENT_DISPOSITION,
-                            "inline; filename=\"" + musicDTO.getFileName() + "\"")
+                            "inline; filename*=UTF-8''" + encodedFileName) // Use filename* for UTF-8
                     .body(resource);
 
         } catch (Exception e) {
@@ -207,9 +213,14 @@ public class MusicController {
                 contentType = "image/jpeg"; // default
             }
 
+            // ... inside getThumbnail
+            String fileName = resource.getFilename();
+            String encodedFileName = UriUtils.encode(fileName != null ? fileName : "thumbnail", StandardCharsets.UTF_8);
+
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "inline; filename*=UTF-8''" + encodedFileName)
                     .body(resource);
 
         } catch (Exception e) {

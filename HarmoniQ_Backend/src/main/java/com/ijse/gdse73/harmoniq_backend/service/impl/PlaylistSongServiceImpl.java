@@ -13,6 +13,7 @@ import com.ijse.gdse73.harmoniq_backend.service.PlaylistSongService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -50,5 +51,22 @@ public class PlaylistSongServiceImpl implements PlaylistSongService {
                 .build();
 
         playlistSongRepo.save(playlistSong);
+    }
+
+    @Override
+    @Transactional // Ensures the delete operation is committed safely
+    public void removePlaylistSong(PlaylistSongDTO playlistSongDTO) {
+        Long playlistId = playlistSongDTO.getPlaylistId();
+        Long musicId = playlistSongDTO.getMusicId();
+
+        // 1. Find the specific relationship entity
+        PlaylistSong playlistSong = playlistSongRepo.findByPlaylistIdAndMusicId(playlistId, musicId)
+                .orElseThrow(() -> new CustomException("This song is not in the specified playlist."));
+
+        // 2. Delete the entity from the table
+        playlistSongRepo.delete(playlistSong);
+
+        // Alternatively, if you want to delete by ID directly:
+        // playlistSongRepo.deleteById(playlistSong.getId());
     }
 }

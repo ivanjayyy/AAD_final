@@ -38,7 +38,7 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     public void deletePlaylist(Long id) {
-
+        playlistRepo.deleteById(id);
     }
 
     @Override

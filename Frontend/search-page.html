@@ -2,9 +2,336 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>HarmoniQ | Search</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <style>
+        body { background-color: #f8f9fa; color: #212529; padding-bottom: 120px; }
+        .sidebar-sensor { width: 15px; z-index: 1060; }
+        .search-header { background: white; border-bottom: 1px solid #dee2e6; padding: 1.5rem 0; z-index: 1000; }
+        .search-input-lg { border-radius: 30px; padding: 0.8rem 1.5rem 0.8rem 3.5rem; font-size: 1.1rem; border: 2px solid #eee; transition: 0.3s; }
+        .search-input-lg:focus { border-color: #0d6efd; box-shadow: none; background: #fff; }
+        .search-icon { position: absolute; left: 1.5rem; top: 50%; transform: translateY(-50%); color: #adb5bd; font-size: 1.2rem; }
+
+        /* Artist Circle Style */
+        .artist-item { transition: 0.2s; cursor: pointer; text-align: center; padding: 10px; border-radius: 10px; }
+        .artist-item:hover { background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .artist-img { width: 100px; height: 100px; object-fit: cover; border-radius: 50%; margin-bottom: 10px; border: 3px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        /* Song Row Style */
+        .song-row { transition: 0.2s; cursor: pointer; border-radius: 10px; padding: 12px; margin-bottom: 5px; }
+        .song-row:hover { background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .song-img { width: 55px; height: 55px; object-fit: cover; border-radius: 6px; }
+
+        /* Bottom Player Transition from Streaming Page */
+        #bottomPlayer.active { bottom: 0 !important; }
+        .cursor-pointer { cursor: pointer; }
+
+        .section-title { font-weight: 700; color: #6c757d; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1.2px; margin-bottom: 1.5rem; }
+        .empty-state { color: #adb5bd; text-align: center; margin-top: 4rem; }
+
+        .playlist-item {
+            transition: 0.2s;
+        }
+        .playlist-item:hover {
+            background-color: #f0f7ff;
+            color: #0d6efd;
+        }
+    </style>
 </head>
 <body>
+
+<div id="sidebar-sensor" class="position-fixed top-0 start-0 vh-100 sidebar-sensor"></div>
+
+<div class="offcanvas offcanvas-start bg-white border-end shadow" tabindex="-1" id="navSidebar" style="width: 280px;">
+    <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title text-primary fw-bold">HarmoniQ 🎶</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column p-0">
+        <ul class="nav flex-column mb-auto">
+            <li><a class="nav-link text-dark p-3 fw-medium" href="user-home.html">🏠 Home</a></li>
+            <li><a class="nav-link text-primary fw-bold bg-light p-3" href="search-page.html">🔍 Search</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="artists-page.html">🎙️ Artists</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="user-playlists.html">📜 Playlists</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="user-profile.html">👤 Profile</a></li>
+        </ul>
+        <div class="p-3 border-top">
+            <button class="btn btn-outline-danger w-100" onclick="logout()">Logout</button>
+        </div>
+    </div>
+</div>
+
+<header class="search-header sticky-top shadow-sm">
+    <div class="container">
+        <div class="position-relative">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" id="mainSearch" class="form-control search-input-lg" placeholder="What do you want to listen to?" autofocus>
+        </div>
+    </div>
+</header>
+
+<main class="container py-4">
+    <div id="emptyPrompt" class="empty-state">
+        <i class="bi bi-search" style="font-size: 3rem;"></i>
+        <p class="mt-3 fs-5">Find your next favorite song or artist</p>
+    </div>
+
+    <section id="artistSection" style="display: none;" class="mb-5">
+        <h6 class="section-title">Artists</h6>
+        <div class="row g-4" id="artistResults"></div>
+    </section>
+
+    <section id="songSection" style="display: none;">
+        <h6 class="section-title">Songs</h6>
+        <div id="songResults"></div>
+    </section>
+
+    <div id="noResults" class="empty-state" style="display: none;">
+        <i class="bi bi-exclamation-circle" style="font-size: 2rem;"></i>
+        <p class="mt-2">We couldn't find anything for that search.</p>
+    </div>
+</main>
+
+<div id="bottomPlayer" class="fixed-bottom bg-white border-top py-3 px-4 shadow-lg" style="bottom: -150px; transition: 0.4s ease-in-out; z-index: 1050;">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-4 col-md-3 d-flex align-items-center">
+                <img id="playerThumbnail" src="" class="rounded border me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                <div class="overflow-hidden">
+                    <div id="playerTitle" class="text-truncate fw-bold small mb-0">Song Title</div>
+                    <div id="playerArtist" class="text-muted text-truncate small">Artist</div>
+                </div>
+            </div>
+
+            <div class="col-4 col-md-6 text-center">
+                <div class="d-flex justify-content-center align-items-center gap-3 mb-2">
+                    <i class="bi bi-skip-start-fill fs-3 cursor-pointer"></i>
+                    <i id="playPauseBtn" class="bi bi-play-circle-fill fs-1 text-primary cursor-pointer"></i>
+                    <i class="bi bi-skip-end-fill fs-3 cursor-pointer"></i>
+                </div>
+                <div class="d-flex align-items-center gap-2 px-md-5">
+                    <span id="currentTime" class="text-muted" style="font-size: 11px;">0:00</span>
+                    <div class="progress flex-grow-1 bg-light border" style="height: 6px; cursor: pointer;">
+                        <div id="progressBar" class="progress-bar bg-primary" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-4 col-md-3 d-flex align-items-center justify-content-end gap-3">
+                <i class="bi bi-heart fs-5 cursor-pointer text-muted" title="Like"></i>
+
+                <i class="bi bi-bookmark-plus fs-5 cursor-pointer text-muted"
+                   id="playlistBtn"
+                   data-bs-toggle="popover"
+                   data-bs-trigger="click"
+                   title="Add to Playlist"></i>
+
+                <i class="bi bi-x-lg fs-5 text-danger cursor-pointer" onclick="closePlayer()"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<audio id="audioPlayer"></audio>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const apiBase = "http://localhost:8080/api/v1";
+    const audio = document.getElementById("audioPlayer");
+    const sidebar = new bootstrap.Offcanvas(document.getElementById('navSidebar'));
+    const token = localStorage.getItem("token");
+    const payload = token ? JSON.parse(atob(token.split('.')[1])) : { sub: "Guest" };
+    const username = payload.sub;
+    let currentPlayingMusicId = null; // Track what's currently in the player
+
+    let allArtists = [];
+    let allSongs = [];
+
+    $('#sidebar-sensor').on('mouseenter', () => sidebar.show());
+
+    $(document).ready(function() {
+        // Cache data exactly like before
+        Promise.all([
+            $.get(`${apiBase}/artist/get-all`),
+            $.get(`${apiBase}/music/get-all`)
+        ]).then(([artistRes, musicRes]) => {
+            allArtists = artistRes.data;
+            allSongs = musicRes.data;
+        });
+
+        $('#mainSearch').on('input', function() {
+            const query = $(this).val().toLowerCase().trim();
+            if (query === "") { resetUI(); return; }
+            filterAndRender(query);
+        });
+    });
+
+    function resetUI() {
+        $('#artistSection, #songSection, #noResults').hide();
+        $('#emptyPrompt').show();
+        $('#artistResults, #songResults').empty();
+    }
+
+    function filterAndRender(query) {
+        const filteredArtists = allArtists.filter(a => a.name.toLowerCase().includes(query));
+        const filteredSongs = allSongs.filter(s =>
+            s.musicTitle.toLowerCase().includes(query) ||
+            s.musicArtist.toLowerCase().includes(query)
+        );
+
+        $('#emptyPrompt').hide();
+
+        // Render Artists
+        if (filteredArtists.length > 0) {
+            $('#artistSection').show();
+            let html = '';
+            filteredArtists.forEach(a => {
+                html += `
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <div class="artist-item">
+                            <img src="${apiBase}/artist/profile-pic/${a.id}" class="artist-img" onerror="this.src='https://via.placeholder.com/100?text=Artist'">
+                            <div class="fw-bold small text-truncate">${a.name}</div>
+                        </div>
+                    </div>`;
+            });
+            $('#artistResults').html(html);
+        } else { $('#artistSection').hide(); }
+
+        // Render Songs
+        if (filteredSongs.length > 0) {
+            $('#songSection').show();
+            let html = '';
+            filteredSongs.forEach(s => {
+                html += `
+                    <div class="song-row d-flex align-items-center" onclick="playSong('${s.id}', '${s.musicTitle.replace(/'/g, "\\'")}', '${s.musicArtist.replace(/'/g, "\\'")}')">
+                        <img src="${apiBase}/music/thumbnail/${s.id}" class="song-img me-3" onerror="this.src='https://via.placeholder.com/60?text=Song'">
+                        <div class="flex-grow-1">
+                            <div class="fw-bold mb-0 text-dark">${s.musicTitle}</div>
+                            <div class="text-muted small">${s.musicArtist}</div>
+                        </div>
+                        <div class="text-primary fs-4 opacity-75"><i class="bi bi-play-circle-fill"></i></div>
+                    </div>`;
+            });
+            $('#songResults').html(html);
+        } else { $('#songSection').hide(); }
+
+        if (filteredArtists.length === 0 && filteredSongs.length === 0) { $('#noResults').show(); }
+        else { $('#noResults').hide(); }
+    }
+
+    // --- STREAMING LOGIC INTEGRATED ---
+    function playSong(id, title, artist) {
+        currentPlayingMusicId = id; // Set the global ID when a song starts
+        audio.src = `${apiBase}/music/stream/${id}`;
+
+        $("#playerTitle").text(title);
+        $("#playerArtist").text(artist);
+        $("#playerThumbnail").attr("src", `${apiBase}/music/thumbnail/${id}`);
+
+        $("#bottomPlayer").addClass("active");
+        audio.play();
+        $("#playPauseBtn").removeClass("bi-play-circle-fill").addClass("bi-pause-circle-fill");
+    }
+
+    const playlistPopover = new bootstrap.Popover(document.getElementById('playlistBtn'), {
+        html: true,
+        content: function() {
+            return `<div id="playlistPopoverContent" class="text-center p-2"><div class="spinner-border spinner-border-sm text-primary"></div></div>`;
+        }
+    });
+
+    document.getElementById('playlistBtn').addEventListener('shown.bs.popover', function () {
+        $.ajax({
+            url: `${apiBase}/playlist/load/${username}`,
+            type: "GET",
+            headers: { "Authorization": "Bearer " + token }, // Fixes 403
+            success: function(response) {
+                let html = '<div class="list-group list-group-flush" style="width: 200px; max-height: 200px; overflow-y: auto;">';
+                if(!response.data || response.data.length === 0) {
+                    html += '<div class="p-3 text-muted small">No playlists found</div>';
+                } else {
+                    response.data.forEach(pl => {
+                        html += `<div class="playlist-item p-2 hover-bg cursor-pointer border-bottom small"
+                                  onclick="addToPlaylist(${pl.id})">${pl.playlistName}</div>`;
+                    });
+                }
+                html += '</div>';
+
+                const popoverBody = document.querySelector('.popover-body');
+                if (popoverBody) popoverBody.innerHTML = html;
+            },
+            error: function() {
+                const popoverBody = document.querySelector('.popover-body');
+                if (popoverBody) popoverBody.innerHTML = '<div class="p-2 text-danger small">Error loading playlists</div>';
+            }
+        });
+    });
+
+    // Function to actually add the song
+    function addToPlaylist(playlistId) {
+        if (!currentPlayingMusicId) {
+            alert("Please play a song first!");
+            return;
+        }
+
+        const data = {
+            playlistId: playlistId,
+            musicId: currentPlayingMusicId
+        };
+
+        $.ajax({
+            url: `${apiBase}/playlist-song/add`,
+            type: "POST",
+            contentType: "application/json",
+            headers: { "Authorization": "Bearer " + token }, // Fixes 403
+            data: JSON.stringify(data),
+            success: function() {
+                alert("Song added to playlist! 🎶");
+                bootstrap.Popover.getInstance(document.getElementById('playlistBtn')).hide();
+            },
+            error: function(xhr) {
+                alert("This song is already in your playlist.");
+            }
+        });
+    }
+
+    function closePlayer() {
+        audio.pause();
+        $("#bottomPlayer").removeClass("active");
+    }
+
+    $("#playPauseBtn").on("click", () => {
+        if(audio.paused) {
+            audio.play();
+            $("#playPauseBtn").removeClass("bi-play-circle-fill").addClass("bi-pause-circle-fill");
+        } else {
+            audio.pause();
+            $("#playPauseBtn").removeClass("bi-pause-circle-fill").addClass("bi-play-circle-fill");
+        }
+    });
+
+    audio.ontimeupdate = () => {
+        if(audio.duration) {
+            let pct = (audio.currentTime / audio.duration) * 100;
+            $("#progressBar").css("width", pct + "%");
+
+            // Format time display
+            let mins = Math.floor(audio.currentTime / 60);
+            let secs = Math.floor(audio.currentTime % 60);
+            $("#currentTime").text(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
+        }
+    };
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = "sign-in.html";
+    }
+</script>
 
 </body>
 </html>

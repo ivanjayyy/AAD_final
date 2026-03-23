@@ -69,10 +69,10 @@
             <h2 class="fw-bold mb-0">Featured Artists</h2>
             <p class="text-muted">Discover the voices behind the music</p>
         </div>
-        <div class="input-group w-25 d-none d-md-flex">
-            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
-            <input type="text" class="form-control border-start-0" placeholder="Filter artists...">
-        </div>
+<!--        <div class="input-group w-25 d-none d-md-flex">-->
+<!--            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>-->
+<!--            <input type="text" class="form-control border-start-0" placeholder="Filter artists...">-->
+<!--        </div>-->
     </div>
 
     <div class="row g-4" id="artistContainer">
@@ -116,7 +116,7 @@
                 <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
                     <div class="card h-100 artist-card shadow-sm text-center p-4">
                         <div class="mb-3">
-                            <img src="http://localhost:8080/api/v1/artist/image/${artist.id}"
+                            <img src="http://localhost:8080/api/v1/artist/profile-pic/${artist.id}"
                                  class="rounded-circle profile-img mx-auto"
                                  onerror="this.src='https://via.placeholder.com/150?text=Artist'"
                                  alt="${artist.name}">
@@ -125,7 +125,8 @@
                         <p class="bio-text mb-3 px-2">${artist.bio}</p>
                         <div class="mt-auto">
                             <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
-                                <i class="bi bi-music-note-beamed me-1"></i> ${artist.songCount} Songs
+<!--                                <i class="bi bi-music-note-beamed me-1"></i> ${artist.songCount} Songs-->
+                                <i class="bi bi-music-note-beamed me-1"></i> 5 Songs
                             </span>
                         </div>
                     </div>

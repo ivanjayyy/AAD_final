@@ -15,6 +15,10 @@
     .table thead { background-color: #f1f3f5; }
     .nav-link:hover { background-color: #f8f9fa; }
     .sidebar-sensor { width: 15px; z-index: 1060; }
+    /* Search Bar Styling */
+    .search-container { position: relative; max-width: 300px; }
+    .search-container i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #adb5bd; }
+    .search-input { padding-left: 35px; border-radius: 20px; }
   </style>
 </head>
 
@@ -29,10 +33,10 @@
   </div>
   <div class="offcanvas-body d-flex flex-column p-0">
     <ul class="nav flex-column mb-auto">
-      <li><a href="admin-dashboard.html" class="nav-link p-3 text-primary fw-bold bg-light rounded"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
-      <li><a href="music-management.html" class="nav-link p-3 text-dark"><i class="bi bi-music-note-beamed me-3"></i> Music Management</a></li>
-      <li><a href="artist-management.html" class="nav-link p-3 text-dark"><i class="bi bi-mic me-3"></i> Artists</a></li>
-      <li><a href="user-management.html" class="nav-link p-3 text-dark"><i class="bi bi-people me-3"></i> User Directory</a></li>
+      <li><a href="admin-dashboard.html" class="nav-link p-3 text-dark border-bottom"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
+      <li><a href="#" class="nav-link p-3 text-primary fw-bold bg-light border-bottom"><i class="bi bi-music-note-beamed me-3"></i> Music Management</a></li>
+      <li><a href="artist-management.html" class="nav-link p-3 text-dark border-bottom"><i class="bi bi-mic me-3"></i> Artists</a></li>
+      <li><a href="user-management.html" class="nav-link p-3 text-dark border-bottom"><i class="bi bi-people me-3"></i> User Directory</a></li>
     </ul>
     <div class="p-3">
       <button class="btn btn-outline-danger w-100" onclick="logout()">Logout</button>
@@ -41,11 +45,19 @@
 </div>
 
 <div class="container">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold">Music Inventory</h2>
-    <button class="btn btn-primary fw-bold px-4" data-bs-toggle="modal" data-bs-target="#uploadModal">
-      <i class="bi bi-plus-lg me-1"></i> Upload Music
-    </button>
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <h2 class="fw-bold mb-0">Music Inventory</h2>
+
+    <div class="d-flex gap-2">
+      <div class="search-container">
+        <i class="bi bi-search"></i>
+        <input type="text" id="musicSearch" class="form-control search-input" placeholder="Search title or artist...">
+      </div>
+
+      <button class="btn btn-primary fw-bold px-4" data-bs-toggle="modal" data-bs-target="#uploadModal">
+        <i class="bi bi-plus-lg me-1"></i> Upload
+      </button>
+    </div>
   </div>
 
   <div class="card overflow-hidden">
@@ -139,6 +151,23 @@
 
   $('#admin-sidebar-sensor').on('mouseenter', () => sidebar.show());
 
+  // --- Real-time Local Search ---
+  $(document).ready(function() {
+    $('#musicSearch').on('keyup', function() {
+      const query = $(this).val().toLowerCase();
+
+      $('#musicTable tbody tr').filter(function() {
+        const title = $(this).find('td:eq(2)').text().toLowerCase();
+        const artist = $(this).find('td:eq(3)').text().toLowerCase();
+
+        // Toggle visibility if query matches title OR artist
+        $(this).toggle(title.indexOf(query) > -1 || artist.indexOf(query) > -1);
+      });
+    });
+
+    fetchMusic();
+  });
+
   function fetchMusic() {
     $.ajax({
       url: `${baseUrl}/get-all`,
@@ -213,7 +242,10 @@
       data: formData,
       processData: false,
       contentType: false,
-      success: () => { bootstrap.Modal.getInstance(document.getElementById('updateModal')).hide(); fetchMusic(); }
+      success: () => { bootstrap.Modal.getInstance(document.getElementById('updateModal')).hide();
+        $('#updateMusicFile').val('');
+        $('#updateThumbnailFile').val('');
+        fetchMusic(); }
     });
   }
 
@@ -226,8 +258,6 @@
     localStorage.clear();
     window.location.href = "sign-in.html";
   }
-
-  $(document).ready(() => fetchMusic());
 </script>
 
 </body>
