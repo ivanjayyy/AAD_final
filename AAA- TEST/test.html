@@ -157,11 +157,11 @@
 
         // Fetch Liked Music Preview with Randomization
         if(userId) {
-            fetchLikedSongs();
+            fetchLikedSongsPreview();
         }
     }
 
-    function fetchLikedSongs() {
+    function fetchLikedSongsPreview() {
         $.ajax({
             url: `${apiBase}/liked-song/get-by-user/${userId}`,
             type: "GET",
@@ -223,23 +223,39 @@
             container.append('<div class="col-12 text-muted small ps-3">No tracks found.</div>');
             return;
         }
-        list.forEach((music, index) => {
+        list.forEach((item, index) => {
+
+            const music = item.music ? item.music : item;
+
             container.append(`
-                <div class="col-12 col-md-6 col-lg-4">
-                    <div class="d-flex align-items-center p-2 rounded music-card hover-bg cursor-pointer" onclick="playFromSpecificList(${index}, '${listType}')">
-                        <img src="${apiBase}/music/thumbnail/${music.id}" class="rounded me-3 border" style="width: 45px; height: 45px; object-fit: cover;">
-                        <div class="overflow-hidden">
-                            <div class="fw-bold text-dark text-truncate small">${music.musicTitle}</div>
-                            <div class="text-muted" style="font-size: 11px;">${music.musicArtist}</div>
-                        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="d-flex align-items-center p-2 rounded music-card hover-bg cursor-pointer"
+                 onclick="playFromSpecificList(${index}, '${listType}')">
+
+                <img src="${apiBase}/music/thumbnail/${music.id}"
+                     class="rounded me-3 border"
+                     style="width: 45px; height: 45px; object-fit: cover;">
+
+                <div class="overflow-hidden">
+                    <div class="fw-bold text-dark text-truncate small">
+                        ${music.musicTitle}
+                    </div>
+                    <div class="text-muted" style="font-size: 11px;">
+                        ${music.musicArtist}
                     </div>
                 </div>
-            `);
+            </div>
+        </div>
+    `);
         });
     }
 
     function playSong(index) {
-        const activeList = shuffleMode ? shuffledList : (currentActiveListName === "liked" ? likedListPreview : musicList);
+        const activeList = shuffleMode ? shuffledList :
+            (currentActiveListName === "liked" ? likedListPreview :
+                currentActiveListName === "recent" ? recentListGlobal :
+                    musicList);
+
         if (index < 0 || index >= activeList.length) return;
 
         currentIndex = index;
@@ -339,7 +355,7 @@
                     if(currentActiveListName === "liked") fetchInitialData();
                 }
 
-                fetchLikedSongs();
+                fetchLikedSongsPreview();
             }
         });
     }
@@ -491,10 +507,11 @@
     $(document).ready(() => {
         fetchInitialData();
         fetchRecentSongs();
-        fetchLikedSongs();
     });
 
 </script>
 
 </body>
 </html>
+add another container right after like songs for Songs from Following artists.
+/random-songs/{userId} send user id to this. it will return a list of Music

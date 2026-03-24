@@ -32,4 +32,12 @@ public class FollowedArtistController {
                 200,"OK",followedArtistService.checkFollowStatus(followedArtistDTO)
         ));
     }
+
+    @GetMapping("/random-songs/{userId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<APIResponse> getRandomSongs(@PathVariable Long userId){
+        return ResponseEntity.ok(new APIResponse(
+                200,"OK",followedArtistService.getRandomFollowedArtistMusic(userId,3,3)
+        ));
+    }
 }
