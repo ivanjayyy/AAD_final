@@ -23,6 +23,15 @@
         .text-primary-important { color: #0d6efd !important; }
         .liked { color: #dc3545 !important; }
 
+        #volumeSlider {
+            height: 4px;
+        }
+        #volumeSlider::-webkit-slider-thumb {
+            width: 12px;
+            height: 12px;
+            background: #0d6efd;
+        }
+
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
     </style>
 </head>
@@ -96,6 +105,11 @@
                 </div>
             </div>
             <div class="col-4 col-md-3 d-flex align-items-center justify-content-end gap-3">
+                <div class="d-none d-md-flex align-items-center gap-2 me-2">
+                    <i id="volumeIcon" class="bi bi-volume-up fs-5 text-muted"></i>
+                    <input type="range" id="volumeSlider" class="form-range" style="width: 80px;" min="0" max="1" step="0.01" value="1">
+                </div>
+
                 <i id="likeBtn" class="bi bi-heart fs-5 cursor-pointer text-muted" title="Like" onclick="likeSong()"></i>
                 <i class="bi bi-bookmark-plus fs-5 cursor-pointer text-muted" id="playlistBtn" data-bs-toggle="popover" data-bs-trigger="click" title="Add to Playlist"></i>
                 <i class="bi bi-x-lg fs-5 text-danger cursor-pointer" onclick="closePlayer()"></i>
@@ -119,6 +133,7 @@
     const userId = payload.id;
 
     let musicList = [];
+    let recentListGlobal = [];
     let likedListPreview = [];
     let shuffledList = [];
     let shuffleMode = false;
@@ -177,7 +192,15 @@
             const songToPlay = $(event.currentTarget); // Not ideal, better to use the specific random list
         }
 
-        const targetList = listType === "liked" ? likedListPreview : musicList;
+        let targetList;
+
+        if (listType === "liked") {
+            targetList = likedListPreview;
+        } else if (listType === "recent") {
+            targetList = recentListGlobal; // we’ll define this
+        } else {
+            targetList = musicList;
+        }
 
         if (shuffleMode) {
             const musicId = targetList[index].id;
@@ -218,6 +241,13 @@
         currentIndex = index;
         const music = activeList[index];
         currentMusicId = music.id;
+
+        audio.onplay = () => {
+            setTimeout(() => {
+                saveRecentSong(userId, currentMusicId);
+            }, 5000);
+        };
+
         audio.src = `${apiBase}/music/stream/${music.id}`;
 
         $("#playerTitle").text(music.musicTitle);
@@ -252,6 +282,37 @@
             }
         });
     }
+
+    // Volume Control Logic
+    $('#volumeSlider').on('input', function() {
+        const vol = $(this).val();
+        audio.volume = vol;
+
+        // Update icon based on volume level
+        const icon = $('#volumeIcon');
+        if (vol == 0) {
+            icon.removeClass('bi-volume-up bi-volume-down').addClass('bi-volume-mute');
+        } else if (vol < 0.5) {
+            icon.removeClass('bi-volume-up bi-volume-mute').addClass('bi-volume-down');
+        } else {
+            icon.removeClass('bi-volume-down bi-volume-mute').addClass('bi-volume-up');
+        }
+    });
+
+    // Optional: Click icon to mute/unmute
+    $('#volumeIcon').on('click', function() {
+        if (audio.volume > 0) {
+            $(this).data('last-vol', audio.volume);
+            audio.volume = 0;
+            $('#volumeSlider').val(0);
+            $(this).removeClass('bi-volume-up bi-volume-down').addClass('bi-volume-mute');
+        } else {
+            const lastVol = $(this).data('last-vol') || 1;
+            audio.volume = lastVol;
+            $('#volumeSlider').val(lastVol);
+            $(this).removeClass('bi-volume-mute').addClass(lastVol < 0.5 ? 'bi-volume-down' : 'bi-volume-up');
+        }
+    });
 
     function likeSong() {
         if (!token || currentIndex === -1) return;
@@ -375,11 +436,54 @@
         });
     }
 
+    let lastSavedMusicId = null;
+
+    function saveRecentSong(userId, musicId) {
+        if (!userId || !musicId || lastSavedMusicId === musicId) return;
+
+        lastSavedMusicId = musicId;
+
+        $.ajax({
+            url: `${apiBase}/recent-song/add`,
+            type: "POST",
+            headers: { "Authorization": "Bearer " + token },
+            contentType: "application/json",
+            data: JSON.stringify({ userId, musicId })
+        });
+    }
+
+    function fetchRecentSongs() {
+        if (!userId) return;
+
+        $.ajax({
+            url: `${apiBase}/recent-song/load-all/${userId}`,
+            type: "GET",
+            headers: { "Authorization": "Bearer " + token },
+            success: function(response) {
+
+                // 👉 THIS is what I meant by "update inside fetch"
+                recentListGlobal = response.data || [];
+
+                // show only few (optional)
+                const limitedList = recentListGlobal.slice(0, 6);
+
+                renderList("#recentSongContainer", limitedList, "recent");
+            },
+            error: function(err) {
+                console.error("Failed to load recent songs", err);
+            }
+        });
+    }
+
     function closePlayer() { audio.pause(); $("#bottomPlayer").removeClass("active"); }
 
     function logout() { localStorage.clear(); window.location.href = "sign-in.html"; }
 
-    $(document).ready(() => fetchInitialData());
+    $(document).ready(() => {
+        fetchInitialData();
+        fetchRecentSongs();
+    });
+
 </script>
 
 </body>

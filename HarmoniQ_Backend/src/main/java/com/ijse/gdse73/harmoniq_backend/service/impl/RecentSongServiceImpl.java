@@ -16,69 +16,11 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
-
-//@Service
-//@RequiredArgsConstructor
-//public class RecentSongServiceImpl implements RecentSongService {
-//
-//    private final UserRepo userRepo;
-//    private final MusicRepo musicRepo;
-//
-//    @Override
-//    @Transactional
-//    public void addRecentSong(LikedOrRecentSongDTO dto) {
-//
-//        User user = userRepo.findById(dto.getUserId())
-//                .orElseThrow(() ->
-//                        new UsernameNotFoundException(dto.getUserId() + " is not valid"));
-//
-//        Music music = musicRepo.findById(dto.getMusicId())
-//                .orElseThrow(() ->
-//                        new RuntimeException(dto.getMusicId() + " is not valid"));
-//
-//        List<RecentSong> recentSongs = user.getRecentSongs();
-//
-//        // Remove duplicate song if exists
-//        recentSongs.removeIf(song ->
-//                song.getMusic().getId().equals(music.getId()));
-//
-//        // Create new recent song
-//        RecentSong newRecentSong = RecentSong.builder()
-//                .user(user)
-//                .music(music)
-//                .build();
-//
-//        // Add to first position
-//        recentSongs.add(0, newRecentSong);
-//
-//        // Keep max 10 songs
-//        if (recentSongs.size() > 10) {
-//            recentSongs.remove(10);
-//        }
-//
-//        userRepo.save(user);
-//    }
-//
-//    @Override
-//    public List<MusicDTO> loadRecentSongs(Long userId) {
-//        if (userId == null) {
-//            throw new CustomException("User ID is null");
-//        }
-//
-//        User user = userRepo.findById(userId)
-//                .orElseThrow(() ->
-//                        new UsernameNotFoundException(userId + " is not valid"));
-//
-//        return user.getRecentSongs().stream()
-//                .map(recentSong -> recentSong.getMusic())
-//                .map(music -> new ModelMapper().map(music, MusicDTO.class))
-//                .toList();
-//    }
-//}
 
 @Service
 @RequiredArgsConstructor
@@ -91,76 +33,30 @@ public class RecentSongServiceImpl implements RecentSongService {
     @Override
     @Transactional
     public void addRecentSong(LikedOrRecentSongDTO likedOrRecentSongDTO) {
-        User user = userRepo.findById(likedOrRecentSongDTO.getUserId()).orElseThrow(
-                () -> new UsernameNotFoundException(likedOrRecentSongDTO.getUserId() + " is not valid"));
+        Long userId = likedOrRecentSongDTO.getUserId();
+        Long musicId = likedOrRecentSongDTO.getMusicId();
 
-        Music music = musicRepo.findById(likedOrRecentSongDTO.getMusicId()).orElseThrow(
-                () -> new UsernameNotFoundException(likedOrRecentSongDTO.getMusicId() + " is not valid"));
+        RecentSong recentSong = recentSongRepo
+                .findByUserIdAndMusicId(userId, musicId)
+                .orElse(null);
 
-        // 1. Copy existing list
-        List<RecentSong> oldList = new ArrayList<>(user.getRecentSongs());
+        if (recentSong != null) {
+            recentSong.setPlayedAt(LocalDateTime.now());
 
-        // 2. Remove duplicates (same music)
-        oldList.removeIf(song -> song.getMusic().getId().equals(music.getId()));
-
-        // 3. CLEAR existing list (this deletes from DB because of orphanRemoval)
-        user.getRecentSongs().clear();
-
-        // 4. Create new list (Deque for ordering)
-        Deque<RecentSong> newList = new ArrayDeque<>();
-
-        // 5. Add new song to front
-        RecentSong newRecent = RecentSong.builder()
-                .user(user)
-                .music(music)
-                .build();
-
-        newList.addFirst(newRecent);
-
-        // 6. Add previous songs
-        for (RecentSong song : oldList) {
-            song.setUser(user); // reattach
-            newList.addLast(song);
+        } else {
+            recentSong = new RecentSong();
+            recentSong.setUser(userRepo.findUserById(userId));
+            recentSong.setMusic(musicRepo.findById(musicId).orElseThrow());
+            recentSong.setPlayedAt(LocalDateTime.now());
         }
 
-        // 7. Trim to max 10
-        while (newList.size() > 10) {
-            newList.removeLast();
+        recentSongRepo.save(recentSong);
+
+        List<RecentSong> list = recentSongRepo.findByUserIdOrderByPlayedAtDesc(userId);
+
+        if (list.size() > 20) {
+            recentSongRepo.deleteAll(list.subList(20, list.size()));
         }
-
-        // 8. Set back to user
-        user.getRecentSongs().addAll(newList);
-
-        // 9. Save (cascade will insert new records)
-        userRepo.save(user);
-
-
-//        User user = userRepo.findById(likedOrRecentSongDTO.getUserId()).orElseThrow(
-//                () -> new UsernameNotFoundException(likedOrRecentSongDTO.getUserId() + " is not valid"));
-//
-//        Music music = musicRepo.findById(likedOrRecentSongDTO.getMusicId()).orElseThrow(
-//                () -> new UsernameNotFoundException(likedOrRecentSongDTO.getMusicId() + " is not valid"));
-//
-//        RecentSong recentSong = RecentSong.builder()
-//                .user(user)
-//                .music(music)
-//                .build();
-//
-//        List<RecentSong> recentSongList = user.getRecentSongs();
-//        Deque<RecentSong> recentSongs = new ArrayDeque<>(recentSongList);
-//
-//        recentSongs.removeIf(song -> song.getMusic().getId().equals(music.getId()));
-//        recentSongs.addFirst(recentSong);
-//
-//        if (recentSongs.size() > 10) {
-//            recentSongRepo.delete(recentSongs.getLast());
-//            recentSongs.removeLast();
-//        }
-//        recentSongList.clear();
-//        recentSongList.addAll(recentSongs);
-//
-//        user.setRecentSongs(recentSongList);
-//        userRepo.save(user);
     }
 
     @Override
@@ -169,13 +65,10 @@ public class RecentSongServiceImpl implements RecentSongService {
             throw new CustomException("User ID is null");
         }
 
-        User user = userRepo.findById(userId)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(userId + " is not valid"));
+        List<RecentSong> list = recentSongRepo.findByUserIdOrderByPlayedAtDesc(userId);
 
-        return user.getRecentSongs().stream()
-                .map(recentSong -> recentSong.getMusic())
-                .map(music -> new ModelMapper().map(music, MusicDTO.class))
-                .toList();
+        return list.stream().map(
+                recentSong -> modelMapper.map(
+                        recentSong.getMusic(), MusicDTO.class)).toList();
     }
 }

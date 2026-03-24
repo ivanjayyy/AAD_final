@@ -6,7 +6,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
+@Table(
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "music_id"})
+)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,11 +20,14 @@ public class RecentSong {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
     @ManyToOne
     @JoinColumn(name = "music_id")
     private Music music;
-    private int songIndex;
+
+    private LocalDateTime playedAt;
 }

@@ -40,6 +40,10 @@ public class MusicServiceImpl implements MusicService {
             throw new CustomException("Genre not found");
         }
 
+//        if (musicRepo.findMusicByMusicTitle(musicDTO.getMusicTitle())) {
+//            throw new CustomException("Music already exists");
+//        }
+
         Music music = Music.builder()
                 .fileName(musicDTO.getFileName())
                 .musicPath(musicDTO.getMusicPath())

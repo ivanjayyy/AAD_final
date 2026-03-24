@@ -22,6 +22,11 @@ public class PlaylistServiceImpl implements PlaylistService {
         if (playlistDTO == null) {
             throw new CustomException("PlaylistDTO is null");
         }
+
+//        if (playlistRepo.getPlaylistByUsernameAndPlaylistName(playlistDTO.getUsername(),playlistDTO.getPlaylistName())) {
+//            return;
+//        }
+
         playlistRepo.save(modelMapper.map(playlistDTO, Playlist.class));
     }
 

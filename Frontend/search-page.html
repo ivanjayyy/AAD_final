@@ -24,6 +24,15 @@
         .song-row:hover { background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         .song-img { width: 55px; height: 55px; object-fit: cover; border-radius: 6px; }
 
+        #volumeSlider {
+            height: 4px;
+        }
+        #volumeSlider::-webkit-slider-thumb {
+            width: 12px;
+            height: 12px;
+            background: #0d6efd;
+        }
+
         #bottomPlayer.active { bottom: 0 !important; }
         .cursor-pointer { cursor: pointer; }
         .section-title { font-weight: 700; color: #6c757d; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1.2px; margin-bottom: 1.5rem; }
@@ -113,6 +122,11 @@
                 </div>
             </div>
             <div class="col-4 col-md-3 d-flex align-items-center justify-content-end gap-3">
+                <div class="d-none d-md-flex align-items-center gap-2 me-2">
+                    <i id="volumeIcon" class="bi bi-volume-up fs-5 text-muted"></i>
+                    <input type="range" id="volumeSlider" class="form-range" style="width: 80px;" min="0" max="1" step="0.01" value="1">
+                </div>
+
                 <i id="likeBtn" class="bi bi-heart fs-5 cursor-pointer text-muted" title="Like" onclick="likeSong()"></i>
 
                 <i class="bi bi-bookmark-plus fs-5 cursor-pointer text-muted" id="playlistBtn" data-bs-toggle="popover" data-bs-trigger="click" title="Add to Playlist"></i>
@@ -164,6 +178,37 @@
             if (query === "") { resetUI(); return; }
             filterAndRender(query);
         });
+    });
+
+    // Volume Control Logic
+    $('#volumeSlider').on('input', function() {
+        const vol = $(this).val();
+        audio.volume = vol;
+
+        // Update icon based on volume level
+        const icon = $('#volumeIcon');
+        if (vol == 0) {
+            icon.removeClass('bi-volume-up bi-volume-down').addClass('bi-volume-mute');
+        } else if (vol < 0.5) {
+            icon.removeClass('bi-volume-up bi-volume-mute').addClass('bi-volume-down');
+        } else {
+            icon.removeClass('bi-volume-down bi-volume-mute').addClass('bi-volume-up');
+        }
+    });
+
+    // Optional: Click icon to mute/unmute
+    $('#volumeIcon').on('click', function() {
+        if (audio.volume > 0) {
+            $(this).data('last-vol', audio.volume);
+            audio.volume = 0;
+            $('#volumeSlider').val(0);
+            $(this).removeClass('bi-volume-up bi-volume-down').addClass('bi-volume-mute');
+        } else {
+            const lastVol = $(this).data('last-vol') || 1;
+            audio.volume = lastVol;
+            $('#volumeSlider').val(lastVol);
+            $(this).removeClass('bi-volume-mute').addClass(lastVol < 0.5 ? 'bi-volume-down' : 'bi-volume-up');
+        }
     });
 
     function resetUI() {

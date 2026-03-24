@@ -332,6 +332,11 @@
       processData: false,
       contentType: false,
       success: () => {
+        $('#musicTitle').val('');
+        $('#musicArtist').val('');
+        $('#musicGenre').val('');
+        $('#musicFile').val('');
+        $('#thumbnailFile').val('');
         $('#uploadModal').modal('hide');
         fetchMusic();
       },

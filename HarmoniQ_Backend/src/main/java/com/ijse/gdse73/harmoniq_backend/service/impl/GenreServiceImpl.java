@@ -22,6 +22,10 @@ public class GenreServiceImpl implements GenreService {
             throw new NullPointerException("GenreDTO cannot be null");
         }
 
+        if (genreRepo.findGenreByName(genreDTO.getName()) != null){
+            return;
+        }
+
         genreRepo.save(modelMapper.map(genreDTO, Genre.class));
     }
 

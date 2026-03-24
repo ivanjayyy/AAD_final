@@ -45,6 +45,10 @@ public class PlaylistSongServiceImpl implements PlaylistSongService {
         Music music = musicRepo.findById(playlistSongDTO.getMusicId()).orElseThrow(
                 () -> new CustomException("Music ID is not valid"));
 
+        if (playlistSongRepo.findByPlaylistIdAndMusicId(playlist.getId(), music.getId()).isPresent()) {
+            throw new CustomException("This song is already in the playlist.");
+        }
+
         PlaylistSong playlistSong = PlaylistSong.builder()
                 .playlist(playlist)
                 .music(music)
