@@ -59,6 +59,14 @@ public class RecentSongServiceImpl implements RecentSongService {
         }
     }
 
+    private MusicDTO convertToDto(Music music) {
+        MusicDTO musicDTO = modelMapper.map(music, MusicDTO.class);
+        if (music.getArtist() != null) {
+            musicDTO.setMusicArtist(music.getArtist().getName());
+        }
+        return musicDTO;
+    }
+
     @Override
     public List<MusicDTO> loadRecentSongs(Long userId) {
         if (userId == null) {
@@ -67,8 +75,13 @@ public class RecentSongServiceImpl implements RecentSongService {
 
         List<RecentSong> list = recentSongRepo.findByUserIdOrderByPlayedAtDesc(userId);
 
-        return list.stream().map(
-                recentSong -> modelMapper.map(
-                        recentSong.getMusic(), MusicDTO.class)).toList();
+        return list.stream()
+                .map(RecentSong::getMusic)
+                .map(this::convertToDto)
+                .toList();
+
+//        return list.stream().map(
+//                recentSong -> modelMapper.map(
+//                        recentSong.getMusic(), MusicDTO.class)).toList();
     }
 }

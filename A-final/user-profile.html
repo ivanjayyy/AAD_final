@@ -10,146 +10,146 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
   <style>
-    /* Theme Variables */
     :root {
-      --bg-color: #f8f9fa;
-      --card-bg: #ffffff;
-      --text-main: #212529;
-      --text-muted: #6c757d;
-      --primary-accent: #0d6efd;
-      --border-color: #dee2e6;
-      --nav-hover: #f1f3f5;
+      --hq-primary: #0d6efd;
+      --hq-danger: #ef4444;
+      --hq-bg: #f8fafc;
     }
 
-    [data-theme="dark"] {
-      --bg-color: #000000;
-      --card-bg: #121212;
-      --text-main: #ffffff;
-      --text-muted: #b0b0b0;
-      --primary-accent: #d63384;
-      --border-color: #333333;
-      --nav-hover: #1e1e1e;
+    body { background-color: var(--hq-bg); color: #1e293b; font-family: 'Inter', system-ui, sans-serif; }
+
+    /* Sidebar Sensor & Logic */
+    #sidebar-sensor { position: fixed; top: 0; left: 0; width: 12px; height: 100vh; z-index: 1050; }
+    .sidebar-custom { border: none; box-shadow: 10px 0 30px rgba(0,0,0,0.04); }
+
+    .nav-link {
+      padding: 14px 24px !important;
+      color: #64748b !important;
+      font-weight: 500;
+      transition: 0.3s;
+      border-radius: 12px;
+      margin: 4px 12px;
+    }
+    .nav-link:hover { background: #f1f5f9; color: var(--hq-primary) !important; }
+    .active-nav { background: #e0e7ff !important; color: var(--hq-primary) !important; font-weight: 700; }
+
+    /* Profile Cards */
+    .settings-card {
+      border: none;
+      border-radius: 24px;
+      background: white;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
-    body {
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      transition: background-color 0.3s, color 0.3s;
-      padding: 40px;
+    .avatar-placeholder {
+      width: 100px; height: 100px;
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      color: white;
+      font-size: 2.5rem;
+      font-weight: 700;
+      box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
     }
 
-    .card {
-      background-color: var(--card-bg) !important;
-      border: 1px solid var(--border-color) !important;
-      color: var(--text-main);
-      border-radius: 16px;
-    }
-
-    /* Sidebar & Nav */
-    .sidebar-sensor { position: fixed; top: 0; left: 0; width: 15px; height: 100vh; z-index: 1050; cursor: pointer; }
-    .offcanvas { background-color: var(--card-bg) !important; color: var(--text-main); border-right: 1px solid var(--border-color) !important; }
-    .nav-link { color: var(--text-main) !important; transition: 0.2s; border-radius: 8px; margin: 4px 10px; }
-    .nav-link:hover { background-color: var(--nav-hover); color: var(--primary-accent) !important; }
-    .active-nav { background-color: var(--nav-hover); color: var(--primary-accent) !important; font-weight: bold; }
-
-    /* Inputs */
+    .form-label { color: #475569; letter-spacing: 0.5px; }
     .form-control {
-      background-color: var(--bg-color);
-      border: 1px solid var(--border-color);
-      color: var(--text-main);
+      border-radius: 12px;
+      padding: 12px 16px;
+      border: 1px solid #e2e8f0;
+      background-color: #fcfcfc;
     }
-    .form-control:focus { background-color: var(--bg-color); color: var(--text-main); border-color: var(--primary-accent); box-shadow: none; }
-    .form-control[readonly] { opacity: 0.6; }
-
-    /* Profile Avatar */
-    .avatar-circle {
-      width: 80px; height: 80px;
-      background: linear-gradient(45deg, var(--primary-accent), #712cf9);
-      color: white; font-size: 2rem;
-      border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-
-    #theme-toggle {
-      position: fixed; top: 20px; right: 20px; z-index: 9999;
-      padding: 8px 15px; border-radius: 50px; border: none;
-      background: var(--primary-accent); color: white; font-weight: bold;
-    }
-
-    .text-primary { color: var(--primary-accent) !important; }
-    .btn-primary { background-color: var(--primary-accent); border-color: var(--primary-accent); }
-    .badge-role { border: 1px solid var(--primary-accent); color: var(--primary-accent); }
+    .form-control:focus { border-color: var(--hq-primary); box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1); }
   </style>
 </head>
 <body>
 
-<button id="theme-toggle" onclick="toggleTheme()">🌙 Dark</button>
-<div id="sidebar-sensor" class="sidebar-sensor"></div>
+<div id="sidebar-sensor"></div>
 
-<div class="offcanvas offcanvas-start shadow" tabindex="-1" id="navSidebar" style="width: 280px;">
-  <div class="offcanvas-header border-bottom">
-    <h5 class="offcanvas-title fw-bold text-primary">HarmoniQ <span id="navRoleLabel"></span></h5>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" id="closeSidebarBtn"></button>
+<div class="offcanvas offcanvas-start sidebar-custom" tabindex="-1" id="navSidebar" style="width: 280px;">
+  <div class="offcanvas-header py-4 px-4">
+    <h5 class="offcanvas-title fw-bold text-primary d-flex align-items-center">
+      <i class="bi bi-music-note-beamed me-2 fs-3"></i> HarmoniQ <small class="ms-2 opacity-50 fw-normal" id="navRoleLabel"></small>
+    </h5>
+    <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas"></button>
   </div>
-  <div class="offcanvas-body d-flex flex-column p-0 pt-3">
+  <div class="offcanvas-body d-flex flex-column p-0">
     <ul class="nav flex-column mb-auto" id="dynamicNavLinks">
     </ul>
-    <div class="p-3 border-top mt-auto">
-      <button class="btn btn-outline-danger w-100" onclick="logout()">Logout</button>
+    <div class="p-4 border-top">
+      <button class="btn btn-outline-danger w-100 fw-bold py-2" onclick="logout()">Logout</button>
     </div>
   </div>
 </div>
 
-<div class="container">
-  <div class="row">
-    <div class="col-12 col-xl-10 mx-auto">
-      <h2 class="fw-bold mb-4">Account Settings</h2>
+<div class="py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
 
-      <div class="row g-4">
-        <div class="col-md-4">
-          <div class="card shadow-sm text-center p-4 h-100">
-            <div class="mb-3">
-              <div class="avatar-circle">
-                <i class="bi bi-person"></i>
+        <div class="d-flex align-items-center justify-content-between mb-5">
+          <div>
+            <h1 class="fw-bold mb-1">Account Settings</h1>
+            <p class="text-muted">Manage your personal identity and security</p>
+          </div>
+          <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill" id="displayRoleBadge">USER</span>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-md-4">
+            <div class="settings-card text-center p-5">
+              <div class="avatar-placeholder rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" id="avatarCircle">
+                ?
+              </div>
+              <h4 id="displayUsername" class="fw-bold mb-1">---</h4>
+              <p id="displayEmail" class="text-muted small mb-0">---</p>
+
+              <div class="mt-4 pt-4 border-top">
+                <div class="row text-center">
+                  <div class="col-6 border-end">
+                    <div class="fw-bold text-primary">12</div>
+                    <div class="small text-muted">Playlists</div>
+                  </div>
+                  <div class="col-6">
+                    <div class="fw-bold text-primary">154</div>
+                    <div class="small text-muted">Liked</div>
+                  </div>
+                </div>
               </div>
             </div>
-            <h5 id="displayUsername" class="fw-bold mb-1">---</h5>
-            <p id="displayEmail" class="text-muted small">---</p>
-            <div class="mt-2">
-              <span class="badge badge-role px-3 py-2 rounded-pill" id="displayRole">---</span>
+          </div>
+
+          <div class="col-md-8">
+            <div class="settings-card p-5">
+              <h5 class="fw-bold mb-4 d-flex align-items-center">
+                <i class="bi bi-shield-check text-primary me-2"></i> Profile Details
+              </h5>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label small fw-bold text-uppercase">Username</label>
+                  <input type="text" id="username" class="form-control" placeholder="Choose a name">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label small fw-bold text-uppercase">Account Level</label>
+                  <input type="text" id="role" class="form-control bg-light opacity-75" readonly>
+                </div>
+                <div class="col-12 mb-4">
+                  <label class="form-label small fw-bold text-uppercase">Email Address</label>
+                  <input type="email" id="email" class="form-control" placeholder="name@example.com">
+                </div>
+              </div>
+
+              <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 mt-4 pt-4 border-top">
+                <button class="btn btn-link text-danger fw-bold text-decoration-none p-0" onclick="deleteAccount()">
+                  <i class="bi bi-trash3 me-2"></i>Delete My Account
+                </button>
+                <button class="btn btn-primary px-5 py-3 fw-bold shadow-sm" style="border-radius: 14px;" onclick="updateUser()">
+                  Update Profile
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="col-md-8">
-          <div class="card shadow-sm p-4 h-100">
-            <h6 class="fw-bold mb-4 border-bottom pb-2">Personal Information</h6>
-
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label class="form-label small fw-bold text-muted">Username</label>
-                <input type="text" id="username" class="form-control py-2">
-              </div>
-              <div class="col-md-6 mb-3">
-                <label class="form-label small fw-bold text-muted">Account Role</label>
-                <input type="text" id="role" class="form-control py-2" readonly>
-              </div>
-              <div class="col-12 mb-4">
-                <label class="form-label small fw-bold text-muted">Email Address</label>
-                <input type="email" id="email" class="form-control py-2">
-              </div>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center border-top pt-4 mt-2">
-              <button class="btn btn-outline-danger btn-sm px-3 border-0" onclick="deleteAccount()">
-                <i class="bi bi-trash me-2"></i>Delete Account
-              </button>
-              <button class="btn btn-primary px-4 fw-bold rounded-pill" onclick="updateUser()">
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -158,32 +158,24 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-  // --- Theme Control ---
-  function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-    const btn = document.getElementById('theme-toggle');
-    btn.innerHTML = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
-    const closeBtn = document.getElementById('closeSidebarBtn');
-    if(theme === 'dark') closeBtn?.classList.add('btn-close-white');
-    else closeBtn?.classList.remove('btn-close-white');
-  }
-
-  function toggleTheme() {
-    applyTheme(localStorage.getItem('theme') === 'dark' ? 'light' : 'dark');
-  }
-
-  (function() { applyTheme(localStorage.getItem('theme') || 'light'); })();
-
-  // --- Auth & API ---
   const token = localStorage.getItem("token");
   const sidebar = new bootstrap.Offcanvas(document.getElementById('navSidebar'));
 
+  // Global Auth Config
+  $.ajaxSetup({
+    headers: { 'Authorization': "Bearer " + token }
+  });
+
   if(!token) window.location.href="sign-in.html";
 
-  const payload = JSON.parse(atob(token.split('.')[1]));
+  // Parse Token safely
+  let payload = {};
+  try {
+    payload = JSON.parse(atob(token.split('.')[1]));
+  } catch(e) { logout(); }
+
   const userId = payload.id;
-  const userRole = payload.role;
+  const userRole = payload.role; // Assuming role is in JWT
 
   $('#sidebar-sensor').on('mouseenter', () => sidebar.show());
 
@@ -192,46 +184,42 @@
     navContainer.empty();
 
     if (userRole === "ADMIN") {
-      $("#navRoleLabel").text("HQ 🛠️");
+      $("#navRoleLabel").text("(Admin)");
       navContainer.append(`
-        <li><a href="admin-dashboard.html" class="nav-link p-3"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
-        <li><a href="music-management.html" class="nav-link p-3"><i class="bi bi-music-note-beamed me-3"></i> Music</a></li>
-        <li><a href="artist-management.html" class="nav-link p-3"><i class="bi bi-mic me-3"></i> Artists</a></li>
-        <li><a href="user-management.html" class="nav-link p-3"><i class="bi bi-people me-3"></i> User Directory</a></li>
-        <li><a href="user-profile.html" class="nav-link p-3 active-nav"><i class="bi bi-person-circle me-3"></i> Profile</a></li>
+        <li><a href="admin-dashboard.html" class="nav-link"><i class="bi bi-speedometer2 me-3"></i> Admin Dashboard</a></li>
+        <li><a href="music-management.html" class="nav-link"><i class="bi bi-music-note-beamed me-3"></i> Manage Music</a></li>
+        <li><a href="artist-management.html" class="nav-link"><i class="bi bi-mic me-3"></i> Manage Artists</a></li>
+        <li><a href="user-management.html" class="nav-link"><i class="bi bi-people me-3"></i> User Directory</a></li>
+        <li><a href="user-profile.html" class="nav-link active-nav"><i class="bi bi-person-circle me-3"></i> My Profile</a></li>
       `);
     } else {
-      $("#navRoleLabel").text("🎶");
+      $("#navRoleLabel").text("(Listener)");
       navContainer.append(`
-        <li><a class="nav-link p-3" href="user-home.html"><i class="bi bi-house me-3"></i> Home</a></li>
-        <li><a class="nav-link p-3" href="search-page.html"><i class="bi bi-search me-3"></i> Search</a></li>
-        <li><a class="nav-link p-3" href="artists-page.html"><i class="bi bi-mic me-3"></i> Artists</a></li>
-        <li><a class="nav-link p-3" href="user-playlists.html"><i class="bi bi-music-note-list me-3"></i> Playlists</a></li>
-        <li><a class="nav-link p-3 active-nav" href="user-profile.html"><i class="bi bi-person-circle me-3"></i> Profile</a></li>
+        <li><a class="nav-link" href="user-home.html"><i class="bi bi-house me-3"></i> Home</a></li>
+        <li><a class="nav-link" href="search-page.html"><i class="bi bi-search me-3"></i> Search Music</a></li>
+        <li><a class="nav-link" href="artists-page.html"><i class="bi bi-mic me-3"></i> Artists</a></li>
+        <li><a class="nav-link" href="user-playlists.html"><i class="bi bi-collection me-3"></i> My Playlists</a></li>
+        <li><a class="nav-link active-nav" href="user-profile.html"><i class="bi bi-person-circle me-3"></i> Profile Settings</a></li>
       `);
     }
   }
 
   function loadUser() {
-    $.ajax({
-      url: `http://localhost:8080/api/v1/user/get/${userId}`,
-      type: "GET",
-      headers: { "Authorization": "Bearer " + token },
-      success: function(response) {
-        const user = response.data;
-        $("#username").val(user.username);
-        $("#email").val(user.email);
-        $("#role").val(user.role);
+    $.get(`http://localhost:8080/api/v1/user/get/${userId}`, function(res) {
+      const u = res.data;
+      $("#username").val(u.username);
+      $("#email").val(u.email);
+      $("#role").val(u.role);
 
-        $("#displayUsername").text(user.username);
-        $("#displayEmail").text(user.email);
-        $("#displayRole").text(user.role);
-      }
-    });
+      $("#displayUsername").text(u.username);
+      $("#displayEmail").text(u.email);
+      $("#displayRoleBadge").text(u.role);
+      $("#avatarCircle").text(u.username.charAt(0).toUpperCase());
+    }).fail(() => logout());
   }
 
   function updateUser() {
-    const updateData = {
+    const data = {
       id: userId,
       username: $("#username").val(),
       email: $("#email").val(),
@@ -241,24 +229,23 @@
     $.ajax({
       url: "http://localhost:8080/api/v1/user/update",
       type: "PUT",
-      headers: { "Authorization": "Bearer " + token },
       contentType: "application/json",
-      data: JSON.stringify(updateData),
+      data: JSON.stringify(data),
       success: function() {
-        alert("Profile Updated Successfully!");
+        alert("Settings saved successfully!");
         loadUser();
-      }
+      },
+      error: (xhr) => alert(xhr.responseJSON?.message || "Update failed")
     });
   }
 
   function deleteAccount() {
-    if(!confirm("Warning: This action is permanent. Delete your HarmoniQ account?")) return;
+    if(!confirm("Warning: This will permanently delete your HarmoniQ account. Continue?")) return;
     $.ajax({
       url: "http://localhost:8080/api/v1/user/delete/" + userId,
       type: "DELETE",
-      headers: { "Authorization": "Bearer " + token },
-      success: function() {
-        alert("Account deleted.");
+      success: () => {
+        alert("Your account has been removed.");
         logout();
       }
     });

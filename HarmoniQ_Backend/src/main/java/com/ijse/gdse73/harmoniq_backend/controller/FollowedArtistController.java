@@ -33,11 +33,27 @@ public class FollowedArtistController {
         ));
     }
 
+    @GetMapping("/get-all/{id}")
+    @PreAuthorize("hasAnyRole('USER')")
+    public ResponseEntity<APIResponse> getAllFollowingArtists(@PathVariable Long id) {
+        return ResponseEntity.ok(new APIResponse(
+                200,"OK",followedArtistService.getAllFollowingArtists(id)
+        ));
+    }
+
     @GetMapping("/random-songs/{userId}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<APIResponse> getRandomSongs(@PathVariable Long userId){
         return ResponseEntity.ok(new APIResponse(
                 200,"OK",followedArtistService.getRandomFollowedArtistMusic(userId,3,3)
+        ));
+    }
+
+    @GetMapping("/get-famous-artists")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<APIResponse> getFamousArtists(){
+        return ResponseEntity.ok(new APIResponse(
+                200,"OK",followedArtistService.getFamousArtists()
         ));
     }
 }

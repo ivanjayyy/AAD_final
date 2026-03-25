@@ -25,12 +25,4 @@ public class Music {
     @ManyToOne
     @JoinColumn(name = "genre_id")
     private Genre genre;
-
-//    // Music can belong to many playlists
-//    @ManyToMany(mappedBy = "musics")
-//    private Set<Playlist> playlists;
-//
-//    // Music liked by many users
-//    @ManyToMany(mappedBy = "likedMusic")
-//    private Set<User> likedByUsers;
 }

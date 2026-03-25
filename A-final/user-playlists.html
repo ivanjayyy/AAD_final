@@ -2,158 +2,129 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>HarmoniQ | Playlists</title>
+    <title>HarmoniQ | My Library</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <style>
-        /* Theme Variables */
         :root {
-            --bg-color: #f8f9fa;
-            --card-bg: #ffffff;
-            --text-main: #212529;
-            --text-muted: #6c757d;
-            --primary-accent: #0d6efd;
-            --border-color: #dee2e6;
-            --nav-hover: #f1f3f5;
-            --gradient-start: #6a11cb;
-            --gradient-end: #2575fc;
+            --hq-gradient: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            --hq-primary: #0d6efd;
         }
 
-        [data-theme="dark"] {
-            --bg-color: #000000;
-            --card-bg: #121212;
-            --text-main: #ffffff;
-            --text-muted: #b0b0b0;
-            --primary-accent: #d63384;
-            --border-color: #333333;
-            --nav-hover: #1e1e1e;
-            --gradient-start: #d63384;
-            --gradient-end: #712cf9;
-        }
+        body { background-color: #f8fafc; color: #1e293b; font-family: 'Inter', sans-serif; }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            transition: background-color 0.3s, color 0.3s;
-            overflow-x: hidden;
-        }
+        /* Sidebar & Navigation */
+        .sidebar-sensor { width: 12px; z-index: 1060; }
+        .nav-link { border-radius: 10px; margin: 5px 15px; transition: 0.2s; color: #64748b !important; }
+        .nav-link:hover { background-color: #f1f5f9; color: var(--hq-primary) !important; }
+        .nav-link.active { background-color: #e0e7ff; color: var(--hq-primary) !important; font-weight: 600; }
 
-        .cursor-pointer { cursor: pointer; }
-
-        /* Modern Playlist Card Styling */
+        /* Modern Playlist Card */
         .playlist-card {
-            background: var(--card-bg) !important;
-            border-radius: 16px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid var(--border-color) !important;
-            position: relative;
-            overflow: hidden;
-            color: var(--text-main);
+            background: white;
+            border-radius: 24px;
+            border: 1px solid rgba(0,0,0,0.03) !important;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
         }
 
         .playlist-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.15) !important;
-            border-color: var(--primary-accent) !important;
+            transform: translateY(-12px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+            border-color: var(--hq-primary) !important;
         }
 
         .icon-box {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 15px auto;
-            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
-            border-radius: 12px;
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 20px auto;
+            background: var(--hq-gradient);
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 2.5rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: 0.3s;
+            font-size: 2.8rem;
+            box-shadow: 0 8px 20px rgba(37, 117, 252, 0.2);
+            transition: 0.4s;
         }
 
         .playlist-card:hover .icon-box {
-            transform: scale(1.1) rotate(5deg);
+            transform: scale(1.1) rotate(-3deg);
+            filter: hue-rotate(15deg);
         }
 
-        /* Sidebar & Nav */
-        .sidebar-sensor { width: 15px; z-index: 1060; }
-        .offcanvas { background-color: var(--card-bg) !important; color: var(--text-main); }
-        .nav-link { color: var(--text-main) !important; }
-        .nav-link:hover { background-color: var(--nav-hover); border-radius: 8px; }
+        .playlist-title { font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+        .playlist-meta { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 600; }
 
-        /* Modal */
-        .modal-content { background-color: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); }
-        .form-control { background-color: var(--nav-hover); border: none; color: var(--text-main); }
-        .form-control:focus { background-color: var(--nav-hover); color: var(--text-main); box-shadow: none; }
-
-        #theme-toggle {
-            position: fixed; top: 20px; right: 20px; z-index: 9999;
-            padding: 8px 15px; border-radius: 50px; border: none;
-            background: var(--primary-accent); color: white; font-weight: bold;
-        }
-
-        .text-primary { color: var(--primary-accent) !important; }
-        .btn-primary { background-color: var(--primary-accent); border-color: var(--primary-accent); }
+        /* Modal Customization */
+        .modal-content { border-radius: 28px; border: none; }
+        .form-control-lg { border-radius: 15px; padding: 15px; font-size: 1.1rem; }
     </style>
 </head>
 <body>
 
-<button id="theme-toggle" onclick="toggleTheme()">🌙 Dark</button>
 <div id="sidebar-sensor" class="position-fixed top-0 start-0 vh-100 sidebar-sensor"></div>
 
-<div class="offcanvas offcanvas-start border-end shadow" tabindex="-1" id="navSidebar" style="width: 280px;">
-    <div class="offcanvas-header border-bottom">
-        <h5 class="offcanvas-title text-primary fw-bold">HarmoniQ 🎶</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" id="closeSidebarBtn"></button>
+<div class="offcanvas offcanvas-start border-0 shadow" tabindex="-1" id="navSidebar" style="width: 280px;">
+    <div class="offcanvas-header py-4 px-4">
+        <h5 class="offcanvas-title text-primary fw-bold d-flex align-items-center">
+            <i class="bi bi-music-note-beamed me-2 fs-3"></i> HarmoniQ
+        </h5>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas"></button>
     </div>
     <div class="offcanvas-body d-flex flex-column p-0">
         <ul class="nav flex-column mb-auto">
-            <li><a class="nav-link p-3" href="user-home.html">🏠 Home</a></li>
-            <li><a class="nav-link p-3" href="search-page.html">🔍 Search</a></li>
-            <li><a class="nav-link p-3" href="artists-page.html">🎙️ Artists</a></li>
-            <li><a class="nav-link p-3 fw-bold text-primary bg-light rounded" href="user-playlists.html">📜 Playlists</a></li>
-            <li><a class="nav-link p-3" href="user-profile.html">👤 Profile</a></li>
+            <li><a class="nav-link" href="user-home.html"><i class="bi bi-house-door me-3"></i> Home</a></li>
+            <li><a class="nav-link" href="search-page.html"><i class="bi bi-search me-3"></i> Search</a></li>
+            <li><a class="nav-link" href="artists-page.html"><i class="bi bi-mic me-3"></i> Artists</a></li>
+            <li><a class="nav-link active" href="user-playlists.html"><i class="bi bi-collection-play me-3"></i> Playlists</a></li>
+            <li><a class="nav-link" href="user-profile.html"><i class="bi bi-person me-3"></i> Profile</a></li>
         </ul>
-        <div class="p-3 border-top mt-auto">
-            <button class="btn btn-outline-danger w-100" onclick="logout()">Logout</button>
+        <div class="p-4 border-top">
+            <button class="btn btn-outline-danger w-100 fw-bold" onclick="logout()">Logout</button>
         </div>
     </div>
 </div>
 
-<div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container py-5 px-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-5 gap-3">
         <div>
-            <h2 class="fw-bold mb-0">My Library</h2>
-            <p class="text-muted small">Your curated music collections</p>
+            <h1 class="fw-bold display-5 mb-1">My Library</h1>
+            <p class="text-muted fs-5 mb-0">Manage and explore your collections</p>
         </div>
-        <button class="btn btn-primary fw-bold px-4 rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#createModal">
-            <i class="bi bi-plus-circle-fill me-2"></i>Create New
+        <button class="btn btn-primary fw-bold px-4 py-2 rounded-pill shadow" data-bs-toggle="modal" data-bs-target="#createModal">
+            <i class="bi bi-plus-lg me-2"></i> New Playlist
         </button>
     </div>
 
-    <hr class="mb-5 opacity-25">
-
-    <div id="playlistContainer" class="row g-4">
+    <div id="playlistContainer" class="row g-4 justify-content-start">
     </div>
 </div>
 
 <div class="modal fade" id="createModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow-lg">
-            <div class="modal-header border-0 pb-0">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" id="closeModalBtn"></button>
-            </div>
-            <div class="modal-body p-4 text-center">
-                <i class="bi bi-music-note-beamed text-primary display-4 mb-3"></i>
-                <h4 class="fw-bold mb-3">Name your playlist</h4>
-                <div class="mb-4">
-                    <input type="text" id="playlistName" class="form-control form-control-lg text-center" placeholder="e.g. Late Night Vibes">
+            <div class="modal-body p-5 text-center">
+                <div class="icon-box mx-auto mb-4" style="width: 70px; height: 70px; font-size: 2rem;">
+                    <i class="bi bi-plus-lg"></i>
                 </div>
-                <button class="btn btn-primary btn-lg w-100 fw-bold rounded-pill py-3" onclick="createPlaylist()">Create Playlist</button>
+                <h3 class="fw-bold mb-2">New Playlist</h3>
+                <p class="text-muted mb-4">Give your collection a memorable name.</p>
+
+                <div class="mb-4 text-start">
+                    <label class="form-label small fw-bold text-uppercase ms-1">Playlist Name</label>
+                    <input type="text" id="playlistName" class="form-control form-control-lg bg-light border-0" placeholder="e.g. Morning Coffee ☕">
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary btn-lg fw-bold rounded-pill" onclick="createPlaylist()">Create Now</button>
+                    <button class="btn btn-link text-muted text-decoration-none fw-medium" data-bs-dismiss="modal">Cancel</button>
+                </div>
             </div>
         </div>
     </div>
@@ -162,74 +133,54 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // --- Theme Control ---
-    function applyTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-        const btn = document.getElementById('theme-toggle');
-        btn.innerHTML = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
-
-        const closeBtn = document.getElementById('closeSidebarBtn');
-        const modalClose = document.getElementById('closeModalBtn');
-        if(theme === 'dark') {
-            closeBtn?.classList.add('btn-close-white');
-            modalClose?.classList.add('btn-close-white');
-        } else {
-            closeBtn?.classList.remove('btn-close-white');
-            modalClose?.classList.remove('btn-close-white');
-        }
-    }
-
-    function toggleTheme() {
-        applyTheme(localStorage.getItem('theme') === 'dark' ? 'light' : 'dark');
-    }
-
-    (function() {
-        applyTheme(localStorage.getItem('theme') || 'light');
-    })();
-
-    // --- Core logic ---
-    const apiBase = "http://localhost:8080/api/v1/playlist";
     const token = localStorage.getItem("token");
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const payload = token ? JSON.parse(atob(token.split('.')[1])) : { sub: "Guest" };
     const username = payload.sub;
     const sidebar = new bootstrap.Offcanvas(document.getElementById('navSidebar'));
 
-    $('#sidebar-sensor').on('mouseenter', () => { if(window.innerWidth > 768) sidebar.show(); });
+    // Global AJAX Setup: This handles the Authorization header for EVERY request
+    $.ajaxSetup({
+        headers: {
+            'Authorization': "Bearer " + token
+        }
+    });
 
-    function loadPlaylists(){
-        $.ajax({
-            url: `${apiBase}/load/${username}`,
-            headers: { "Authorization": "Bearer " + token },
-            success: function(response){
-                const container = $("#playlistContainer");
-                container.empty();
+    $('#sidebar-sensor').on('mouseenter', () => sidebar.show());
 
-                if(!response.data || response.data.length === 0) {
-                    container.html(`
-                        <div class="col-12 text-center py-5">
+    function loadPlaylists() {
+        $.get("http://localhost:8080/api/v1/playlist/load/" + username, function(response) {
+            const container = $("#playlistContainer").empty();
+
+            if (!response.data || response.data.length === 0) {
+                container.html(`
+                    <div class="col-12 text-center py-5">
+                        <div class="bg-white rounded-5 p-5 shadow-sm d-inline-block">
                             <i class="bi bi-music-note-list display-1 text-muted opacity-25"></i>
-                            <p class="text-muted mt-3">Start your journey by creating a playlist.</p>
+                            <h4 class="mt-4 fw-bold">No playlists found</h4>
+                            <p class="text-muted">Your library is currently empty. Start by creating your first vibe.</p>
                         </div>
-                    `);
-                    return;
-                }
+                    </div>
+                `);
+                return;
+            }
 
-                response.data.forEach(pl => {
-                    container.append(`
-                        <div class="col-6 col-md-4 col-lg-3 col-xl-2">
-                            <div class="card h-100 p-4 playlist-card text-center cursor-pointer"
-                                 onclick="openPlaylist(${pl.id}, '${pl.playlistName}')">
-                                <div class="icon-box">
-                                    <i class="bi bi-music-note-list"></i>
-                                </div>
-                                <div class="fw-bold text-truncate small mb-1">${pl.playlistName}</div>
-                                <div class="text-muted" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Playlist</div>
+            response.data.forEach(pl => {
+                container.append(`
+                    <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+                        <div class="card h-100 p-4 playlist-card border-0" onclick="openPlaylist(${pl.id}, '${pl.playlistName}')">
+                            <div class="icon-box">
+                                <i class="bi bi-music-note-list"></i>
+                            </div>
+                            <div class="text-center">
+                                <div class="playlist-title text-truncate" title="${pl.playlistName}">${pl.playlistName}</div>
+                                <div class="playlist-meta">Playlist</div>
                             </div>
                         </div>
-                    `);
-                });
-            }
+                    </div>
+                `);
+            });
+        }).fail(() => {
+            $("#playlistContainer").html('<div class="col-12 text-center text-danger py-5">Error: Unable to load library. Please check your connection.</div>');
         });
     }
 
@@ -239,15 +190,14 @@
         window.location.href = "user-playlist-songs.html";
     }
 
-    function createPlaylist(){
-        const name = $("#playlistName").val();
-        if(!name) return;
+    function createPlaylist() {
+        const name = $("#playlistName").val().trim();
+        if (!name) return alert("Please provide a playlist name.");
 
         $.ajax({
-            url: `${apiBase}/create`,
+            url: "http://localhost:8080/api/v1/playlist/create",
             method: 'POST',
             contentType: 'application/json',
-            headers: { "Authorization": "Bearer " + token },
             data: JSON.stringify({ "playlistName": name, "username": username }),
             success: function () {
                 $("#playlistName").val('');

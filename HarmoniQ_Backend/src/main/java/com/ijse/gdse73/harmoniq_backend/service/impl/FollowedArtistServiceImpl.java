@@ -1,6 +1,8 @@
 package com.ijse.gdse73.harmoniq_backend.service.impl;
 
+import com.ijse.gdse73.harmoniq_backend.dto.ArtistDTO;
 import com.ijse.gdse73.harmoniq_backend.dto.FollowedArtistDTO;
+import com.ijse.gdse73.harmoniq_backend.dto.MusicDTO;
 import com.ijse.gdse73.harmoniq_backend.entity.Artist;
 import com.ijse.gdse73.harmoniq_backend.entity.FollowedArtist;
 import com.ijse.gdse73.harmoniq_backend.entity.Music;
@@ -13,6 +15,8 @@ import com.ijse.gdse73.harmoniq_backend.repo.UserRepo;
 import com.ijse.gdse73.harmoniq_backend.service.FollowedArtistService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -70,8 +74,13 @@ public class FollowedArtistServiceImpl implements FollowedArtistService {
 
     @Override
     public List<Music> getRandomFollowedArtistMusic(Long userId, int artistCount, int songsPerArtist) {
+
+        User user = userRepo.findById(userId).orElseThrow(
+                () -> new CustomException("User not found")
+        );
+
         // 1️⃣ Get all followed artists of the user
-        List<FollowedArtist> followedArtists = followedArtistRepo.findAllByUserId(userId);
+        List<FollowedArtist> followedArtists = followedArtistRepo.findAllByUser(user);
 
         if(followedArtists.isEmpty()) return Collections.emptyList();
 
@@ -102,5 +111,33 @@ public class FollowedArtistServiceImpl implements FollowedArtistService {
         Collections.shuffle(randomMusicList);
 
         return randomMusicList;
+    }
+
+    @Override
+    public List<ArtistDTO> getFamousArtists() {
+        Pageable topThree = PageRequest.of(0, 3);
+
+        List<Artist> famousArtists = followedArtistRepo.findTopFollowedArtists(topThree);
+
+        return famousArtists.stream()
+                .map(artist -> modelMapper.map(artist, ArtistDTO.class))
+                .toList();
+    }
+
+    @Override
+    public List<ArtistDTO> getAllFollowingArtists(Long userId) {
+        User user = userRepo.findById(userId).orElseThrow(
+                () -> new CustomException("User not found")
+        );
+
+        return followedArtistRepo.findAllByUser(user)
+                .stream()
+                .map(FollowedArtist::getArtist)
+                .map(this::convertToDto)
+                .toList();
+    }
+
+    private ArtistDTO convertToDto(Artist artist) {
+        return modelMapper.map(artist, ArtistDTO.class);
     }
 }

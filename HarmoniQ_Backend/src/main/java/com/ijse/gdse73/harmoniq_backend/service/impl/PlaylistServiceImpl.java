@@ -1,9 +1,11 @@
 package com.ijse.gdse73.harmoniq_backend.service.impl;
 
+import com.ijse.gdse73.harmoniq_backend.dto.MusicDTO;
 import com.ijse.gdse73.harmoniq_backend.dto.PlaylistDTO;
 import com.ijse.gdse73.harmoniq_backend.entity.Playlist;
 import com.ijse.gdse73.harmoniq_backend.exception.CustomException;
 import com.ijse.gdse73.harmoniq_backend.repo.PlaylistRepo;
+import com.ijse.gdse73.harmoniq_backend.repo.PlaylistSongRepo;
 import com.ijse.gdse73.harmoniq_backend.service.PlaylistService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -16,6 +18,7 @@ import java.util.List;
 public class PlaylistServiceImpl implements PlaylistService {
     private final PlaylistRepo playlistRepo;
     private final ModelMapper modelMapper;
+    private final PlaylistSongRepo playlistSongRepo;
 
     @Override
     public void createPlaylist(PlaylistDTO playlistDTO) {
@@ -49,5 +52,29 @@ public class PlaylistServiceImpl implements PlaylistService {
     @Override
     public void updatePlaylist(PlaylistDTO playlistDTO) {
 
+    }
+
+    @Override
+    public List<MusicDTO> getSongsFromPlaylists(String username) {
+        if (username == null) {
+            throw new CustomException("Username is null");
+        }
+
+        List<Playlist> playlists = playlistRepo.getAllByUsername(username);
+
+        List<Long> playlistIds = playlists.stream()
+                .map(Playlist::getId)
+                .toList();
+
+        if (playlistIds.isEmpty()) {
+            return List.of();
+        }
+
+        return playlistSongRepo.findMusicByPlaylistIdIn(playlistIds)
+                .stream()
+                .distinct() // Prevent duplicates if a song is in multiple playlists
+                .limit(10)  // Good for "preview" or "featured" sections
+                .map(music -> modelMapper.map(music, MusicDTO.class))
+                .toList();
     }
 }

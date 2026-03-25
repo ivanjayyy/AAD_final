@@ -10,119 +10,31 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <style>
-        /* Theme Variables */
-        :root {
-            --bg-color: #f8f9fa;
-            --card-bg: #ffffff;
-            --text-main: #212529;
-            --text-muted: #6c757d;
-            --primary-accent: #198754; /* Green */
-            --border-color: #dee2e6;
-            --nav-hover: #f1f3f5;
-        }
-
-        [data-theme="dark"] {
-            --bg-color: #000000;
-            --card-bg: #121212;
-            --text-main: #ffffff;
-            --text-muted: #b0b0b0;
-            --primary-accent: #d63384; /* Purple */
-            --border-color: #333333;
-            --nav-hover: #1e1e1e;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            transition: background-color 0.3s, color 0.3s;
-        }
-
+        body { background-color: #f8f9fa; color: #212529; }
         .sidebar-sensor { width: 15px; z-index: 1060; cursor: pointer; }
-
-        /* Card & Table Styling */
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-        }
-        .table { color: var(--text-main); }
-        .table thead { background-color: var(--nav-hover); color: var(--text-muted); }
-        [data-theme="dark"] .table-hover tbody tr:hover { background-color: #1a1a1a; color: white; }
-        [data-theme="dark"] .bg-light { background-color: #222 !important; color: white !important; }
-
-        /* Navigation */
-        .nav-link { color: var(--text-main) !important; }
-        .nav-link:hover { background-color: var(--nav-hover); border-radius: 5px; }
-        .offcanvas { background-color: var(--card-bg) !important; color: var(--text-main); }
-
-        /* Fixed Theme Switcher */
-        #theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            padding: 8px 15px;
-            border-radius: 50px;
-            border: none;
-            background: var(--primary-accent);
-            color: white;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            font-weight: bold;
-        }
-
-        /* Mobile Responsive Bottom Bar */
-        @media (max-width: 768px) {
-            #admin-sidebar-sensor { display: none; }
-            .offcanvas { display: none !important; } /* Hide sidebar on mobile */
-
-            .mobile-bottom-nav {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                width: 100%;
-                height: 65px;
-                background-color: var(--card-bg);
-                display: flex !important;
-                justify-content: space-around;
-                align-items: center;
-                border-top: 1px solid var(--border-color);
-                z-index: 1050;
-            }
-            .mobile-bottom-nav a {
-                color: var(--text-main);
-                font-size: 1.5rem;
-                text-decoration: none;
-            }
-            .mobile-bottom-nav .active { color: var(--primary-accent); }
-
-            main { padding-bottom: 80px !important; } /* Space for bottom nav */
-        }
-
-        .text-primary { color: var(--primary-accent) !important; }
-        .btn-primary { background-color: var(--primary-accent); border-color: var(--primary-accent); }
+        .card { border: none; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); }
+        .nav-link:hover { background-color: #f1f3f5; border-radius: 5px; }
+        .table thead { background-color: #f1f3f5; }
     </style>
 </head>
 
 <body class="overflow-hidden">
 
-<button id="theme-toggle" onclick="toggleTheme()">🌙 Dark</button>
-
 <div id="admin-sidebar-sensor" class="position-fixed top-0 start-0 vh-100 sidebar-sensor"></div>
 
-<div class="offcanvas offcanvas-start border-end shadow" tabindex="-1" id="adminSidebar" style="width: 280px;">
+<div class="offcanvas offcanvas-start bg-white border-end shadow" tabindex="-1" id="adminSidebar" style="width: 280px;">
     <div class="offcanvas-header border-bottom">
         <h5 class="offcanvas-title text-primary fw-bold"><i class="bi bi-shield-lock-fill me-2"></i>Admin Panel</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" id="closeSidebarBtn"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
     </div>
     <div class="offcanvas-body d-flex flex-column p-0">
         <div class="p-3">
             <ul class="nav flex-column gap-1">
-                <li><a href="admin-dashboard.html" class="nav-link p-3 fw-bold bg-light rounded"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
-                <li><a href="music-management.html" class="nav-link p-3"><i class="bi bi-music-note-beamed me-3"></i> Music Management</a></li>
-                <li><a href="artist-management.html" class="nav-link p-3"><i class="bi bi-mic me-3"></i> Artists</a></li>
-                <li><a href="user-management.html" class="nav-link p-3"><i class="bi bi-people me-3"></i> User Directory</a></li>
-                <li><a href="user-profile.html" class="nav-link p-3"><i class="bi bi-person-circle me-3"></i> Profile</a></li>
+                <li><a href="admin-dashboard.html" class="nav-link p-3 text-primary fw-bold bg-light rounded"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
+                <li><a href="music-management.html" class="nav-link p-3 text-dark"><i class="bi bi-music-note-beamed me-3"></i> Music Management</a></li>
+                <li><a href="artist-management.html" class="nav-link p-3 text-dark"><i class="bi bi-mic me-3"></i> Artists</a></li>
+                <li><a href="user-management.html" class="nav-link p-3 text-dark"><i class="bi bi-people me-3"></i> User Directory</a></li>
+                <li><a href="user-profile.html" class="nav-link p-3 text-dark"><i class="bi bi-person-circle me-3"></i> Profile</a></li>
             </ul>
         </div>
         <div class="mt-auto p-3 border-top">
@@ -131,20 +43,12 @@
     </div>
 </div>
 
-<nav class="mobile-bottom-nav d-none">
-    <a href="admin-dashboard.html" class="active"><i class="bi bi-speedometer2"></i></a>
-    <a href="music-management.html"><i class="bi bi-music-note-beamed"></i></a>
-    <a href="artist-management.html"><i class="bi bi-mic"></i></a>
-    <a href="user-management.html"><i class="bi bi-people"></i></a>
-    <a href="user-profile.html"><i class="bi bi-person-circle"></i></a>
-</nav>
-
 <main class="vh-100 overflow-auto p-4">
     <div class="container-fluid">
 
         <div class="mb-4">
             <h2 class="fw-bold">Overview</h2>
-            <p class="text-muted small d-none d-md-block">← Hover the left edge to open the menu</p>
+            <p class="text-muted small">← Hover the left edge to open the menu</p>
         </div>
 
         <div class="row g-4 mb-5">
@@ -152,7 +56,7 @@
                 <div class="card p-3">
                     <div class="card-body">
                         <div class="text-muted small text-uppercase fw-bold mb-1">Total Streams</div>
-                        <h2 class="fw-bold mb-0">1.2M</h2>
+                        <h2 class="fw-bold text-dark mb-0">1.2M</h2>
                     </div>
                 </div>
             </div>
@@ -160,7 +64,7 @@
                 <div class="card p-3">
                     <div class="card-body">
                         <div class="text-muted small text-uppercase fw-bold mb-1">Active Users</div>
-                        <h2 class="fw-bold mb-0">24.5K</h2>
+                        <h2 class="fw-bold text-dark mb-0">24.5K</h2>
                     </div>
                 </div>
             </div>
@@ -184,7 +88,7 @@
         <div class="card">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="small text-uppercase">
+                    <thead class="small text-uppercase text-muted">
                     <tr>
                         <th class="ps-4">Music</th>
                         <th>Artist</th>
@@ -197,7 +101,7 @@
                     <tr>
                         <td class="ps-4">
                             <div class="d-flex align-items-center">
-                                <div class="bg-secondary-subtle rounded border me-3" style="width: 40px; height: 40px;"></div>
+                                <div class="bg-light rounded border me-3" style="width: 40px; height: 40px;"></div>
                                 <span class="fw-medium">Starlight Serenade</span>
                             </div>
                         </td>
@@ -220,34 +124,10 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // --- Theme Logic ---
-    function applyTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-        const btn = document.getElementById('theme-toggle');
-        btn.innerHTML = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
-
-        // Update close button for dark mode visibility
-        const closeBtn = document.getElementById('closeSidebarBtn');
-        if(theme === 'dark') closeBtn.classList.add('btn-close-white');
-        else closeBtn.classList.remove('btn-close-white');
-    }
-
-    function toggleTheme() {
-        const currentTheme = localStorage.getItem('theme') === 'dark' ? 'light' : 'dark';
-        applyTheme(currentTheme);
-    }
-
-    (function() {
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        applyTheme(savedTheme);
-    })();
-
-    // --- Sidebar Logic ---
     const adminMenu = new bootstrap.Offcanvas(document.getElementById('adminSidebar'));
-    $('#admin-sidebar-sensor').on('mouseenter', () => {
-        if (window.innerWidth > 768) adminMenu.show();
-    });
+
+    // Trigger sidebar on hover
+    $('#admin-sidebar-sensor').on('mouseenter', () => adminMenu.show());
 
     function logout() {
         localStorage.clear();

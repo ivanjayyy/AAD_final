@@ -65,12 +65,9 @@ public class LikedSongServiceImpl implements LikedSongService {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException(userId + " is not valid"));
 
-        // 1. Fetch all LikedSong entities for this user
         return likedSongRepo.findAllByUser(user)
                 .stream()
-                // 2. Get the Music object from each LikedSong
                 .map(LikedSong::getMusic)
-                // 3. Convert each Music entity to MusicDTO
                 .map(this::convertToDto)
                 .toList();
     }

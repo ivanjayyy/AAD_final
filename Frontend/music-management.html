@@ -215,6 +215,9 @@
   $('#admin-sidebar-sensor').on('mouseenter', () => sidebar.show());
 
   $(document).ready(() => {
+    if (localStorage.getItem("token") == null) {
+      window.location.href = "sign-in.html";
+    }
     fetchMusic();
     fetchArtists();
     fetchGenres();

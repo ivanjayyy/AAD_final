@@ -10,90 +10,407 @@
 
   <style>
     :root {
-      --bg-color: #f8f9fa;
-      --card-bg: #ffffff;
-      --text-main: #212529;
-      --primary-accent: #198754;
+      --primary-blue: #0061ff;
+      --deep-blue: #003db3;
+      --soft-bg: #f8fafc;
+      --glass-white: rgba(255, 255, 255, 0.15);
     }
 
-    [data-theme="dark"] {
-      --bg-color: #000000;
-      --card-bg: #121212;
-      --text-main: #ffffff;
-      --primary-accent: #d63384;
+    body {
+      background-color: var(--soft-bg);
+      color: #1e293b;
+      padding-bottom: 140px;
+      font-family: 'Inter', -apple-system, sans-serif;
     }
 
-    body { background-color: var(--bg-color); color: var(--text-main); transition: 0.3s; }
-    .profile-header { background: var(--card-bg); border-radius: 20px; padding: 40px; border: 1px solid rgba(0,0,0,0.1); }
-    .large-profile-img { width: 200px; height: 200px; object-fit: cover; border-radius: 50%; border: 5px solid var(--primary-accent); }
-    .back-btn { color: var(--text-main); text-decoration: none; font-weight: 600; transition: 0.2s; }
-    .back-btn:hover { color: var(--primary-accent); }
+    /* Modern Gradient Header */
+    .profile-header {
+      background: linear-gradient(135deg, var(--deep-blue) 0%, var(--primary-blue) 100%);
+      color: white;
+      padding: 80px 0 60px 0;
+      margin-bottom: 40px;
+      border-radius: 0 0 40px 40px;
+      box-shadow: 0 10px 30px rgba(0, 97, 255, 0.2);
+    }
+
+    .profile-main-img {
+      width: 160px;
+      height: 160px;
+      object-fit: cover;
+      border: 5px solid white;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease;
+    }
+    .profile-main-img:hover { transform: scale(1.03); }
+
+    /* Tracklist Styling */
+    .song-card {
+      background: white;
+      border: 1px solid rgba(0,0,0,0.05);
+      border-radius: 16px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+    .song-card:hover {
+      background: white;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+      border-color: var(--primary-blue);
+    }
+    .song-thumb {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+
+    .back-btn {
+      position: absolute;
+      top: 25px;
+      left: 25px;
+      color: white;
+      text-decoration: none;
+      background: var(--glass-white);
+      padding: 10px 20px;
+      border-radius: 30px;
+      backdrop-filter: blur(10px);
+      font-weight: 600;
+      font-size: 0.9rem;
+      border: 1px solid rgba(255,255,255,0.2);
+      transition: 0.2s;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.3); color: white; transform: translateX(-3px); }
+
+    /* Follow Button Modernized */
+    .btn-follow {
+      border-radius: 30px;
+      padding: 10px 35px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      border-width: 2px;
+      transition: 0.3s;
+    }
+
+    /* Bottom Player Refinement */
+    #bottomPlayer {
+      border-top: 1px solid rgba(0,0,0,0.08) !important;
+      backdrop-filter: blur(20px);
+      background: rgba(255, 255, 255, 0.95) !important;
+    }
+    #bottomPlayer.active { bottom: 0 !important; }
+
+    .progress { border-radius: 10px; overflow: hidden; background-color: #e2e8f0 !important; border: none !important; }
+    .progress-bar { transition: width 0.1s linear; }
+
+    /* Custom Volume Slider */
+    #volumeSlider { height: 5px; cursor: pointer; }
+
+    .liked { color: #ff4d4d !important; animation: beat 0.3s ease; }
+    @keyframes beat {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+
+    .playlist-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: 0.2s;
+    }
+    .playlist-item:hover { background-color: var(--soft-blue); color: var(--primary-blue); }
   </style>
 </head>
 <body>
 
-<div class="container py-5">
-  <div class="mb-4">
-    <a href="artists-page.html" class="back-btn">
-      <i class="bi bi-arrow-left me-2"></i> Back to Artists
-    </a>
-  </div>
+<div class="profile-header text-center position-relative">
+  <a href="artists-page.html" class="back-btn"><i class="bi bi-chevron-left me-1"></i> Library</a>
+  <div class="container">
+    <img id="artistImg" src="" class="rounded-circle profile-main-img mb-4" onerror="this.src='https://via.placeholder.com/180'">
+    <h1 id="artistName" class="display-4 fw-bold mb-2">Loading...</h1>
+    <p id="artistBio" class="lead opacity-75 mx-auto mb-4" style="max-width: 650px; font-size: 1.1rem;">Artist Biography...</p>
 
-  <div class="profile-header text-center shadow-sm">
-    <div id="profileDetails">
-      <div class="spinner-border text-success" role="status"></div>
-      <p>Loading artist profile...</p>
+    <button id="followBtn" class="btn btn-outline-light btn-follow" onclick="toggleFollow()">
+      <i class="bi bi-plus-lg me-2"></i>Follow
+    </button>
+  </div>
+</div>
+
+<main class="container">
+  <div class="d-flex align-items-center mb-4">
+    <h3 class="fw-bold mb-0">Popular Tracks</h3>
+    <div class="ms-auto small text-muted fw-medium">All releases</div>
+  </div>
+  <div id="songContainer" class="d-flex flex-column gap-3"></div>
+</main>
+
+<div id="bottomPlayer" class="fixed-bottom py-3 px-4 shadow-lg" style="bottom: -160px; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1); z-index: 1050;">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-4 col-md-3 d-flex align-items-center">
+        <img id="playerThumbnail" src="" class="rounded-3 shadow-sm me-3" style="width: 54px; height: 54px; object-fit: cover;">
+        <div class="overflow-hidden">
+          <div id="playerTitle" class="text-truncate fw-bold mb-0" style="font-size: 0.95rem;">Song Title</div>
+          <div id="playerArtist" class="text-muted text-truncate small">Artist</div>
+        </div>
+      </div>
+
+      <div class="col-4 col-md-6">
+        <div class="d-flex justify-content-center align-items-center gap-4 mb-2">
+          <i id="shuffleBtn" class="bi bi-shuffle fs-5 cursor-pointer text-muted" title="Shuffle" onclick="toggleShuffle()"></i>
+          <i class="bi bi-skip-backward-fill fs-3 cursor-pointer" onclick="prevSong()"></i>
+          <i id="playPauseBtn" class="bi bi-play-circle-fill fs-1 text-primary cursor-pointer" style="line-height: 1;"></i>
+          <i class="bi bi-skip-forward-fill fs-3 cursor-pointer" onclick="nextSong()"></i>
+          <i class="bi bi-repeat fs-5 text-muted opacity-25"></i>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <span id="currentTime" class="text-muted fw-medium" style="font-size: 11px; min-width: 35px;">0:00</span>
+          <div class="progress flex-grow-1" style="height: 6px; cursor: pointer;" onclick="seek(event)">
+            <div id="progressBar" class="progress-bar bg-primary shadow-sm" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-4 col-md-3 d-flex align-items-center justify-content-end gap-3">
+        <div class="d-none d-lg-flex align-items-center gap-2 me-3">
+          <i id="volumeIcon" class="bi bi-volume-up text-muted"></i>
+          <input type="range" id="volumeSlider" class="form-range" style="width: 70px;" min="0" max="1" step="0.01" value="1">
+        </div>
+        <button class="btn btn-link p-0 text-muted" id="likeBtn" onclick="likeSong()"><i class="bi bi-heart fs-5"></i></button>
+        <button class="btn btn-link p-0 text-muted" id="playlistBtn" data-bs-toggle="popover" data-bs-trigger="click"><i class="bi bi-plus-square fs-5"></i></button>
+        <button class="btn btn-link p-0 text-danger ms-2" onclick="closePlayer()"><i class="bi bi-x-lg fs-5"></i></button>
+      </div>
     </div>
   </div>
 </div>
 
+<audio id="audioPlayer"></audio>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
-  // Sync theme with localStorage
-  (function() {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-  })();
+  const apiBase = "http://localhost:8080/api/v1";
+  const audio = document.getElementById("audioPlayer");
+  const token = localStorage.getItem("token");
+  const payload = token ? JSON.parse(atob(token.split('.')[1])) : { sub: "Guest", id: null };
+  const username = payload.sub;
+  const userId = payload.id;
 
-  $(document).ready(function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const artistId = urlParams.get('id');
+  let currentArtistId = null;
+  let artistSongs = [];
+  let shuffledList = [];
+  let shuffleMode = false;
+  let currentMusicId = null;
+  let currentIndex = -1;
 
-    if (artistId) {
-      fetchArtistDetails(artistId);
-    } else {
-      $("#profileDetails").html("<h3>Artist not found</h3>");
+  $.ajaxSetup({
+    beforeSend: function(xhr) {
+      if (token) xhr.setRequestHeader('Authorization', 'Bearer ' + token);
     }
   });
 
-  function fetchArtistDetails(id) {
+  $(document).ready(function() {
+    const artistData = localStorage.getItem("selectedArtist");
+    if (!artistData) {
+      window.location.href = "artists-page.html";
+      return;
+    }
+
+    const artist = JSON.parse(artistData);
+    currentArtistId = artist.id;
+
+    $("#artistName").text(artist.name);
+    $("#artistBio").text(artist.bio);
+    $("#artistImg").attr("src", `${apiBase}/artist/profile-pic/${artist.id}`);
+    document.title = `HarmoniQ | ${artist.name}`;
+
+    fetchArtistSongs(artist.id, artist.name);
+    checkFollowStatus();
+    initPlaylistPopover();
+  });
+
+  function checkFollowStatus() {
+    if (!token || !currentArtistId) return;
     $.ajax({
-      url: `http://localhost:8080/api/v1/artist/get/${id}`,
-      type: "GET",
-      headers: { "Authorization": "Bearer " + localStorage.getItem("token") },
-      success: function(response) {
-        renderProfile(response.data);
-      },
-      error: function() {
-        // Mock for demonstration
-        const mockArtist = { name: "Luna Ray", bio: "Indie pop sensation from the northern lights. Bringing ethereal vibes to your ears. Full discography includes 4 albums and 12 singles." };
-        renderProfile(mockArtist, id);
+      url: `${apiBase}/follow-artist/check`,
+      type: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({ userId: userId, artistId: currentArtistId }),
+      success: (r) => updateFollowUI(r.data === "Following")
+    });
+  }
+
+  function toggleFollow() {
+    if (!token) return alert("Please sign in to follow artists.");
+    $.ajax({
+      url: `${apiBase}/follow-artist/add`,
+      type: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({ userId: userId, artistId: currentArtistId }),
+      success: (r) => updateFollowUI(r.data === "Followed Artist")
+    });
+  }
+
+  function updateFollowUI(isFollowing) {
+    const btn = $("#followBtn");
+    if (isFollowing) {
+      btn.removeClass("btn-outline-light").addClass("btn-light text-primary border-0");
+      btn.html('<i class="bi bi-check-lg me-2"></i>Following');
+    } else {
+      btn.removeClass("btn-light text-primary border-0").addClass("btn-outline-light");
+      btn.html('<i class="bi bi-plus-lg me-2"></i>Follow');
+    }
+  }
+
+  function fetchArtistSongs(artistId, artistName) {
+    $.get(`${apiBase}/music/get-all`, (response) => {
+      artistSongs = response.data.filter(s => s.artistId == artistId || s.musicArtist === artistName);
+      renderSongs(artistSongs);
+    });
+  }
+
+  function renderSongs(songs) {
+    const container = $("#songContainer");
+    container.empty();
+    if (songs.length === 0) {
+      container.html('<div class="text-center text-muted py-5 card rounded-4 border-0">No tracks released yet.</div>');
+      return;
+    }
+    songs.forEach((song, index) => {
+      container.append(`
+                <div class="song-card d-flex align-items-center p-3" onclick="playFromProfile(${index})">
+                    <div class="me-4 text-muted small fw-bold" style="width: 20px;">${index + 1}</div>
+                    <img src="${apiBase}/music/thumbnail/${song.id}" class="song-thumb me-3 shadow-sm">
+                    <div class="flex-grow-1 overflow-hidden">
+                        <div class="fw-bold text-dark text-truncate">${song.musicTitle}</div>
+                        <div class="text-muted extra-small" style="font-size: 0.8rem;">HarmoniQ Original</div>
+                    </div>
+                    <div class="text-primary fs-3 ms-3"><i class="bi bi-play-circle-fill"></i></div>
+                </div>
+            `);
+    });
+  }
+
+  function checkLikeStatus() {
+    if (!token || currentIndex === -1) return;
+    const musicId = (shuffleMode ? shuffledList : artistSongs)[currentIndex].id;
+    $.ajax({
+      url: `${apiBase}/liked-song/check-like`,
+      type: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({ userId: userId, musicId: musicId }),
+      success: (r) => {
+        const btn = $('#likeBtn i');
+        r.data === "Liked" ? btn.removeClass("bi-heart").addClass("bi-heart-fill liked") : btn.removeClass("bi-heart-fill liked").addClass("bi-heart");
       }
     });
   }
 
-  function renderProfile(artist, id) {
-    $("#profileDetails").html(`
-            <img src="http://localhost:8080/api/v1/artist/profile-pic/${id}"
-                 class="large-profile-img mb-4"
-                 onerror="this.src='https://via.placeholder.com/200'">
-            <h1 class="display-4 fw-bold">${artist.name}</h1>
-            <p class="lead mt-3 mx-auto" style="max-width: 700px;">${artist.bio}</p>
-            <div class="mt-4">
-                <button class="btn btn-success px-4 rounded-pill">Follow</button>
-                <button class="btn btn-outline-secondary px-4 rounded-pill ms-2">Share</button>
-            </div>
-        `);
+  function likeSong() {
+    if (!token) return;
+    const musicId = (shuffleMode ? shuffledList : artistSongs)[currentIndex].id;
+    $.ajax({
+      url: `${apiBase}/liked-song/add-or-remove`,
+      type: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({ userId: userId, musicId: musicId }),
+      success: (r) => {
+        const btn = $('#likeBtn i');
+        r.data === "Liked Song" ? btn.removeClass("bi-heart").addClass("bi-heart-fill liked") : btn.removeClass("bi-heart-fill liked").addClass("bi-heart");
+      }
+    });
   }
+
+  function playFromProfile(index) {
+    if (shuffleMode) {
+      const musicId = artistSongs[index].id;
+      playSong(shuffledList.findIndex(m => m.id === musicId));
+    } else {
+      playSong(index);
+    }
+  }
+
+  function playSong(index) {
+    const activeList = shuffleMode ? shuffledList : artistSongs;
+    if (index < 0 || index >= activeList.length) return;
+    currentIndex = index;
+    const music = activeList[index];
+    currentMusicId = music.id;
+    audio.src = `${apiBase}/music/stream/${music.id}`;
+    $("#playerTitle").text(music.musicTitle);
+    $("#playerArtist").text(music.musicArtist);
+    $("#playerThumbnail").attr("src", `${apiBase}/music/thumbnail/${music.id}`);
+    $("#bottomPlayer").addClass("active");
+    audio.play();
+    $("#playPauseBtn").removeClass("bi-play-circle-fill").addClass("bi-pause-circle-fill");
+    checkLikeStatus();
+  }
+
+  function toggleShuffle() {
+    shuffleMode = !shuffleMode;
+    const btn = $("#shuffleBtn");
+    if (shuffleMode) {
+      btn.addClass("text-primary").removeClass("text-muted");
+      shuffledList = [...artistSongs].sort(() => Math.random() - 0.5);
+      if (currentMusicId) currentIndex = shuffledList.findIndex(m => m.id === currentMusicId);
+    } else {
+      btn.removeClass("text-primary").addClass("text-muted");
+      if (currentMusicId) currentIndex = artistSongs.findIndex(m => m.id === currentMusicId);
+    }
+  }
+
+  function nextSong() { playSong((currentIndex + 1) % (shuffleMode ? shuffledList : artistSongs).length); }
+  function prevSong() { playSong((currentIndex - 1 + (shuffleMode ? shuffledList : artistSongs).length) % (shuffleMode ? shuffledList : artistSongs).length); }
+  audio.onended = () => nextSong();
+
+  $("#playPauseBtn").click(() => {
+    if(audio.paused) { audio.play(); $("#playPauseBtn").removeClass("bi-play-circle-fill").addClass("bi-pause-circle-fill"); }
+    else { audio.pause(); $("#playPauseBtn").removeClass("bi-pause-circle-fill").addClass("bi-play-circle-fill"); }
+  });
+
+  audio.ontimeupdate = () => {
+    if(audio.duration) {
+      $("#progressBar").css("width", (audio.currentTime / audio.duration * 100) + "%");
+      let m = Math.floor(audio.currentTime / 60), s = Math.floor(audio.currentTime % 60);
+      $("#currentTime").text(`${m}:${s < 10 ? '0' : ''}${s}`);
+    }
+  };
+
+  function seek(e) { audio.currentTime = (e.offsetX / e.currentTarget.offsetWidth) * audio.duration; }
+  function closePlayer() { audio.pause(); $("#bottomPlayer").removeClass("active"); }
+
+  function initPlaylistPopover() {
+    new bootstrap.Popover(document.getElementById('playlistBtn'), {
+      html: true,
+      sanitize: false,
+      placement: 'top',
+      content: function() { return `<div class="p-3 text-center"><div class="spinner-border spinner-border-sm text-primary"></div></div>`; }
+    });
+
+    document.getElementById('playlistBtn').addEventListener('shown.bs.popover', function () {
+      $.get(`${apiBase}/playlist/load/${username}`, (response) => {
+        let html = '<div class="list-group list-group-flush" style="width: 200px;">';
+        if(!response.data || response.data.length === 0) html += '<div class="p-3 text-muted small">No playlists created</div>';
+        else response.data.forEach(pl => html += `<div class="playlist-item" onclick="addToPlaylist(${pl.id})">${pl.playlistName}</div>`);
+        html += '</div>';
+        document.querySelector('.popover-body').innerHTML = html;
+      });
+    });
+  }
+
+  function addToPlaylist(id) {
+    if (!currentMusicId) return;
+    $.ajax({
+      url: `${apiBase}/playlist-song/add`,
+      type: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({ playlistId: id, musicId: currentMusicId }),
+      success: () => { alert("Added to playlist!"); bootstrap.Popover.getInstance(document.getElementById('playlistBtn')).hide(); }
+    });
+  }
+
+  $('#volumeSlider').on('input', function() { audio.volume = $(this).val(); });
 </script>
+
 </body>
 </html>

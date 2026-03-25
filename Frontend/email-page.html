@@ -10,6 +10,11 @@
 <body>
 <div class="container mt-5">
   <h2>Send Email</h2>
+  <div class="mb-3">
+    <button type="button" class="btn btn-secondary" onclick="goBack()">
+      <i class="bi bi-arrow-left me-2"></i> Back
+    </button>
+  </div>
   <form id="emailForm">
     <div class="mb-3">
       <label for="to" class="form-label">To</label>
@@ -30,6 +35,13 @@
 
 <script>
   $(document).ready(function() {
+    if (localStorage.getItem("token") == null) {
+      window.location.href = "sign-in.html";
+    }
+
+    $('#to').val(localStorage.getItem("email"))
+    localStorage.removeItem("email")
+
     $('#emailForm').on('submit', function(e) {
       e.preventDefault();
 
@@ -65,6 +77,10 @@
       });
     });
   });
+
+  function goBack() {
+    window.location.href = "user-management.html";
+  }
 </script>
 </body>
 </html>

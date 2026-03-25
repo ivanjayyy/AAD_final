@@ -227,6 +227,9 @@
   }
 
   $(document).ready(() => {
+    if (localStorage.getItem("token") == null) {
+      window.location.href = "sign-in.html";
+    }
     setupNavbar();
     loadUser();
   });

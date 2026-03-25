@@ -33,8 +33,17 @@ public class PlaylistSongServiceImpl implements PlaylistSongService {
 
         return playlistSongRepo.getPlaylistSongsByPlaylistId(playlistId)
                 .stream()
-                .map(playlistSong -> modelMapper.map(playlistSong.getMusic(), MusicDTO.class))
+                .map(PlaylistSong::getMusic)
+                .map(this::convertToDto)
                 .toList();
+    }
+
+    private MusicDTO convertToDto(Music music) {
+        MusicDTO musicDTO = modelMapper.map(music, MusicDTO.class);
+        if (music.getArtist() != null) {
+            musicDTO.setMusicArtist(music.getArtist().getName());
+        }
+        return musicDTO;
     }
 
     @Override

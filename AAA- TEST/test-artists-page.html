@@ -64,19 +64,24 @@
 </div>
 
 <main class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-5">
+    <div id="followedSection" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-0">Artists You Follow</h2>
+                <p class="text-muted">Your personal favorites</p>
+            </div>
+        </div>
+        <div class="row g-4 mb-5" id="followedArtistContainer"></div>
+        <hr class="mb-5">
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold mb-0">Featured Artists</h2>
             <p class="text-muted">Discover the voices behind the music</p>
         </div>
-<!--        <div class="input-group w-25 d-none d-md-flex">-->
-<!--            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>-->
-<!--            <input type="text" class="form-control border-start-0" placeholder="Filter artists...">-->
-<!--        </div>-->
     </div>
-
-    <div class="row g-4" id="artistContainer">
-    </div>
+    <div class="row g-4" id="artistContainer"></div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -87,36 +92,71 @@
     // Reveal sidebar on left edge hover
     $('#sidebar-sensor').on('mouseenter', () => sidebar.show());
 
-    function fetchArtists() {
-        // Replace with your actual API endpoint
-        $.ajax({
-            url: "http://localhost:8080/api/v1/artist/get-all",
-            type: "GET",
-            headers: {
-                "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
-            },
-            success: function(response) {
-                renderArtists(response.data);
-            },
-            error: function() {
-                // Mock data for testing if API is not ready
-                const mockData = [
-                    { id: 1, name: "Luna Ray", bio: "Indie pop sensation from the northern lights. Bringing ethereal vibes to your ears.", songCount: 12 },
-                    { id: 2, name: "Echo Bass", bio: "Electronic producer specializing in deep house and futuristic synth soundscapes.", songCount: 8 },
-                    { id: 3, name: "The Harmonics", bio: "Alternative rock band with a passion for soulful lyrics and heavy riffs.", songCount: 15 }
-                ];
-                renderArtists(mockData);
+    // Helper to get current User ID (Ensure your login stores this!)
+    const getCurrentUserId = () => {
+        // Usually, you might decode the JWT token or get it from a 'user' object in localStorage
+        const user = JSON.parse(localStorage.getItem("user"));
+        return user ? user.id : null;
+    };
+
+    async function fetchArtists() {
+        const userId = getCurrentUserId();
+        const token = localStorage.getItem("token");
+
+        try {
+            const response = await $.ajax({
+                url: "http://localhost:8080/api/v1/artist/get-all",
+                type: "GET",
+                headers: { "Authorization": "Bearer " + token }
+            });
+
+            const artists = response.data;
+            const followedList = [];
+            const otherList = [];
+
+            // Check follow status for each artist in parallel
+            const statusChecks = artists.map(artist => {
+                return $.ajax({
+                    url: "http://localhost:8080/api/v1/follow-artist/check",
+                    type: "POST", // Changed to POST as you are sending a Body
+                    contentType: "application/json",
+                    headers: { "Authorization": "Bearer " + token },
+                    data: JSON.stringify({ userId: userId, artistId: artist.id })
+                }).then(status => {
+                    if (status === "Following") {
+                        followedList.push(artist);
+                    } else {
+                        otherList.push(artist);
+                    }
+                }).catch(() => otherList.push(artist)); // Default to 'others' on error
+            });
+
+            // Wait for all API calls to finish
+            await Promise.all(statusChecks);
+
+            // Render to UI
+            if (followedList.length > 0) {
+                $("#followedSection").show();
+                renderToContainer(followedList, "#followedArtistContainer", true);
+            } else {
+                $("#followedSection").hide();
             }
-        });
+
+            renderToContainer(otherList, "#artistContainer", false);
+
+        } catch (error) {
+            console.error("Error fetching artists:", error);
+        }
     }
 
-    function renderArtists(artists) {
-        const container = $("#artistContainer");
+    function renderToContainer(artists, containerId, isFollowed) {
+        const container = $(containerId);
         container.empty();
 
         artists.forEach(artist => {
-            // We stringify the artist object so it can be stored in localStorage
             const artistData = JSON.stringify(artist).replace(/'/g, "&apos;");
+            const badgeColor = isFollowed ? "bg-success" : "bg-primary-subtle text-primary";
+            const followIcon = isFollowed ? '<i class="bi bi-check-circle-fill me-1"></i>' : '';
 
             container.append(`
             <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
@@ -131,8 +171,8 @@
                     <h5 class="fw-bold mb-1">${artist.name}</h5>
                     <p class="bio-text mb-3 px-2">${artist.bio}</p>
                     <div class="mt-auto">
-                        <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
-                             View Profile
+                        <span class="badge rounded-pill ${badgeColor} border px-3 py-2">
+                             ${followIcon} View Profile
                         </span>
                     </div>
                 </div>
@@ -140,6 +180,8 @@
         `);
         });
     }
+
+    // Keep your existing viewProfile, logout, and document.ready functions
 
     // Helper function to save to localStorage and redirect
     function viewProfile(artist) {

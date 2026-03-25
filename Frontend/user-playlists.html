@@ -208,7 +208,12 @@
         window.location.href = "sign-in.html";
     }
 
-    $(document).ready(() => loadPlaylists());
+    $(document).ready(() => {
+        if (localStorage.getItem("token") == null) {
+            window.location.href = "sign-in.html";
+        }
+        loadPlaylists()
+    });
 </script>
 
 </body>

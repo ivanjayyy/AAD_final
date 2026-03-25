@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>HarmoniQ | User Management</title>
+  <title>HarmoniQ | Admin HQ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -10,103 +10,98 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
   <style>
-    /* Theme Variables */
     :root {
-      --bg-color: #f8f9fa;
-      --card-bg: #ffffff;
-      --text-main: #212529;
-      --text-muted: #6c757d;
-      --primary-accent: #198754;
-      --border-color: #dee2e6;
-      --nav-hover: #f1f3f5;
-    }
-
-    [data-theme="dark"] {
-      --bg-color: #000000;
-      --card-bg: #121212;
-      --text-main: #ffffff;
-      --text-muted: #b0b0b0;
-      --primary-accent: #d63384;
-      --border-color: #333333;
-      --nav-hover: #1e1e1e;
+      --admin-primary: #0d6efd;
+      --admin-dark: #1e293b;
     }
 
     body {
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      transition: background-color 0.3s, color 0.3s;
+      background-color: #f1f5f9;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: var(--admin-dark);
     }
 
-    .sidebar-sensor { width: 15px; z-index: 1060; cursor: pointer; }
-    .card { background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); }
-    .card-header { background-color: transparent !important; border-bottom: 1px solid var(--border-color) !important; color: var(--text-main) !important; }
-
-    /* Table Styling */
-    .table { color: var(--text-main); }
-    .table thead { background-color: var(--nav-hover); color: var(--text-muted); }
-    [data-theme="dark"] .table-hover tbody tr:hover { background-color: #1a1a1a; color: white; }
-
-    /* Modal & Form Control */
-    .modal-content { background-color: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); }
-    .form-control, .form-select { background-color: var(--bg-color); border-color: var(--border-color); color: var(--text-main); }
-    .form-control[readonly] { background-color: var(--nav-hover); opacity: 0.8; }
-
-    .nav-link { color: var(--text-main) !important; }
-    .nav-link:hover { background-color: var(--nav-hover); border-radius: 8px; }
-    .offcanvas { background-color: var(--card-bg) !important; color: var(--text-main); }
-
-    #theme-toggle {
-      position: fixed; top: 20px; right: 20px; z-index: 9999;
-      padding: 8px 15px; border-radius: 50px; border: none;
-      background: var(--primary-accent); color: white; font-weight: bold;
+    /* Sidebar Styling */
+    .sidebar-sensor { width: 12px; z-index: 1060; }
+    .offcanvas { border: none; box-shadow: 10px 0 30px rgba(0,0,0,0.05); }
+    .nav-link {
+      border-radius: 10px; margin: 4px 15px; padding: 12px 16px !important;
+      transition: 0.2s; color: #64748b !important;
+    }
+    .nav-link:hover, .nav-link.active {
+      background-color: #f1f5f9; color: var(--admin-primary) !important; font-weight: 600;
     }
 
-    .text-primary { color: var(--primary-accent) !important; }
-    .btn-primary { background-color: var(--primary-accent); border-color: var(--primary-accent); }
-    .btn-outline-primary { color: var(--primary-accent); border-color: var(--primary-accent); }
-    .btn-outline-primary:hover { background-color: var(--primary-accent); color: white; }
+    /* Table & Card Styling */
+    .card { border: none; border-radius: 20px; overflow: hidden; }
+    .table thead th {
+      background-color: #f8fafc;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      color: #94a3b8;
+      padding: 1.25rem 1rem;
+    }
+    .table tbody td { padding: 1.25rem 1rem; vertical-align: middle; border-bottom: 1px solid #f1f5f9; }
+
+    .role-badge-admin { background: #dbeafe; color: #1e40af; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 20px; }
+    .role-badge-user { background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 20px; }
+
+    .action-btn {
+      width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 10px; transition: 0.2s; border: 1px solid #e2e8f0; background: white;
+    }
+    .action-btn:hover { background: #f8fafc; transform: translateY(-2px); }
   </style>
 </head>
 
-<body class="p-4">
+<body class="p-4 p-md-5">
 
-<button id="theme-toggle" onclick="toggleTheme()">🌙 Dark</button>
 <div id="admin-sidebar-sensor" class="position-fixed top-0 start-0 vh-100 sidebar-sensor"></div>
 
-<div class="offcanvas offcanvas-start border-end shadow" tabindex="-1" id="adminSidebar" style="width: 280px;">
-  <div class="offcanvas-header border-bottom">
-    <h5 class="offcanvas-title text-primary fw-bold"><i class="bi bi-shield-lock-fill me-2"></i>Admin HQ</h5>
-    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" id="closeSidebarBtn"></button>
+<div class="offcanvas offcanvas-start" tabindex="-1" id="adminSidebar" style="width: 280px;">
+  <div class="offcanvas-header py-4 px-4">
+    <h5 class="offcanvas-title text-primary fw-bold d-flex align-items-center">
+      <i class="bi bi-shield-check-fill me-2 fs-3"></i> Admin HQ
+    </h5>
+    <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas"></button>
   </div>
   <div class="offcanvas-body d-flex flex-column p-0">
     <ul class="nav flex-column mb-auto">
-      <li><a href="admin-dashboard.html" class="nav-link p-3"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
-      <li><a href="music-management.html" class="nav-link p-3"><i class="bi bi-music-note-beamed me-3"></i> Music Management</a></li>
-      <li><a href="artist-management.html" class="nav-link p-3"><i class="bi bi-mic me-3"></i> Artists</a></li>
-      <li><a href="user-management.html" class="nav-link p-3 fw-bold bg-light rounded"><i class="bi bi-people me-3"></i> User Directory</a></li>
-      <li><a href="user-profile.html" class="nav-link p-3"><i class="bi bi-person-circle me-3"></i> Profile</a></li>
+      <li><a href="admin-dashboard.html" class="nav-link"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
+      <li><a href="music-management.html" class="nav-link"><i class="bi bi-music-note-beamed me-3"></i> Music</a></li>
+      <li><a href="artist-management.html" class="nav-link"><i class="bi bi-mic me-3"></i> Artists</a></li>
+      <li><a href="user-management.html" class="nav-link active"><i class="bi bi-people-fill me-3"></i> User Directory</a></li>
     </ul>
-    <div class="p-3 mt-auto">
-      <button class="btn btn-outline-danger w-100" onclick="logout()">Logout</button>
+    <div class="p-4 border-top">
+      <button class="btn btn-outline-danger w-100 fw-bold border-2" onclick="logout()">Logout</button>
     </div>
   </div>
 </div>
 
-<div class="container">
-  <h2 class="fw-bold mb-4">User Directory</h2>
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-end mb-5">
+    <div>
+      <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 mb-2">ACCESS LEVEL: SYSTEM ADMIN</span>
+      <h1 class="fw-bold mb-0">User Directory</h1>
+    </div>
+    <button class="btn btn-primary fw-bold rounded-pill px-4" onclick="fetchUsers()">
+      <i class="bi bi-arrow-clockwise me-2"></i> Refresh
+    </button>
+  </div>
 
-  <div class="card mb-5">
-    <div class="card-header py-3">
-      <h6 class="mb-0 text-primary fw-bold"><i class="bi bi-shield-shaded me-2"></i>Administrators</h6>
+  <div class="card shadow-sm mb-5">
+    <div class="card-header bg-white border-0 py-4 px-4">
+      <h6 class="mb-0 fw-bold"><i class="bi bi-shield-shaded me-2 text-primary"></i> Administrators</h6>
     </div>
     <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0" id="adminTable">
-        <thead class="small text-uppercase">
+      <table class="table table-hover mb-0" id="adminTable">
+        <thead>
         <tr>
-          <th class="ps-3">ID</th>
-          <th>Username</th>
-          <th>Email</th>
-          <th class="text-end pe-3">Actions</th>
+          <th class="ps-4">UID</th>
+          <th>User Identity</th>
+          <th>Email Address</th>
+          <th class="text-end pe-4">Management</th>
         </tr>
         </thead>
         <tbody></tbody>
@@ -114,18 +109,18 @@
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-header py-3">
-      <h6 class="mb-0 text-secondary fw-bold"><i class="bi bi-person-fill me-2"></i>Standard Users</h6>
+  <div class="card shadow-sm">
+    <div class="card-header bg-white border-0 py-4 px-4">
+      <h6 class="mb-0 fw-bold"><i class="bi bi-person-fill me-2 text-secondary"></i> Standard Users</h6>
     </div>
     <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0" id="userTable">
-        <thead class="small text-uppercase">
+      <table class="table table-hover mb-0" id="userTable">
+        <thead>
         <tr>
-          <th class="ps-3">ID</th>
-          <th>Username</th>
-          <th>Email</th>
-          <th class="text-end pe-3">Actions</th>
+          <th class="ps-4">UID</th>
+          <th>User Identity</th>
+          <th>Email Address</th>
+          <th class="text-end pe-4">Management</th>
         </tr>
         </thead>
         <tbody></tbody>
@@ -136,31 +131,27 @@
 
 <div class="modal fade" id="userModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow">
-      <div class="modal-header">
-        <h5 class="modal-title fw-bold">Manage Permissions</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 24px;">
+      <div class="modal-header border-0 p-4 pb-0">
+        <h5 class="modal-title fw-bold">User Configuration</h5>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body p-4">
         <input type="hidden" id="modalUserId">
         <div class="mb-3">
           <label class="form-label small fw-bold text-muted">Username</label>
-          <input type="text" id="modalUsername" class="form-control" readonly>
+          <input type="text" id="modalUsername" class="form-control bg-light border-0" readonly>
         </div>
-        <div class="mb-3">
-          <label class="form-label small fw-bold text-muted">Email Address</label>
-          <input type="text" id="modalEmail" class="form-control" readonly>
-        </div>
-        <div class="mb-3">
-          <label class="form-label small fw-bold text-muted">Assign Role</label>
-          <select id="modalRole" class="form-select">
-            <option value="USER">USER</option>
-            <option value="ADMIN">ADMIN</option>
+        <div class="mb-4">
+          <label class="form-label small fw-bold text-muted">Access Role</label>
+          <select id="modalRole" class="form-select border-2">
+            <option value="USER">Standard User</option>
+            <option value="ADMIN">System Administrator</option>
           </select>
         </div>
-      </div>
-      <div class="p-4 border-0">
-        <button class="btn btn-primary w-100 fw-bold py-2" onclick="updateUser()">Apply Changes</button>
+        <button class="btn btn-primary w-100 fw-bold py-3" style="border-radius: 12px;" onclick="updateUser()">
+          Save Permissions
+        </button>
       </div>
     </div>
   </div>
@@ -169,100 +160,86 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-  // --- Theme Logic ---
-  function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-    const btn = document.getElementById('theme-toggle');
-    btn.innerHTML = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
-    const closeBtns = document.querySelectorAll('.btn-close');
-    closeBtns.forEach(b => {
-      if(theme === 'dark') b.classList.add('btn-close-white');
-      else b.classList.remove('btn-close-white');
-    });
-  }
-
-  function toggleTheme() {
-    const currentTheme = localStorage.getItem('theme') === 'dark' ? 'light' : 'dark';
-    applyTheme(currentTheme);
-  }
-
-  (function() {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    applyTheme(savedTheme);
-  })();
-
-  // --- Sidebar & API ---
   const baseUrl = "http://localhost:8080/api/v1/user";
   const sidebar = new bootstrap.Offcanvas(document.getElementById('adminSidebar'));
   const token = localStorage.getItem("token");
 
   $('#admin-sidebar-sensor').on('mouseenter', () => sidebar.show());
 
-  function fetchUsers() {
-    $.ajax({
-      url: `${baseUrl}/get-all`,
-      method: "GET",
-      headers: { "Authorization": "Bearer " + token },
-      success: function(response) {
-        const adminsTbody = $("#adminTable tbody").empty();
-        const usersTbody = $("#userTable tbody").empty();
-
-        response.data.forEach(user => {
-          const row = `
-                        <tr>
-                            <td class="ps-3 text-muted">#${user.id}</td>
-                            <td class="fw-bold">${user.username}</td>
-                            <td>${user.email}</td>
-                            <td class="text-end pe-3">
-                                <button class="btn btn-sm btn-outline-primary border-0" onclick="viewUser('${user.id}')"><i class="bi bi-pencil-square"></i></button>
-                                <button class="btn btn-sm btn-outline-danger border-0 ms-2" onclick="deleteUser(${user.id})"><i class="bi bi-trash"></i></button>
-                            </td>
-                        </tr>`;
-
-          if (user.role === "ADMIN") adminsTbody.append(row);
-          else usersTbody.append(row);
-        });
+  // Set up global AJAX headers for your backend
+  $.ajaxSetup({
+    beforeSend: function(xhr) {
+      if (token) {
+        xhr.setRequestHeader('Authorization', 'Bearer ' + token);
       }
-    });
+    }
+  });
+
+  function fetchUsers() {
+    $.get(`${baseUrl}/get-all`, function(response) {
+      const adminsTbody = $("#adminTable tbody").empty();
+      const usersTbody = $("#userTable tbody").empty();
+
+      response.data.forEach(user => {
+        const row = `
+                    <tr>
+                        <td class="ps-4 text-muted small">#${user.id}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; font-weight: 700;">
+                                    ${user.username.charAt(0).toUpperCase()}
+                                </div>
+                                <span class="fw-bold">${user.username}</span>
+                            </div>
+                        </td>
+                        <td class="text-muted">${user.email}</td>
+                        <td class="text-end pe-4">
+                            <button class="action-btn text-primary border-primary border-opacity-25" onclick="viewUser(${user.id})" title="Edit Role">
+                                <i class="bi bi-shield-lock"></i>
+                            </button>
+                            <button class="action-btn text-danger border-danger border-opacity-25 ms-2" onclick="deleteUser(${user.id})" title="Remove User">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+
+        if (user.role === "ADMIN") adminsTbody.append(row);
+        else usersTbody.append(row);
+      });
+    }).fail(() => alert("Failed to fetch user directory. Check permissions."));
   }
 
   function viewUser(id) {
-    $.ajax({
-      url: `${baseUrl}/get/${id}`,
-      type: "GET",
-      headers: { "Authorization": "Bearer " + token },
-      success: function(response) {
-        const user = response.data;
-        $("#modalUserId").val(user.id);
-        $("#modalUsername").val(user.username);
-        $("#modalEmail").val(user.email);
-        $("#modalRole").val(user.role);
-        new bootstrap.Modal(document.getElementById("userModal")).show();
-      }
+    $.get(`${baseUrl}/get/${id}`, (res) => {
+      const u = res.data;
+      $("#modalUserId").val(u.id);
+      $("#modalUsername").val(u.username);
+      $("#modalRole").val(u.role);
+      new bootstrap.Modal('#userModal').show();
     });
   }
 
   function updateUser() {
+    const id = $("#modalUserId").val();
+    const newRole = $("#modalRole").val();
+
     $.ajax({
-      url: `${baseUrl}/update-role/${$("#modalUserId").val()}`,
+      url: `${baseUrl}/update-role/${id}`,
       type: "PUT",
-      headers: { "Authorization": "Bearer " + token },
       contentType: "application/json",
-      data: JSON.stringify({ role: $("#modalRole").val() }),
+      data: JSON.stringify({ role: newRole }),
       success: function() {
-        bootstrap.Modal.getInstance(document.getElementById("userModal")).hide();
+        bootstrap.Modal.getInstance('#userModal').hide();
         fetchUsers();
       }
     });
   }
 
   function deleteUser(id) {
-    if (!confirm("Are you sure you want to delete this user?")) return;
+    if (!confirm("Are you sure you want to permanently remove this user? This action cannot be undone.")) return;
     $.ajax({
       url: `${baseUrl}/delete/${id}`,
       type: "DELETE",
-      headers: { "Authorization": "Bearer " + token },
       success: () => fetchUsers()
     });
   }

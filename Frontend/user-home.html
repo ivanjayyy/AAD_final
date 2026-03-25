@@ -32,6 +32,10 @@
             background: #0d6efd;
         }
 
+        .artist-item { transition: 0.2s; cursor: pointer; text-align: center; padding: 10px; border-radius: 10px; }
+        .artist-item:hover { background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .artist-img { width: 100px; height: 100px; object-fit: cover; border-radius: 50%; margin-bottom: 10px; border: 3px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
     </style>
 </head>
@@ -71,6 +75,11 @@
             <a href="liked-songs.html" class="btn btn-sm btn-outline-primary rounded-pill px-3">View All</a>
         </div>
         <div class="row g-3" id="likedSongsPreviewContainer"></div>
+    </div>
+
+    <div class="mb-5">
+        <h5 class="fw-bold mb-4 text-secondary"><i class="bi bi-star-half me-2"></i>Following</h5>
+        <div class="row g-3" id="followingArtistContainer"></div>
     </div>
 
     <div>
@@ -249,7 +258,7 @@
         audio.onplay = () => {
             setTimeout(() => {
                 saveRecentSong(userId, currentMusicId);
-            }, 5000);
+            }, 1000);
         };
 
         audio.src = `${apiBase}/music/stream/${music.id}`;
@@ -484,11 +493,52 @@
         });
     }
 
+    function renderFollowingArtists(artists) {
+        const container = $("#followingArtistContainer");
+        container.empty();
+
+        artists.forEach(a => {
+            // We stringify the artist object so it can be stored in localStorage
+            const artistData = JSON.stringify(a).replace(/'/g, "&apos;");
+
+            container.append(`
+                <div class="col-6 col-md-3 col-lg-2">
+                <div class="artist-item" onclick='viewProfile(${artistData})'>
+                <img src="${apiBase}/artist/profile-pic/${a.id}" class="artist-img" onerror="this.src='https://via.placeholder.com/100?text=Artist'">
+                <div class="fw-bold small text-truncate">${a.name}</div>
+        </div>
+        </div>
+        `);
+        });
+    }
+
+    function fetchFollowingArtists() {
+        $.ajax({
+            url: "http://localhost:8080/api/v1/follow-artist/get-all/" + userId,
+            type: "GET",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+            },
+            success: function(response) {
+                renderFollowingArtists(response.data);
+            }
+        });
+    }
+
+    function viewProfile(artist) {
+        localStorage.setItem("selectedArtist", JSON.stringify(artist));
+        window.location.href = "artist-profile.html";
+    }
+
     function closePlayer() { audio.pause(); $("#bottomPlayer").removeClass("active"); }
 
     function logout() { localStorage.clear(); window.location.href = "sign-in.html"; }
 
     $(document).ready(() => {
+        if (localStorage.getItem("token") == null) {
+            window.location.href = "sign-in.html";
+        }
+        fetchFollowingArtists()
         fetchInitialData();
         fetchRecentSongs();
         fetchLikedSongs();

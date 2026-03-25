@@ -163,6 +163,10 @@
     $('#sidebar-sensor').on('mouseenter', () => sidebar.show());
 
     $(document).ready(function() {
+        if (localStorage.getItem("token") == null) {
+            window.location.href = "sign-in.html";
+        }
+
         Promise.all([
             $.get(`${apiBase}/artist/get-all`),
             $.get(`${apiBase}/music/get-all`)

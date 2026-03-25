@@ -149,7 +149,9 @@
     });
 
     $(document).ready(function() {
-        if (!userId) { window.location.href = "sign-in.html"; return; }
+        if (localStorage.getItem("token") == null) {
+            window.location.href = "sign-in.html";
+        }
         fetchLikedSongs();
         initPlaylistPopover();
     });

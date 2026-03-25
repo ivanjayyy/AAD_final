@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>HarmoniQ | Playlist Songs</title>
+    <title>HarmoniQ | Playlist Explorer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -10,153 +10,180 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <style>
-        /* Theme Variables */
         :root {
-            --bg-color: #f8f9fa;
-            --card-bg: #ffffff;
-            --text-main: #212529;
-            --text-muted: #6c757d;
-            --primary-accent: #0d6efd;
-            --border-color: #dee2e6;
-            --nav-hover: #f1f3f5;
-        }
-
-        [data-theme="dark"] {
-            --bg-color: #000000;
-            --card-bg: #121212;
-            --text-main: #ffffff;
-            --text-muted: #b0b0b0;
-            --primary-accent: #d63384;
-            --border-color: #333333;
-            --nav-hover: #1e1e1e;
+            --primary-blue: #0061ff;
+            --sidebar-width: 300px;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            transition: background-color 0.3s, color 0.3s;
-            overflow-x: hidden;
-            padding-bottom: 120px;
+            background-color: #f8fafc;
+            color: #1e293b;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            padding-bottom: 140px;
         }
 
+        /* Layout Structure */
         .main-wrapper { display: flex; min-height: 100vh; }
-        .content-area { flex: 1; padding: 2.5rem; margin-right: 320px; transition: 0.3s; }
+
+        .content-area {
+            flex: 1;
+            padding: 3rem;
+            margin-right: var(--sidebar-width);
+            transition: all 0.3s ease;
+        }
 
         .right-sidebar {
-            width: 320px; position: fixed; right: 0; top: 0; height: 100vh;
-            background: var(--card-bg); border-left: 1px solid var(--border-color);
-            padding: 2rem 1.5rem; overflow-y: auto; z-index: 1000;
+            width: var(--sidebar-width);
+            position: fixed;
+            right: 0; top: 0;
+            height: 100vh;
+            background: white;
+            border-left: 1px solid #e2e8f0;
+            padding: 2.5rem 1.5rem;
+            overflow-y: auto;
+            z-index: 1000;
         }
 
         /* Music Grid */
-        .music-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 25px; margin-top: 20px; }
+        .music-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 24px;
+        }
+
         .music-card {
-            background: var(--card-bg); border-radius: 16px; padding: 15px; text-align: center;
-            cursor: pointer; transition: 0.3s; border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 20px;
+            padding: 16px;
+            border: 1px solid transparent;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
         }
         .music-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.15);
-            border-color: var(--primary-accent);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+            border-color: var(--primary-blue);
         }
-        .music-thumbnail { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 12px; margin-bottom: 12px; }
 
-        /* Playlist Nav Items */
-        .playlist-nav-item {
-            padding: 12px 16px; border-radius: 12px; cursor: pointer; transition: 0.2s;
-            display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;
+        .music-thumb {
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: cover;
+            border-radius: 14px;
+            margin-bottom: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
-        .playlist-nav-item:hover { background-color: var(--nav-hover); color: var(--primary-accent); }
-        .playlist-nav-item.active { background-color: var(--primary-accent); color: white; }
 
-        /* Bottom Player */
+        /* Sidebar Items */
+        .playlist-item {
+            padding: 14px 18px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #64748b;
+        }
+        .playlist-item:hover { background-color: #f1f5f9; color: var(--primary-blue); }
+        .playlist-item.active {
+            background-color: var(--primary-blue);
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 97, 255, 0.3);
+        }
+
+        /* Player glassmorphism */
         #bottomPlayer {
-            background-color: var(--card-bg) !important; border-top: 1px solid var(--border-color);
-            color: var(--text-main); bottom: -180px; transition: 0.4s ease-in-out; z-index: 1050;
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.9);
+            border-top: 1px solid rgba(0,0,0,0.05) !important;
+            bottom: -160px;
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         #bottomPlayer.active { bottom: 0 !important; }
-        .progress { background-color: var(--nav-hover) !important; height: 6px; }
-        .progress-bar { background-color: var(--primary-accent) !important; }
 
-        #theme-toggle {
-            position: fixed; top: 20px; right: 340px; z-index: 1001;
-            padding: 8px 15px; border-radius: 50px; border: none;
-            background: var(--primary-accent); color: white; font-weight: bold;
-        }
+        .shuffle-active { color: var(--primary-blue) !important; transform: scale(1.1); }
+        .liked { color: #ef476f !important; }
 
-        .text-primary { color: var(--primary-accent) !important; }
-        .shuffle-active { color: var(--primary-accent) !important; filter: drop-shadow(0 0 5px var(--primary-accent)); }
-
-        @media (max-width: 992px) {
-            .right-sidebar { display: none; }
+        @media (max-width: 1100px) {
+            .right-sidebar { transform: translateX(100%); transition: 0.3s; }
             .content-area { margin-right: 0; }
-            #theme-toggle { right: 20px; }
         }
     </style>
 </head>
 <body>
 
-<button id="theme-toggle" onclick="toggleTheme()">🌙 Dark</button>
-
 <div class="main-wrapper">
-    <div class="content-area">
-        <div class="d-flex justify-content-between align-items-end mb-4">
+    <main class="content-area">
+        <div class="d-flex justify-content-between align-items-start mb-5">
             <div>
                 <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-2">
-                        <li class="breadcrumb-item"><a href="user-playlists.html" class="text-decoration-none text-muted">My Library</a></li>
-                        <li class="breadcrumb-item active text-primary">Playlist</li>
+                    <ol class="breadcrumb small fw-bold text-uppercase letter-spacing-1">
+                        <li class="breadcrumb-item"><a href="user-playlists.html" class="text-decoration-none text-muted">Library</a></li>
+                        <li class="breadcrumb-item active text-primary">Current Playlist</li>
                     </ol>
                 </nav>
                 <div class="d-flex align-items-center gap-3">
-                    <h1 id="activePlaylistName" class="fw-bold display-5 mb-0 text-primary">Loading...</h1>
-                    <button class="btn btn-sm btn-outline-danger border-0 mt-2" onclick="deleteCurrentPlaylist()" title="Delete Playlist">
-                        <i class="bi bi-trash3 fs-4"></i>
+                    <h1 id="activePlaylistName" class="fw-bold display-4 mb-0">Loading...</h1>
+                    <button class="btn btn-light rounded-circle text-danger mt-2 p-2" onclick="deleteCurrentPlaylist()">
+                        <i class="bi bi-trash3 fs-5"></i>
                     </button>
                 </div>
-                <p id="songCount" class="text-muted mt-1">0 Tracks found</p>
+                <p id="songCount" class="text-muted fw-medium mt-1">0 Tracks</p>
             </div>
-            <button class="btn btn-outline-primary rounded-pill px-4 fw-bold" onclick="window.location.href='user-playlists.html'">
-                <i class="bi bi-arrow-left me-2"></i>Back
-            </button>
+            <a href="user-playlists.html" class="btn btn-white shadow-sm rounded-pill px-4 fw-bold border">
+                <i class="bi bi-grid-fill me-2"></i> All Playlists
+            </a>
         </div>
-        <div class="music-container" id="musicContainer"></div>
-    </div>
 
-    <div class="right-sidebar shadow-sm">
-        <h5 class="fw-bold mb-4 px-2">Your Playlists</h5>
+        <div class="music-grid" id="musicContainer"></div>
+    </main>
+
+    <aside class="right-sidebar shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+            <h6 class="text-uppercase fw-bold text-muted small mb-0" style="letter-spacing: 1px;">Switch Playlist</h6>
+            <i class="bi bi-plus-circle text-primary fs-5 cursor-pointer" onclick="window.location.href='user-playlists.html'"></i>
+        </div>
         <div id="sidebarPlaylistList"></div>
-    </div>
+    </aside>
 </div>
 
 <div id="bottomPlayer" class="fixed-bottom py-3 px-4 shadow-lg">
     <div class="container-fluid">
         <div class="row align-items-center">
             <div class="col-4 col-md-3 d-flex align-items-center">
-                <img id="playerThumbnail" src="" class="rounded border me-3" style="width: 55px; height: 55px; object-fit: cover;">
+                <img id="playerThumbnail" src="" class="rounded-3 shadow-sm me-3" style="width: 56px; height: 56px; object-fit: cover;">
                 <div class="overflow-hidden">
-                    <div id="playerTitle" class="text-truncate fw-bold small mb-0">Song Title</div>
+                    <div id="playerTitle" class="text-truncate fw-bold mb-0">Song Title</div>
                     <div id="playerArtist" class="text-muted text-truncate small">Artist</div>
                 </div>
             </div>
+
             <div class="col-4 col-md-6 text-center">
-                <div class="d-flex justify-content-center align-items-center gap-3 mb-2">
-                    <i id="shuffleBtn" class="bi bi-shuffle fs-5 cursor-pointer text-muted" title="Shuffle" onclick="toggleShuffle()"></i>
-                    <i class="bi bi-skip-start-fill fs-3 cursor-pointer" onclick="prevSong()"></i>
+                <div class="d-flex justify-content-center align-items-center gap-4 mb-2">
+                    <i id="shuffleBtn" class="bi bi-shuffle fs-5 cursor-pointer text-muted" onclick="toggleShuffle()"></i>
+                    <i class="bi bi-skip-backward-fill fs-3 cursor-pointer" onclick="prevSong()"></i>
                     <i id="playPauseBtn" class="bi bi-play-circle-fill fs-1 text-primary cursor-pointer"></i>
-                    <i class="bi bi-skip-end-fill fs-3 cursor-pointer" onclick="nextSong()"></i>
-                    <i class="bi bi-repeat fs-5 text-muted invisible"></i>
+                    <i class="bi bi-skip-forward-fill fs-3 cursor-pointer" onclick="nextSong()"></i>
                 </div>
-                <div class="d-flex align-items-center gap-2 px-md-5">
-                    <span id="currentTime" class="text-muted" style="font-size: 11px;">0:00</span>
-                    <div class="progress flex-grow-1" onclick="seek(event)" style="cursor: pointer;">
-                        <div id="progressBar" class="progress-bar" style="width: 0%"></div>
+                <div class="d-flex align-items-center gap-3 px-md-5">
+                    <span id="currentTime" class="text-muted small">0:00</span>
+                    <div class="progress flex-grow-1" style="height: 6px; cursor: pointer;" onclick="seek(event)">
+                        <div id="progressBar" class="progress-bar bg-primary" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
+
             <div class="col-4 col-md-3 d-flex align-items-center justify-content-end gap-3">
+                <div class="d-none d-lg-flex align-items-center gap-2 me-2">
+                    <i id="volumeIcon" class="bi bi-volume-up text-muted"></i>
+                    <input type="range" id="volumeSlider" class="form-range" style="width: 70px;" min="0" max="1" step="0.01" value="1">
+                </div>
+                <i id="likeBtn" class="bi bi-heart fs-5 cursor-pointer text-muted" onclick="likeSong()"></i>
                 <i class="bi bi-bookmark-dash fs-5 cursor-pointer text-danger" title="Remove from playlist" onclick="removeFromCurrentPlaylist()"></i>
-                <i class="bi bi-x-lg fs-5 text-danger cursor-pointer" onclick="closePlayer()"></i>
+                <i class="bi bi-x-lg fs-6 text-muted cursor-pointer ms-2" onclick="closePlayer()"></i>
             </div>
         </div>
     </div>
@@ -165,174 +192,162 @@
 <audio id="audioPlayer"></audio>
 
 <script>
-    // --- Theme Logic ---
-    function applyTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-        const btn = document.getElementById('theme-toggle');
-        btn.innerHTML = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
-    }
-
-    function toggleTheme() {
-        applyTheme(localStorage.getItem('theme') === 'dark' ? 'light' : 'dark');
-    }
-
-    (function() {
-        applyTheme(localStorage.getItem('theme') || 'light');
-    })();
-
-    // --- API & Core logic ---
     const audio = document.getElementById("audioPlayer");
     const musicApi = "http://localhost:8080/api/v1/music";
     const playlistApi = "http://localhost:8080/api/v1/playlist";
     const playlistSongApi = "http://localhost:8080/api/v1/playlist-song";
-    const token = localStorage.getItem("token");
-    const username = JSON.parse(atob(token.split('.')[1])).sub;
+    const likedSongApi = "http://localhost:8080/api/v1/liked-song";
 
-    let currentPlaylistSongs = [];
-    let shuffledSongs = [];
-    let isShuffle = false;
-    let currentPlayingIndex = -1;
-    let activePlaylistId = null;
+    const token = localStorage.getItem("token");
+    const payload = token ? JSON.parse(atob(token.split('.')[1])) : { sub: "Guest", id: null };
+    const userId = payload.id;
+    const username = payload.sub;
+
+    let currentPlaylistSongs = [], shuffledSongs = [], isShuffle = false;
+    let currentPlayingMusicId = null, currentPlayingIndex = -1, activePlaylistId = null;
+
+    // Global AJAX config
+    $.ajaxSetup({ beforeSend: (xhr) => { if(token) xhr.setRequestHeader('Authorization', 'Bearer ' + token); } });
 
     $(document).ready(function() {
         activePlaylistId = localStorage.getItem("selectedPlaylistId");
+        const initialName = localStorage.getItem("selectedPlaylistName");
         if (!activePlaylistId) { window.location.href = "user-playlists.html"; return; }
 
         loadSidebarPlaylists(activePlaylistId);
-        fetchPlaylistSongs(activePlaylistId, localStorage.getItem("selectedPlaylistName"));
+        fetchPlaylistSongs(activePlaylistId, initialName);
     });
 
-    function loadSidebarPlaylists(activeId) {
-        $.ajax({
-            url: `${playlistApi}/load/${username}`,
-            headers: { "Authorization": "Bearer " + token },
-            success: function(response) {
-                const list = $("#sidebarPlaylistList").empty();
-                response.data.forEach(pl => {
-                    const isActive = pl.id == activeId ? 'active' : '';
-                    list.append(`
-            <div class="playlist-nav-item ${isActive}" onclick="switchPlaylist(${pl.id}, '${pl.playlistName}')">
-              <span class="text-truncate small"><i class="bi bi-music-note-list me-2"></i>${pl.playlistName}</span>
-              <i class="bi bi-chevron-right small opacity-50"></i>
-            </div>
-          `);
-                });
-            }
+    function fetchPlaylistSongs(pId, pName) {
+        $("#activePlaylistName").text(pName);
+        $.get(`${playlistSongApi}/get-all/${pId}`, (res) => {
+            currentPlaylistSongs = res.data || [];
+            $("#songCount").text(`${currentPlaylistSongs.length} Tracks Found`);
+            renderGrid(currentPlaylistSongs);
         });
     }
 
-    function fetchPlaylistSongs(playlistId, playlistName) {
-        $("#activePlaylistName").text(playlistName);
-        $.ajax({
-            url: `${playlistSongApi}/get-all/${playlistId}`,
-            headers: { "Authorization": "Bearer " + token },
-            success: function(response) {
-                currentPlaylistSongs = response.data || [];
-                $("#songCount").text(`${currentPlaylistSongs.length} Tracks found`);
-                const container = $("#musicContainer").empty();
+    function renderGrid(list) {
+        const container = $("#musicContainer").empty();
+        if (!list.length) return container.html('<div class="col-12 text-center py-5 text-muted"><h5>Empty Playlist</h5><p>Add songs from the explore page.</p></div>');
 
-                if (currentPlaylistSongs.length === 0) {
-                    container.html('<div class="col-12 text-center py-5 opacity-50"><i class="bi bi-plus-circle fs-1"></i><p class="mt-2">No tracks added yet.</p></div>');
-                    return;
-                }
-
-                currentPlaylistSongs.forEach((music, index) => {
-                    container.append(`
-            <div class="music-card" onclick="playSongFromIndex(${index})">
-              <img src="${musicApi}/thumbnail/${music.id}" class="music-thumbnail">
-              <div class="text-truncate fw-bold small">${music.musicTitle}</div>
-              <div class="text-truncate text-muted" style="font-size: 11px;">${music.musicArtist}</div>
-            </div>
-          `);
-                });
-            }
+        list.forEach((m, i) => {
+            container.append(`
+        <div class="music-card" onclick="playFromGrid(${i})">
+          <img src="${musicApi}/thumbnail/${m.id}" class="music-thumb" onerror="this.src='https://via.placeholder.com/200'">
+          <div class="fw-bold text-truncate mb-0">${m.musicTitle}</div>
+          <div class="text-muted small text-truncate">${m.musicArtist}</div>
+        </div>
+      `);
         });
     }
 
-    function playSongFromIndex(index) {
+    function playFromGrid(idx) {
         if (isShuffle) {
-            const musicId = currentPlaylistSongs[index].id;
-            playSong(shuffledSongs.findIndex(s => s.id === musicId));
+            const id = currentPlaylistSongs[idx].id;
+            playSong(shuffledSongs.findIndex(s => s.id === id));
         } else {
-            playSong(index);
+            playSong(idx);
         }
     }
 
-    function playSong(index) {
+    function playSong(idx) {
         const list = isShuffle ? shuffledSongs : currentPlaylistSongs;
-        if (index < 0 || index >= list.length) return;
+        if (idx < 0 || idx >= list.length) return;
 
-        currentPlayingIndex = index;
-        const music = list[index];
-        audio.src = `${musicApi}/stream/${music.id}`;
-        $("#playerTitle").text(music.musicTitle);
-        $("#playerArtist").text(music.musicArtist);
-        $("#playerThumbnail").attr("src", `${musicApi}/thumbnail/${music.id}`);
+        currentPlayingIndex = idx;
+        const m = list[idx];
+        currentPlayingMusicId = m.id;
+
+        audio.src = `${musicApi}/stream/${m.id}`;
+        $("#playerTitle").text(m.musicTitle);
+        $("#playerArtist").text(m.musicArtist);
+        $("#playerThumbnail").attr("src", `${musicApi}/thumbnail/${m.id}`);
         $("#bottomPlayer").addClass("active");
         audio.play();
-        $("#playPauseBtn").attr("class", "bi bi-pause-circle-fill fs-1 text-primary cursor-pointer");
+        $("#playPauseBtn").removeClass("bi-play-circle-fill").addClass("bi-pause-circle-fill");
+        checkLikeStatus();
+    }
+
+    function checkLikeStatus() {
+        if (!currentPlayingMusicId) return;
+        $.post(`${likedSongApi}/check-like`, JSON.stringify({ userId, musicId: currentPlayingMusicId }), (res) => {
+            $('#likeBtn').toggleClass("bi-heart-fill text-danger liked", res.data === "Liked").toggleClass("bi-heart text-muted", res.data !== "Liked");
+        });
+    }
+
+    function likeSong() {
+        $.post(`${likedSongApi}/add-or-remove`, JSON.stringify({ userId, musicId: currentPlayingMusicId }), () => checkLikeStatus());
     }
 
     function toggleShuffle() {
         isShuffle = !isShuffle;
+        $("#shuffleBtn").toggleClass("shuffle-active", isShuffle).toggleClass("text-muted", !isShuffle);
         if (isShuffle) {
-            $("#shuffleBtn").addClass("shuffle-active").removeClass("text-muted");
             shuffledSongs = [...currentPlaylistSongs].sort(() => Math.random() - 0.5);
-        } else {
-            $("#shuffleBtn").removeClass("shuffle-active").addClass("text-muted");
+            if (currentPlayingMusicId) currentPlayingIndex = shuffledSongs.findIndex(s => s.id === currentPlayingMusicId);
         }
     }
 
-    function nextSong() { playSong(currentPlayingIndex + 1 >= (isShuffle ? shuffledSongs : currentPlaylistSongs).length ? 0 : currentPlayingIndex + 1); }
-    function prevSong() { playSong(currentPlayingIndex - 1 < 0 ? (isShuffle ? shuffledSongs : currentPlaylistSongs).length - 1 : currentPlayingIndex - 1); }
-
-    function switchPlaylist(id, name) {
-        localStorage.setItem("selectedPlaylistId", id);
-        localStorage.setItem("selectedPlaylistName", name);
-        window.location.reload();
-    }
+    function nextSong() { playSong(currentPlayingIndex + 1); }
+    function prevSong() { playSong(currentPlayingIndex - 1); }
+    audio.onended = () => nextSong();
 
     function removeFromCurrentPlaylist() {
-        const music = (isShuffle ? shuffledSongs : currentPlaylistSongs)[currentPlayingIndex];
-        if (!music || !confirm("Remove this song from the playlist?")) return;
-
+        if (!confirm("Remove this song from the current playlist?")) return;
         $.ajax({
             url: `${playlistSongApi}/remove`,
             type: "DELETE",
-            headers: { "Authorization": "Bearer " + token },
             contentType: 'application/json',
-            data: JSON.stringify({ playlistId: parseInt(activePlaylistId), musicId: parseInt(music.id) }),
-            success: function() { fetchPlaylistSongs(activePlaylistId, localStorage.getItem("selectedPlaylistName")); closePlayer(); }
+            data: JSON.stringify({ playlistId: activePlaylistId, musicId: currentPlayingMusicId }),
+            success: () => {
+                fetchPlaylistSongs(activePlaylistId, localStorage.getItem("selectedPlaylistName"));
+                closePlayer();
+            }
         });
     }
 
     function deleteCurrentPlaylist() {
-        if (!confirm("Delete entire playlist?")) return;
-        $.ajax({
-            url: `${playlistApi}/delete/${activePlaylistId}`,
-            type: "DELETE",
-            headers: { "Authorization": "Bearer " + token },
-            success: function() { window.location.href = "user-playlists.html"; }
+        if (!confirm("Delete this entire playlist?")) return;
+        $.ajax({ url: `${playlistApi}/delete/${activePlaylistId}`, type: "DELETE", success: () => window.location.href = "user-playlists.html" });
+    }
+
+    function loadSidebarPlaylists(aId) {
+        $.get(`${playlistApi}/load/${username}`, (res) => {
+            const list = $("#sidebarPlaylistList").empty();
+            res.data.forEach(pl => {
+                list.append(`
+          <div class="playlist-item ${pl.id == aId ? 'active' : ''}" onclick="switchPlaylist(${pl.id}, '${pl.playlistName}')">
+            <span class="text-truncate"><i class="bi bi-music-note-list me-3"></i>${pl.playlistName}</span>
+          </div>
+        `);
+            });
         });
     }
 
-    $("#playPauseBtn").on("click", () => {
-        if(audio.paused) { audio.play(); $("#playPauseBtn").attr("class", "bi bi-pause-circle-fill fs-1 text-primary"); }
-        else { audio.pause(); $("#playPauseBtn").attr("class", "bi bi-play-circle-fill fs-1 text-primary"); }
-    });
+    function switchPlaylist(id, name) {
+        activePlaylistId = id;
+        localStorage.setItem("selectedPlaylistId", id);
+        localStorage.setItem("selectedPlaylistName", name);
+        fetchPlaylistSongs(id, name);
+        loadSidebarPlaylists(id);
+    }
 
+    // Volume & Player UI
+    $('#volumeSlider').on('input', function() { audio.volume = $(this).val(); });
+    $("#playPauseBtn").on("click", () => audio.paused ? audio.play() : audio.pause());
+    audio.onplay = () => $("#playPauseBtn").removeClass("bi-play-circle-fill").addClass("bi-pause-circle-fill");
+    audio.onpause = () => $("#playPauseBtn").removeClass("bi-pause-circle-fill").addClass("bi-play-circle-fill");
     audio.ontimeupdate = () => {
         if(audio.duration) {
-            $("#progressBar").css("width", (audio.currentTime / audio.duration) * 100 + "%");
-            let mins = Math.floor(audio.currentTime / 60);
-            let secs = Math.floor(audio.currentTime % 60);
-            $("#currentTime").text(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
+            $("#progressBar").css("width", (audio.currentTime / audio.duration * 100) + "%");
+            let m = Math.floor(audio.currentTime / 60), s = Math.floor(audio.currentTime % 60);
+            $("#currentTime").text(`${m}:${s < 10 ? '0' : ''}${s}`);
         }
     };
-
-    function seek(e) { audio.currentTime = (e.offsetX / e.currentTarget.offsetWidth) * audio.duration; }
+    function seek(e) { audio.currentTime = (e.offsetX / $(e.currentTarget).width()) * audio.duration; }
     function closePlayer() { audio.pause(); $("#bottomPlayer").removeClass("active"); }
 </script>
+
 </body>
 </html>

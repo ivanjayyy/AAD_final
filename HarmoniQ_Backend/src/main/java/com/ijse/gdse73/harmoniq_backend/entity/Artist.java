@@ -18,6 +18,4 @@ public class Artist {
     private String name;
     private String bio;
     private String pfpPath;
-//    @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private Set<Music> musics;
 }

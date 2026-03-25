@@ -10,182 +10,157 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <style>
-        /* Theme Variables */
         :root {
-            --bg-color: #f8f9fa;
-            --card-bg: #ffffff;
-            --text-main: #212529;
-            --text-muted: #6c757d;
-            --primary-accent: #198754; /* Green */
-            --border-color: #dee2e6;
-            --nav-hover: #f1f3f5;
-            --modal-bg: #ffffff;
-        }
-
-        [data-theme="dark"] {
-            --bg-color: #000000;
-            --card-bg: #121212;
-            --text-main: #ffffff;
-            --text-muted: #b0b0b0;
-            --primary-accent: #d63384; /* Purple */
-            --border-color: #333333;
-            --nav-hover: #1e1e1e;
-            --modal-bg: #1a1a1a;
+            --primary-blue: #0061ff;
+            --soft-blue: #eef4ff;
+            --dark-text: #1e293b;
+            --light-text: #64748b;
+            --glass-border: rgba(226, 232, 240, 0.8);
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            transition: background-color 0.3s, color 0.3s;
+            background-color: #f8fafc;
+            color: var(--dark-text);
+            font-family: 'Inter', -apple-system, sans-serif;
         }
 
-        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); }
-        .card-header { background-color: transparent !important; border-bottom: 1px solid var(--border-color) !important; color: var(--text-main) !important; }
+        /* Sidebar & Layout */
+        .sidebar-sensor { width: 12px; z-index: 1060; cursor: pointer; }
+        .card { border: 1px solid var(--glass-border); border-radius: 12px; background: #ffffff; }
 
-        .table { color: var(--text-main); }
-        .table thead { background-color: var(--nav-hover); color: var(--text-muted); }
-        [data-theme="dark"] .table-hover tbody tr:hover { background-color: #1a1a1a; color: white; }
-
-        .nav-link { color: var(--text-main) !important; }
-        .nav-link:hover { background-color: var(--nav-hover); border-radius: 8px; }
-        .offcanvas { background-color: var(--card-bg) !important; color: var(--text-main); }
-
-        .sidebar-sensor { width: 15px; z-index: 1060; cursor: pointer; }
-        .profile-img-table { width: 45px; height: 45px; object-fit: cover; border-radius: 50%; border: 1px solid var(--border-color); }
-        .bio-truncate { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-muted) !important; }
-
-        /* Modals */
-        .modal-content { background-color: var(--modal-bg); color: var(--text-main); border: 1px solid var(--border-color); }
-        .form-control { background-color: var(--bg-color); border-color: var(--border-color); color: var(--text-main); }
-        .form-control:focus { background-color: var(--bg-color); color: var(--text-main); border-color: var(--primary-accent); }
-
-        /* Search Styling */
-        .search-input { max-width: 250px; border-radius: 20px; padding-left: 35px; }
-        .search-container { position: relative; }
-        .search-container i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-
-        /* Theme Switcher */
-        #theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            padding: 8px 15px;
-            border-radius: 50px;
-            border: none;
-            background: var(--primary-accent);
-            color: white;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            font-weight: bold;
+        /* Table Aesthetics */
+        .profile-img-table {
+            width: 42px;
+            height: 42px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            background: #f1f5f9;
         }
-
-        /* Profile Preview Styling */
-        .profile-preview-wrapper {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
+        .bio-truncate {
+            max-width: 350px;
+            white-space: nowrap;
             overflow: hidden;
-            border: 4px solid var(--card-bg);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            background: var(--nav-hover);
+            text-overflow: ellipsis;
+            color: var(--light-text);
+        }
+
+        /* Search Bar */
+        .search-container { position: relative; width: 300px; }
+        .search-container i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--light-text); }
+        .search-input {
+            border-radius: 10px;
+            padding-left: 40px;
+            border: 1px solid var(--glass-border);
+            height: 42px;
+            transition: all 0.2s;
+        }
+        .search-input:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(0, 97, 255, 0.1); }
+
+        /* Modern Profile Upload */
+        .profile-upload-container {
+            position: relative;
+            width: 130px;
+            margin: 0 auto 1.5rem auto;
+            cursor: pointer;
+        }
+        .profile-preview-wrapper {
+            width: 130px;
+            height: 130px;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 4px solid #fff;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            background: #f1f5f9;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-
-        /* Mobile Bottom Navigation */
-        @media (max-width: 768px) {
-            #admin-sidebar-sensor { display: none; }
-            .offcanvas { display: none !important; }
-
-            .mobile-bottom-nav {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                width: 100%;
-                height: 65px;
-                background-color: var(--card-bg);
-                display: flex !important;
-                justify-content: space-around;
-                align-items: center;
-                border-top: 1px solid var(--border-color);
-                z-index: 1050;
-            }
-            .mobile-bottom-nav a { color: var(--text-main); font-size: 1.4rem; text-decoration: none; }
-            .mobile-bottom-nav .active { color: var(--primary-accent); }
-
-            body { padding-bottom: 80px !important; }
+        .profile-preview-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .edit-icon-badge {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            background: var(--primary-blue);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #fff;
         }
 
-        .text-primary { color: var(--primary-accent) !important; }
-        .btn-primary { background-color: var(--primary-accent); border-color: var(--primary-accent); }
+        /* Nav links (Side Menu) */
+        .nav-link { border-radius: 8px; margin-bottom: 4px; color: var(--light-text); transition: 0.2s; }
+        .nav-link:hover { background-color: var(--soft-blue); color: var(--primary-blue); }
+        .nav-link.active { background-color: var(--primary-blue) !important; color: white !important; }
+
+        .btn-primary { background-color: var(--primary-blue); border: none; border-radius: 10px; font-weight: 600; }
+        .btn-primary:hover { background-color: #0052d4; }
     </style>
 </head>
 
-<body class="p-4">
-
-<button id="theme-toggle" onclick="toggleTheme()">🌙 Dark</button>
+<body class="p-4 p-md-5">
 
 <div id="admin-sidebar-sensor" class="position-fixed top-0 start-0 vh-100 sidebar-sensor"></div>
 
-<div class="offcanvas offcanvas-start border-end shadow" tabindex="-1" id="adminSidebar" style="width: 280px;">
-    <div class="offcanvas-header border-bottom">
-        <h5 class="offcanvas-title text-primary fw-bold"><i class="bi bi-shield-lock-fill me-2"></i>Admin HQ</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" id="closeSidebarBtn"></button>
+<div class="offcanvas offcanvas-start bg-white border-end shadow-lg" tabindex="-1" id="adminSidebar" style="width: 280px;">
+    <div class="offcanvas-header py-4 px-4 border-bottom">
+        <h5 class="offcanvas-title text-primary fw-bold d-flex align-items-center">
+            <span class="p-2 bg-primary text-white rounded-3 me-2"><i class="bi bi-waveform"></i></span>
+            Admin HQ
+        </h5>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas"></button>
     </div>
-    <div class="offcanvas-body d-flex flex-column p-0">
+    <div class="offcanvas-body d-flex flex-column px-3 pt-4">
         <ul class="nav flex-column mb-auto">
-            <li><a href="admin-dashboard.html" class="nav-link p-3"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
-            <li><a href="music-management.html" class="nav-link p-3"><i class="bi bi-music-note-beamed me-3"></i> Music Management</a></li>
-            <li><a href="artist-management.html" class="nav-link p-3 fw-bold bg-light rounded"><i class="bi bi-mic me-3"></i> Artists</a></li>
-            <li><a href="user-management.html" class="nav-link p-3"><i class="bi bi-people me-3"></i> User Directory</a></li>
-            <li><a href="user-profile.html" class="nav-link p-3"><i class="bi bi-person-circle me-3"></i> Profile</a></li>
+            <li><a href="admin-dashboard.html" class="nav-link p-3"><i class="bi bi-grid-1x2-fill me-3"></i> Dashboard</a></li>
+            <li><a href="music-management.html" class="nav-link p-3"><i class="bi bi-music-note-list me-3"></i> Music Management</a></li>
+            <li><a href="artist-management.html" class="nav-link p-3 active"><i class="bi bi-mic-fill me-3"></i> Artists</a></li>
+            <li><a href="user-management.html" class="nav-link p-3"><i class="bi bi-people-fill me-3"></i> User Directory</a></li>
+            <li><a href="user-profile.html" class="nav-link p-3"><i class="bi bi-gear-fill me-3"></i> Profile</a></li>
         </ul>
-        <div class="p-3 border-top">
-            <button class="btn btn-outline-danger w-100" onclick="logout()">Logout</button>
+        <div class="p-3 mt-auto border-top">
+            <button class="btn btn-outline-danger w-100 fw-bold border-2" onclick="logout()">
+                <i class="bi bi-box-arrow-left me-2"></i> Logout
+            </button>
         </div>
     </div>
 </div>
 
-<nav class="mobile-bottom-nav d-none">
-    <a href="admin-dashboard.html"><i class="bi bi-speedometer2"></i></a>
-    <a href="music-management.html"><i class="bi bi-music-note-beamed"></i></a>
-    <a href="artist-management.html" class="active"><i class="bi bi-mic"></i></a>
-    <a href="user-management.html"><i class="bi bi-people"></i></a>
-    <a href="user-profile.html"><i class="bi bi-person-circle"></i></a>
-</nav>
-
-<div class="container">
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-        <h2 class="fw-bold mb-0">Artist Directory</h2>
-        <div class="d-flex gap-2 align-items-center">
+<div class="container-fluid">
+    <div class="d-flex flex-wrap justify-content-between align-items-end mb-5 gap-3">
+        <div>
+            <h2 class="fw-bold mb-1">Artist Directory</h2>
+            <p class="text-muted small mb-0">Manage and verify profiles for your platform's creators.</p>
+        </div>
+        <div class="d-flex gap-3 align-items-center">
             <div class="search-container">
                 <i class="bi bi-search"></i>
-                <input type="text" id="artistSearch" class="form-control search-input" placeholder="Search artist...">
+                <input type="text" id="artistSearch" class="form-control search-input" placeholder="Search by name...">
             </div>
-            <button class="btn btn-primary fw-bold px-4" data-bs-toggle="modal" data-bs-target="#addArtistModal">
-                <i class="bi bi-plus-lg me-1"></i> Add Artist
+            <button class="btn btn-primary px-4 py-2" data-bs-toggle="modal" data-bs-target="#addArtistModal">
+                <i class="bi bi-person-plus-fill me-2"></i> Add Artist
             </button>
         </div>
     </div>
 
-    <div class="card overflow-hidden">
-        <div class="card-header py-3">
-            <h6 class="mb-0 fw-bold"><i class="bi bi-person-lines-fill me-2"></i>Managed Artists</h6>
-        </div>
+    <div class="card shadow-sm border-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" id="artistTable">
-                <thead class="small text-uppercase">
+                <thead class="small text-uppercase fw-bold text-muted bg-light">
                 <tr>
-                    <th class="ps-3">ID</th>
-                    <th>Photo</th>
-                    <th>Artist Name</th>
-                    <th>Biography</th>
-                    <th class="text-end pe-3">Actions</th>
+                    <th class="ps-4 py-3">Reference ID</th>
+                    <th class="py-3">Profile</th>
+                    <th class="py-3">Artist Name</th>
+                    <th class="py-3">Biography</th>
+                    <th class="text-end pe-4 py-3">Actions</th>
                 </tr>
                 </thead>
-                <tbody class="border-top-0"></tbody>
+                <tbody class="border-top-0">
+                </tbody>
             </table>
         </div>
     </div>
@@ -193,29 +168,67 @@
 
 <div class="modal fade" id="addArtistModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold">Add New Artist</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-bottom-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold">New Artist Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-4 text-center">
-                <div class="profile-upload-container cursor-pointer" style="width: 120px; margin: 0 auto 1.5rem auto;" onclick="$('#profilePic').click()">
+            <div class="modal-body p-4 pt-0 text-center">
+                <div class="profile-upload-container" onclick="$('#profilePic').click()">
                     <div class="profile-preview-wrapper">
-                        <img id="previewImage" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 24 24' fill='none' stroke='%23adb5bd' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E" alt="Preview" style="width:100%; height:100%; object-fit:cover;">
+                        <img id="previewImage" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E" alt="Preview">
                     </div>
+                    <div class="edit-icon-badge shadow-sm"><i class="bi bi-plus-lg"></i></div>
                 </div>
                 <input type="file" id="profilePic" class="d-none" accept="image/*" onchange="handleImagePreview(this, '#previewImage')">
 
                 <div class="text-start">
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Artist Name</label>
-                        <input type="text" id="artistName" class="form-control" placeholder="e.g. Luna Ray">
+                        <label class="form-label small fw-bold text-muted">Artist Name</label>
+                        <input type="text" id="artistName" class="form-control py-2" placeholder="e.g. Luna Ray">
                     </div>
                     <div class="mb-4">
-                        <label class="form-label small fw-bold">Biography</label>
-                        <textarea id="artistBio" class="form-control" rows="3" placeholder="Tell us about the artist..."></textarea>
+                        <label class="form-label small fw-bold text-muted">Biography</label>
+                        <textarea id="artistBio" class="form-control" rows="4" placeholder="Brief history and genre information..."></textarea>
                     </div>
-                    <button class="btn btn-primary w-100 fw-bold py-2" onclick="saveArtist()">Save Artist</button>
+                    <button class="btn btn-primary w-100 fw-bold py-3 shadow-sm" onclick="saveArtist()">
+                        Create Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="updateArtistModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-bottom-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold text-primary">Edit Artist Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 pt-0 text-center">
+                <div class="profile-upload-container" onclick="$('#updateProfilePic').click()">
+                    <div class="profile-preview-wrapper border-primary shadow-sm" style="border-width: 2px;">
+                        <img id="updatePreviewImage" src="" alt="Current Profile" onerror="this.src=placeholderSVG">
+                    </div>
+                    <div class="edit-icon-badge bg-warning text-dark border-0"><i class="bi bi-pencil-fill"></i></div>
+                </div>
+                <input type="file" id="updateProfilePic" class="d-none" accept="image/*" onchange="handleImagePreview(this, '#updatePreviewImage')">
+
+                <div class="text-start">
+                    <input type="hidden" id="updateArtistId">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Artist Name</label>
+                        <input type="text" id="updateArtistName" class="form-control py-2">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted">Biography</label>
+                        <textarea id="updateArtistBio" class="form-control" rows="4"></textarea>
+                    </div>
+                    <button class="btn btn-primary w-100 fw-bold py-3" onclick="submitUpdate()">
+                        Update Profile
+                    </button>
                 </div>
             </div>
         </div>
@@ -225,39 +238,11 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // --- Theme Logic ---
-    function applyTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-        const btn = document.getElementById('theme-toggle');
-        btn.innerHTML = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
-
-        const closeBtns = document.querySelectorAll('.btn-close');
-        closeBtns.forEach(b => {
-            if(theme === 'dark') b.classList.add('btn-close-white');
-            else b.classList.remove('btn-close-white');
-        });
-    }
-
-    function toggleTheme() {
-        const currentTheme = localStorage.getItem('theme') === 'dark' ? 'light' : 'dark';
-        applyTheme(currentTheme);
-    }
-
-    (function() {
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        applyTheme(savedTheme);
-    })();
-
-    // --- Sidebar Logic ---
-    const sidebar = new bootstrap.Offcanvas(document.getElementById('adminSidebar'));
-    $('#admin-sidebar-sensor').on('mouseenter', () => {
-        if (window.innerWidth > 768) sidebar.show();
-    });
-
-    // --- Backend Logic (Untouched) ---
     const baseUrl = "http://localhost:8080/api/v1/artist";
-    const placeholderSVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 24 24' fill='none' stroke='%23adb5bd' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E";
+    const sidebar = new bootstrap.Offcanvas(document.getElementById('adminSidebar'));
+    const placeholderSVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E";
+
+    $('#admin-sidebar-sensor').on('mouseenter', () => sidebar.show());
 
     $(document).ready(() => fetchArtists());
 
@@ -269,6 +254,13 @@
         }
     }
 
+    $('#artistSearch').on('keyup', function() {
+        const value = $(this).val().toLowerCase();
+        $('#artistTable tbody tr').filter(function() {
+            $(this).toggle($(this).find('td:eq(2)').text().toLowerCase().indexOf(value) > -1);
+        });
+    });
+
     function fetchArtists() {
         $.ajax({
             url: `${baseUrl}/get-all`,
@@ -278,17 +270,24 @@
                 const tbody = $('#artistTable tbody').empty();
                 response.data.forEach(artist => {
                     tbody.append(`
-            <tr>
-              <td class="ps-3 text-muted">#${artist.id}</td>
-              <td><img src="${baseUrl}/profile-pic/${artist.id}" class="profile-img-table" onerror="this.src='${placeholderSVG}'"></td>
-              <td class="fw-bold">${artist.name}</td>
-              <td class="bio-truncate small">${artist.bio}</td>
-              <td class="text-end pe-3">
-                <button class="btn btn-sm btn-outline-primary border-0" onclick="updateArtist(${artist.id}, \`${artist.name}\`, \`${artist.bio}\`)"><i class="bi bi-pencil"></i></button>
-                <button class="btn btn-sm btn-outline-danger border-0 ms-1" onclick="deleteArtist(${artist.id})"><i class="bi bi-trash"></i></button>
-              </td>
-            </tr>
-          `);
+                        <tr>
+                            <td class="ps-4 text-muted small fw-medium">#ART-${artist.id}</td>
+                            <td>
+                                <img src="${baseUrl}/profile-pic/${artist.id}" class="profile-img-table shadow-sm"
+                                     onerror="this.src='${placeholderSVG}'">
+                            </td>
+                            <td class="fw-bold text-dark">${artist.name}</td>
+                            <td><div class="bio-truncate small">${artist.bio}</div></td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-sm btn-light text-primary me-1" onclick="updateArtist(${artist.id}, \`${artist.name}\`, \`${artist.bio}\`)">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <button class="btn btn-sm btn-light text-danger" onclick="deleteArtist(${artist.id})">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `);
                 });
             }
         });
@@ -298,6 +297,7 @@
         const name = $('#artistName').val();
         const bio = $('#artistBio').val();
         const pic = $('#profilePic')[0].files[0];
+
         if(!name || !bio) return alert("Fill in name and biography.");
 
         let formData = new FormData();
@@ -320,6 +320,49 @@
             },
             error: () => alert("Add failed")
         });
+    }
+
+    function updateArtist(id, name, bio) {
+        $('#updateArtistId').val(id);
+        $('#updateArtistName').val(name);
+        $('#updateArtistBio').val(bio);
+        $('#updatePreviewImage').attr('src', `${baseUrl}/profile-pic/${id}?t=${new Date().getTime()}`);
+        new bootstrap.Modal(document.getElementById('updateArtistModal')).show();
+    }
+
+    function submitUpdate() {
+        const id = $('#updateArtistId').val();
+        let formData = new FormData();
+        formData.append("name", $('#updateArtistName').val());
+        formData.append("bio", $('#updateArtistBio').val());
+        const pFile = $('#updateProfilePic')[0].files[0];
+        if (pFile) formData.append("profilePic", pFile);
+
+        $.ajax({
+            url: `${baseUrl}/update/${id}`,
+            type: "PUT",
+            headers: { "Authorization": "Bearer " + localStorage.getItem("token") },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: () => {
+                bootstrap.Modal.getInstance(document.getElementById('updateArtistModal')).hide();
+                $('#updateProfilePic').val('');
+                fetchArtists();
+            },
+            error: () => alert("Update failed")
+        });
+    }
+
+    function deleteArtist(id) {
+        if (confirm("Permanently delete this artist profile?")) {
+            $.ajax({
+                url: `${baseUrl}/delete/${id}`,
+                type: "DELETE",
+                headers: { "Authorization": "Bearer " + localStorage.getItem("token") },
+                success: () => fetchArtists()
+            });
+        }
     }
 
     function logout() {
