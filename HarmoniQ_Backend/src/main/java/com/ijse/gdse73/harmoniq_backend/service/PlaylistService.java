@@ -7,9 +7,9 @@ import java.util.List;
 
 public interface PlaylistService {
     void createPlaylist(PlaylistDTO playlistDTO);
-    List<PlaylistDTO> getPlaylistsByUsername(String username);
+    List<PlaylistDTO> getPlaylistsByUserId(Long userId);
     void deletePlaylist(Long id);
     void updatePlaylist(PlaylistDTO playlistDTO);
 
-    List<MusicDTO> getSongsFromPlaylists(String username);
+    List<MusicDTO> getSongsFromPlaylists(Long userId);
 }

@@ -26,10 +26,10 @@ public class PlaylistController {
         ));
     }
 
-    @GetMapping("/load/{username}")
+    @GetMapping("/load/{userId}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<APIResponse> getUserPlaylists(@PathVariable String username){
-        List<PlaylistDTO> playlistDTOS = playlistService.getPlaylistsByUsername(username);
+    public ResponseEntity<APIResponse> getUserPlaylists(@PathVariable Long userId){
+        List<PlaylistDTO> playlistDTOS = playlistService.getPlaylistsByUserId(userId);
 
         return ResponseEntity.ok(new APIResponse(
                  200,"OK",playlistDTOS

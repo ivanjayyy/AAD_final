@@ -131,13 +131,14 @@
     const token = localStorage.getItem("token");
     const payload = token ? JSON.parse(atob(token.split('.')[1])) : { sub: "Guest" };
     const username = payload.sub;
+    const userId = payload.id;
     const sidebar = new bootstrap.Offcanvas(document.getElementById('navSidebar'));
 
     $('#sidebar-sensor').on('mouseenter', () => sidebar.show());
 
     function loadPlaylists(){
         $.ajax({
-            url: "http://localhost:8080/api/v1/playlist/load/" + username,
+            url: "http://localhost:8080/api/v1/playlist/load/" + userId,
             method: "GET",
             headers: {
                 "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
@@ -194,7 +195,7 @@
             headers: {
                 "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
             },
-            data: JSON.stringify({ "playlistName": name, "username": username }),
+            data: JSON.stringify({ "playlistName": name, "userId": userId }),
             success: function () {
                 $("#playlistName").val('');
                 bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();

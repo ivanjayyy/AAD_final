@@ -56,7 +56,7 @@
         </nav>
         <div class="d-flex align-items-center gap-3">
           <h1 id="activePlaylistName" class="fw-bold display-5 mb-0 text-primary">Loading...</h1>
-          <button class="btn btn-sm btn-outline-danger border-0 mt-2" onclick="deleteCurrentPlaylist()" title="Delete Entire Playlist">
+          <button class="btn btn-sm btn-outline-danger border-0 mt-2" onclick="deleteSpecificPlaylist(activePlaylistId)" title="Delete Entire Playlist">
             <i class="bi bi-trash3 fs-4"></i>
           </button>
         </div>
@@ -315,7 +315,7 @@
   // --- PLAYLIST MGMT ---
   function loadSidebarPlaylists(activeId) {
     $.ajax({
-      url: `${playlistApi}/load/${username}`,
+      url: `${playlistApi}/load/${userId}`,
       type: "GET",
       headers: { "Authorization": "Bearer " + token },
       success: function(response) {

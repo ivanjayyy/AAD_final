@@ -75,9 +75,15 @@ public class MusicServiceImpl implements MusicService {
      * Helper method to handle complex mapping between Music Entity and MusicDTO
      */
     private MusicDTO convertToDto(Music music) {
+
+        modelMapper.typeMap(Music.class, MusicDTO.class)
+                .addMappings(mapper -> {
+                    mapper.skip(MusicDTO::setMusicArtist);
+                    mapper.skip(MusicDTO::setMusicGenreId);
+                });
+
         MusicDTO musicDTO = modelMapper.map(music, MusicDTO.class);
 
-        // Manually set the artist name string from the Artist entity
         if (music.getArtist() != null) {
             musicDTO.setMusicArtist(music.getArtist().getName());
         }

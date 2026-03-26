@@ -2,10 +2,13 @@ package com.ijse.gdse73.harmoniq_backend.service.impl;
 
 import com.ijse.gdse73.harmoniq_backend.dto.MusicDTO;
 import com.ijse.gdse73.harmoniq_backend.dto.PlaylistDTO;
+import com.ijse.gdse73.harmoniq_backend.entity.Music;
 import com.ijse.gdse73.harmoniq_backend.entity.Playlist;
+import com.ijse.gdse73.harmoniq_backend.entity.User;
 import com.ijse.gdse73.harmoniq_backend.exception.CustomException;
 import com.ijse.gdse73.harmoniq_backend.repo.PlaylistRepo;
 import com.ijse.gdse73.harmoniq_backend.repo.PlaylistSongRepo;
+import com.ijse.gdse73.harmoniq_backend.repo.UserRepo;
 import com.ijse.gdse73.harmoniq_backend.service.PlaylistService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -18,6 +21,7 @@ import java.util.List;
 public class PlaylistServiceImpl implements PlaylistService {
     private final PlaylistRepo playlistRepo;
     private final ModelMapper modelMapper;
+    private final UserRepo userRepo;
     private final PlaylistSongRepo playlistSongRepo;
 
     @Override
@@ -26,22 +30,48 @@ public class PlaylistServiceImpl implements PlaylistService {
             throw new CustomException("PlaylistDTO is null");
         }
 
+        User user = userRepo.findUserById(playlistDTO.getUserId());
+
 //        if (playlistRepo.getPlaylistByUsernameAndPlaylistName(playlistDTO.getUsername(),playlistDTO.getPlaylistName())) {
 //            return;
 //        }
 
-        playlistRepo.save(modelMapper.map(playlistDTO, Playlist.class));
+        Playlist playlist = Playlist.builder()
+                .playlistName(playlistDTO.getPlaylistName())
+                .user(user)
+                .build();
+
+        playlistRepo.save(playlist);
     }
 
     @Override
-    public List<PlaylistDTO> getPlaylistsByUsername(String username) {
-        if (username == null) {
+    public List<PlaylistDTO> getPlaylistsByUserId(Long userId) {
+        if (userId == null) {
             throw new CustomException("Username is null");
         }
-        return playlistRepo.getAllByUsername(username)
+
+        User user = userRepo.findUserById(userId);
+
+        return playlistRepo.findAllByUser(user)
                 .stream()
-                .map(playlist -> modelMapper.map(playlist, PlaylistDTO.class))
+                .map(this::convertToDto)
                 .toList();
+    }
+
+    private PlaylistDTO convertToDto(Playlist playlist) {
+
+        modelMapper.typeMap(Playlist.class, PlaylistDTO.class)
+                .addMappings(mapper -> {
+                    mapper.skip(PlaylistDTO::setUserId);
+                });
+
+        PlaylistDTO playlistDTO = modelMapper.map(playlist, PlaylistDTO.class);
+
+        if (playlist.getUser() != null) {
+            playlistDTO.setUserId(playlist.getUser().getId());
+        }
+
+        return playlistDTO;
     }
 
     @Override
@@ -55,12 +85,14 @@ public class PlaylistServiceImpl implements PlaylistService {
     }
 
     @Override
-    public List<MusicDTO> getSongsFromPlaylists(String username) {
-        if (username == null) {
+    public List<MusicDTO> getSongsFromPlaylists(Long userId) {
+        if (userId == null) {
             throw new CustomException("Username is null");
         }
 
-        List<Playlist> playlists = playlistRepo.getAllByUsername(username);
+        User user = userRepo.findUserById(userId);
+
+        List<Playlist> playlists = playlistRepo.findAllByUser(user);
 
         List<Long> playlistIds = playlists.stream()
                 .map(Playlist::getId)

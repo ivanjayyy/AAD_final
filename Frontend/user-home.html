@@ -417,7 +417,7 @@
 
     document.getElementById('playlistBtn').addEventListener('shown.bs.popover', function () {
         $.ajax({
-            url: `${apiBase}/playlist/load/${username}`,
+            url: `${apiBase}/playlist/load/${userId}`,
             type: "GET",
             headers: { "Authorization": "Bearer " + token },
             success: function(response) {

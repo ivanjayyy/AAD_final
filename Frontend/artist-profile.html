@@ -457,7 +457,7 @@
         });
 
         document.getElementById('playlistBtn').addEventListener('shown.bs.popover', function () {
-            $.get(`${apiBase}/playlist/load/${username}`, (response) => {
+            $.get(`${apiBase}/playlist/load/${userId}`, (response) => {
                 let html = '<div class="list-group list-group-flush">';
                 if(!response.data || response.data.length === 0) {
                     html += '<div class="p-3 text-muted small">No playlists found</div>';
