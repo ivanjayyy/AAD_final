@@ -38,6 +38,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/music/thumbnail/**").permitAll() // allow upload for now
                         .requestMatchers("/api/v1/music/stream/**").permitAll()
+                        .requestMatchers("/api/v1/rag/**").permitAll()
+                        .requestMatchers("/api/v1/chat/**").permitAll()
 //                        .requestMatchers("/api/v1/user/**").permitAll()
 //                        .requestMatchers("/api/v1/playlist/**").permitAll()
 //                        .requestMatchers("/api/v1/liked-song/**").permitAll()
