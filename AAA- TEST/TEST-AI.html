@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-</head>
-<body>
 
 <style>
     /* The Floating Button */
@@ -77,6 +75,8 @@
     }
 </style>
 
+</head>
+
 <body>
 
 <button class="chat-launcher" onclick="toggleChat()">💬</button>
@@ -108,47 +108,90 @@
         chat.style.display = (chat.style.display === "none") ? "flex" : "none";
     }
 
-    async function send() {
+    // async function send() {
+    //     let inputField = document.getElementById("input");
+    //     let input = inputField.value;
+    //     if (!input.trim()) return;
+    //
+    //     // 1. Show User Message
+    //     const messagesDiv = document.getElementById("messages");
+    //     messagesDiv.innerHTML += `<p><b>${username}:</b> ${input}</p>`;
+    //     inputField.value = "";
+    //
+    //     // 2. Prepare the AI message bubble
+    //     const aiMessageId = "ai-resp-" + Date.now();
+    //     messagesDiv.innerHTML += `<p><b>HarmoniQ AI:</b> <span id="${aiMessageId}"></span></p>`;
+    //     const responseContainer = document.getElementById(aiMessageId);
+    //
+    //     try {
+    //         const response = await fetch("http://localhost:8080/api/v1/chat/response", {
+    //             method: "POST",
+    //             headers: { "Content-Type": "application/json" },
+    //             body: JSON.stringify({ message: input })
+    //         });
+    //
+    //         // 3. Read the stream
+    //         const reader = response.body.getReader();
+    //         const decoder = new TextDecoder();
+    //
+    //         while (true) {
+    //             const { done, value } = await reader.read();
+    //             if (done) break;
+    //
+    //             // Decode the chunk and append it immediately
+    //             const chunk = decoder.decode(value, { stream: true });
+    //             responseContainer.innerText += chunk;
+    //
+    //             // Auto-scroll
+    //             messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    //         }
+    //     } catch (error) {
+    //         console.error("Streaming error:", error);
+    //         responseContainer.innerText = "Error connecting to server.";
+    //     }
+    // }
+
+    function send() {
         let inputField = document.getElementById("input");
         let input = inputField.value;
         if (!input.trim()) return;
 
-        // 1. Show User Message
         const messagesDiv = document.getElementById("messages");
+
+        // Show user message
         messagesDiv.innerHTML += `<p><b>${username}:</b> ${input}</p>`;
         inputField.value = "";
 
-        // 2. Prepare the AI message bubble
+        // Placeholder for AI
         const aiMessageId = "ai-resp-" + Date.now();
-        messagesDiv.innerHTML += `<p><b>HarmoniQ AI:</b> <span id="${aiMessageId}"></span></p>`;
-        const responseContainer = document.getElementById(aiMessageId);
+        messagesDiv.innerHTML += `<p><b>HarmoniQ AI:</b> <span id="${aiMessageId}">Typing...</span></p>`;
 
-        try {
-            const response = await fetch("http://localhost:8080/api/v1/chat/response", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: input })
-            });
+        $.ajax({
+            url: "http://localhost:8080/api/v1/chat/response",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ message: input }),
 
-            // 3. Read the stream
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
+            success: function(response) {
 
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                // Decode the chunk and append it immediately
-                const chunk = decoder.decode(value, { stream: true });
-                responseContainer.innerText += chunk;
-
-                // Auto-scroll
+                // Show response in UI
+                document.getElementById(aiMessageId).innerText = response;
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+                // ✅ Detect [ACTION:PLAY_SONG(id_number)]
+                const match = response.match(/\[ACTION:PLAY_SONG\((\d+)\)\]/);
+
+                if (match) {
+                    const songId = match[1]; // extracted number
+                    console.log("PLAY SONG ID:", songId);
+                }
+            },
+
+            error: function(err) {
+                console.error("AJAX error:", err);
+                document.getElementById(aiMessageId).innerText = "Error occurred.";
             }
-        } catch (error) {
-            console.error("Streaming error:", error);
-            responseContainer.innerText = "Error connecting to server.";
-        }
+        });
     }
 
     $(document).ready(() => {
@@ -175,5 +218,4 @@
 </script>
 </body>
 
-</body>
 </html>

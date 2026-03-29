@@ -172,7 +172,12 @@ public class ChatService {
        - Respond with this exact tag: [ACTION:PLAY_SONG(id_number)]
        - If the song isn't in the list, say "I couldn't find that song."
        
-    6. CONCISENESS: Keep all responses brief and focused on the user's specific input.
+    6. CREATE NEW PLAYLIST REQUESTS:
+       - If the user wants to create a new playlist, you MUST check the user Playlist list for duplicates.
+       - If there are no duplicates, respond with this exact tag: [ACTION:CREATE_PLAYLIST(playlist_name)]
+       - If there are duplicates, say "You already have a playlist with that name."
+       
+    7. CONCISENESS: Keep all responses brief and focused on the user's specific input.
     
     ### USER REQUEST:
     %s
@@ -214,6 +219,7 @@ public class ChatService {
         List<FollowedArtist> followedArtists = followedArtistRepo.findAllByUser(user);
         List<Music> userLikedSongs = user.getLikedSongs().stream().map(LikedSong::getMusic).toList();
         List<Music> userRecentSongs = user.getRecentSongs().stream().map(RecentSong::getMusic).toList();
+        List<Playlist> userPlaylists = user.getPlaylists();
 
         StringBuilder sb = new StringBuilder();
 
@@ -235,6 +241,15 @@ public class ChatService {
         sb.append("- Recently Played: ").append(
                 userRecentSongs.stream().map(Music::getMusicTitle).collect(Collectors.joining(", "))
         ).append("\n");
+
+        sb.append("\n[USER PLAYLISTS]\n");
+        if (userPlaylists.isEmpty()) {
+            sb.append("- Playlists: None\n");
+        } else {
+            sb.append("- Playlists: ").append(
+                    userPlaylists.stream().map(Playlist::getPlaylistName).collect(Collectors.joining(", "))
+            ).append("\n");
+        }
 
         return sb.toString();
     }
