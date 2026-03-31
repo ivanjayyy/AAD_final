@@ -37,12 +37,26 @@
                         <input type="email" id="email" class="form-control" placeholder="name@example.com">
                     </div>
 
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">OTP</label>
+
+                        <div class="d-flex gap-2">
+                            <input type="text" id="otp" class="form-control" placeholder="Enter OTP">
+
+                            <button id="sendOtpBtn" class="btn btn-outline-primary fw-bold" onclick="sendOtp()">
+                                Send OTP
+                            </button>
+                        </div>
+
+                        <small id="otpTimer" class="text-muted"></small>
+                    </div>
+
                     <div class="mb-4">
                         <label class="form-label small fw-bold text-secondary">Password</label>
                         <input type="password" id="password" class="form-control" placeholder="••••••••">
                     </div>
 
-                    <button class="btn btn-primary w-100 fw-bold py-2 mb-3" onclick="signUp()">
+                    <button class="btn btn-primary w-100 fw-bold py-2 mb-3" onclick="validateOtp()">
                         Sign Up
                     </button>
 
@@ -61,12 +75,88 @@
 
 <script>
     const baseUrl = "http://localhost:8080/api/v1/auth/sign-up";
+    let countdown = 60;
+    let timerInterval = null;
+
+    function sendOtp() {
+        const email = $('#email').val();
+
+        if (!email) {
+            alert("Enter email first");
+            return;
+        }
+
+        // Disable button immediately
+        $('#sendOtpBtn').prop('disabled', true);
+
+        // Call backend API (change URL if needed)
+        $.ajax({
+            url: "http://localhost:8080/api/v1/auth/send-otp",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ email: email }),
+            success: function () {
+                alert("OTP sent to your email!");
+                startOtpTimer();
+            },
+            error: function () {
+                alert("Failed to send OTP");
+                $('#sendOtpBtn').prop('disabled', false);
+            }
+        });
+    }
+
+    function startOtpTimer() {
+        countdown = 60;
+
+        $('#otpTimer').text(`Resend available in ${countdown}s`);
+
+        timerInterval = setInterval(() => {
+            countdown--;
+
+            $('#otpTimer').text(`Resend available in ${countdown}s`);
+
+            if (countdown <= 0) {
+                clearInterval(timerInterval);
+                $('#otpTimer').text("");
+                $('#sendOtpBtn').prop('disabled', false);
+            }
+        }, 1000);
+    }
+
+    function validateOtp() {
+        const otp = $('#otp').val();
+        const email = $('#email').val();
+
+        if (!otp || !email) {
+            alert("Please enter both OTP and email");
+            return false;
+        }
+
+        $.ajax({
+            url: "http://localhost:8080/api/v1/auth/validate-otp",
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                "email": email,
+                "otp": otp
+            }),
+            success: function (response) {
+                console.log("OTP validation successful:", response);
+                signUp();
+            },
+            error: function(error) {
+                const msg = error.responseJSON?.message || "OTP validation failed";
+                alert(msg);
+            }
+        });
+    }
 
     function signUp() {
         const username = $('#username').val();
         const password = $('#password').val();
         const email = $('#email').val();
-        const role = "ADMIN";
+        const role = "USER";
 
         if (!username || !email || !password) {
             alert("Please fill all fields");
