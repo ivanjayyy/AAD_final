@@ -42,6 +42,53 @@
       color: #0d6efd !important;
       font-weight: bold;
     }
+
+    .profile-upload-container {
+      position: relative;
+      width: 100px;
+      margin: 0 auto;
+      cursor: pointer;
+    }
+
+    .profile-preview-wrapper {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 4px solid #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      background: #f0f2f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.3s;
+    }
+
+    .profile-preview-wrapper:hover {
+      transform: scale(1.05);
+      filter: brightness(0.9);
+    }
+
+    .profile-preview-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .edit-icon-badge {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      background: #0d6efd;
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid white;
+    }
   </style>
 </head>
 <body>
@@ -73,9 +120,23 @@
           <div class="col-md-4">
             <div class="card border-0 shadow-sm text-center p-4">
               <div class="mb-3">
-                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem;">
-                  <i class="bi bi-person"></i>
+                <div class="profile-upload-container" onclick="$('#userProfilePicInput').click()">
+
+                  <div class="profile-preview-wrapper" style="width: 100px; height: 100px;">
+                    <img id="userProfilePreview"
+                         src=""
+                         alt="Profile"
+                         onerror="this.src=defaultProfileSVG">
+                  </div>
+
+                  <div class="edit-icon-badge">
+                    <i class="bi bi-camera-fill"></i>
+                  </div>
                 </div>
+
+                <input type="file" id="userProfilePicInput" class="d-none"
+                       accept="image/*"
+                       onchange="handleUserProfilePreview(this)">
               </div>
               <h5 id="displayUsername" class="fw-bold mb-1">---</h5>
               <p id="displayEmail" class="text-muted small">---</p>
@@ -123,6 +184,7 @@
 <script>
   const token = localStorage.getItem("token");
   const sidebar = new bootstrap.Offcanvas(document.getElementById('navSidebar'));
+  const defaultProfileSVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 24 24' fill='none' stroke='%23adb5bd' stroke-width='1'%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3Cpath d='M5.5 21a6.5 6.5 0 0 1 13 0'/%3E%3C/svg%3E";
 
   if(!token) {
     window.location.href="signin.html";
@@ -221,9 +283,62 @@
     });
   }
 
+  function handleUserProfilePreview(input) {
+    if (input.files && input.files[0]) {
+
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        $('#userProfilePreview').attr('src', e.target.result);
+      };
+
+      reader.readAsDataURL(input.files[0]);
+
+      // AUTO upload after selecting
+      uploadUserProfilePic(input.files[0]);
+    }
+  }
+
+  function uploadUserProfilePic(file) {
+
+    let formData = new FormData();
+    formData.append("userId", userId);
+    formData.append("profilePic", file);
+
+    $.ajax({
+      url: "http://localhost:8080/api/v1/user/upload-profile-pic",
+      type: "POST", // or PUT depending on backend
+      headers: {
+        "Authorization": "Bearer " + token
+      },
+      data: formData,
+      processData: false,
+      contentType: false,
+
+      success: function () {
+        // refresh with real image (avoid cache)
+        $('#userProfilePreview').attr(
+                'src',
+                `http://localhost:8080/api/v1/user/get-profile-pic/${userId}`
+        );
+      },
+
+      error: function () {
+        alert("Profile picture upload failed");
+      }
+    });
+  }
+
   function logout() {
     localStorage.clear();
     window.location.href = "sign-in.html";
+  }
+
+  function loadProfilePhoto() {
+    $('#userProfilePreview').attr(
+            'src',
+            `http://localhost:8080/api/v1/user/get-profile-pic/${userId}?t=${new Date().getTime()}`
+    );
   }
 
   $(document).ready(() => {
@@ -232,6 +347,7 @@
     }
     setupNavbar();
     loadUser();
+    loadProfilePhoto();
   });
 </script>
 

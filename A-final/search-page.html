@@ -2,218 +2,184 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>HarmoniQ | Explore</title>
+    <title>HarmoniQ | Search</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <style>
-        :root {
-            --primary-blue: #0061ff;
-            --glass-bg: rgba(255, 255, 255, 0.9);
-            --subtle-gray: #f8fafc;
-        }
-
+        /* Base Theme Overrides */
         body {
-            background-color: #f1f5f9;
-            color: #1e293b;
-            padding-bottom: 140px;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #0f0f0f;
+            color: #f1f1f1;
+            padding-bottom: 120px;
         }
 
         /* Sidebar & Navigation */
-        .sidebar-sensor { width: 12px; z-index: 1060; }
-        .nav-link {
-            border-radius: 12px; margin: 4px 15px; padding: 12px 16px !important;
-            transition: 0.2s; color: #64748b !important;
-        }
-        .nav-link:hover { background-color: #f1f5f9; color: var(--primary-blue) !important; }
+        .offcanvas { background-color: #1a1a1a !important; color: #f1f1f1 !important; }
+        .nav-link { color: #b3b3b3 !important; transition: 0.3s; }
+        .nav-link:hover { color: #ffffff !important; background: #282828; }
+        .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
 
-        /* Search Header Enhancement */
+        /* Search Header */
         .search-header {
-            background: var(--glass-bg);
-            backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            padding: 2rem 0;
-            z-index: 1000;
+            background: #121212;
+            border-bottom: 1px solid #282828;
+            padding: 1.5rem 0;
         }
+
         .search-input-lg {
-            border-radius: 16px;
-            padding: 1.2rem 1.5rem 1.2rem 4rem;
-            font-size: 1.25rem;
-            border: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background-color: #2a2a2a;
+            border: 1px solid #3e3e3e;
+            color: #ffffff;
+            border-radius: 30px;
+            padding: 0.8rem 1.5rem 0.8rem 3.5rem;
         }
+
         .search-input-lg:focus {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
-            background: #fff;
-        }
-        .search-icon { position: absolute; left: 1.8rem; top: 50%; transform: translateY(-50%); color: var(--primary-blue); font-size: 1.5rem; }
-
-        /* Results Styling */
-        .section-title {
-            font-weight: 800;
-            color: #94a3b8;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 2px;
-            margin-bottom: 2rem;
+            background-color: #333;
+            border-color: #0d6efd;
+            color: #fff;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
         }
 
-        .artist-card {
-            background: white;
-            padding: 20px;
-            border-radius: 24px;
-            text-align: center;
-            transition: 0.3s;
-            cursor: pointer;
-            border: 1px solid transparent;
+        /* Artist & Song Items */
+        .artist-item:hover {
+            background: #282828;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
-        .artist-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.06);
-            border-color: #e2e8f0;
-        }
+
         .artist-img {
-            width: 110px; height: 110px;
-            object-fit: cover;
-            border-radius: 50%;
-            margin-bottom: 15px;
-            border: 4px solid #fff;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            border: 3px solid #1a1a1a;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
         .song-row {
-            background: white;
-            transition: 0.2s;
-            cursor: pointer;
-            border-radius: 16px;
-            padding: 12px 20px;
-            margin-bottom: 10px;
-            border: 1px solid transparent;
+            background: transparent;
+            border-bottom: 1px solid #1a1a1a;
         }
+
         .song-row:hover {
-            background: #fdfdfd;
-            transform: scale(1.01);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-            border-color: #e2e8f0;
+            background: #282828;
+            box-shadow: none;
         }
-        .song-img { width: 52px; height: 52px; object-fit: cover; border-radius: 10px; }
 
-        /* Bottom Player glassmorphism */
+        .song-row .text-dark { color: #ffffff !important; }
+        .song-row .text-muted { color: #b3b3b3 !important; }
+
+        /* Bottom Player */
         #bottomPlayer {
-            backdrop-filter: blur(25px);
-            background: rgba(255, 255, 255, 0.85);
-            border-top: 1px solid rgba(0,0,0,0.05) !important;
-        }
-        #bottomPlayer.active { bottom: 0 !important; }
-
-        .progress { border-radius: 10px; height: 6px !important; background: #e2e8f0 !important; }
-        .progress-bar { background: var(--primary-blue) !important; transition: width 0.1s linear; }
-
-        .liked { color: #ef476f !important; animation: heart-beat 0.3s ease; }
-        @keyframes heart-beat {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
+            background-color: #181818 !important;
+            border-top: 1px solid #282828 !important;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.5) !important;
         }
 
-        .empty-state { color: #94a3b8; text-align: center; margin-top: 8rem; }
+        #playerTitle { color: #ffffff; }
+        .progress { background-color: #3e3e3e !important; border: none !important; }
+
+        /* UI Refinements */
+        .section-title { color: #b3b3b3; }
+        .empty-state { color: #404040; }
+
+        .playlist-item { color: #e0e0e0; border-bottom: 1px solid #282828; }
+        .playlist-item:hover { background-color: #333; color: #0d6efd; }
+
+        .popover { background-color: #282828; border: 1px solid #3e3e3e; }
+        .popover-body { color: #f1f1f1; }
+
+        /* Overrides for hardcoded Bootstrap classes */
+        .bg-white { background-color: #1a1a1a !important; }
+        .border-end, .border-bottom, .border-top { border-color: #282828 !important; }
     </style>
 </head>
 <body>
 
 <div id="sidebar-sensor" class="position-fixed top-0 start-0 vh-100 sidebar-sensor"></div>
 
-<div class="offcanvas offcanvas-start border-0 shadow-lg" tabindex="-1" id="navSidebar" style="width: 280px; border-radius: 0 25px 25px 0;">
-    <div class="offcanvas-header py-4 px-4">
-        <h5 class="offcanvas-title text-primary fw-bold d-flex align-items-center">
-            <i class="bi bi-vinyl-fill me-2 fs-3"></i> HarmoniQ
-        </h5>
-        <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas"></button>
+<div class="offcanvas offcanvas-start bg-white border-end shadow" tabindex="-1" id="navSidebar" style="width: 280px;">
+    <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title text-primary fw-bold">HarmoniQ 🎶</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
     </div>
     <div class="offcanvas-body d-flex flex-column p-0">
         <ul class="nav flex-column mb-auto">
-            <li><a class="nav-link" href="user-home.html"><i class="bi bi-house-door-fill me-3"></i> Home</a></li>
-            <li><a class="nav-link bg-light text-primary fw-bold" href="search-page.html"><i class="bi bi-search me-3"></i> Explore</a></li>
-            <li><a class="nav-link" href="artists-page.html"><i class="bi bi-mic-fill me-3"></i> Artists</a></li>
-            <li><a class="nav-link" href="user-playlists.html"><i class="bi bi-music-note-list me-3"></i> Playlists</a></li>
-            <li><a class="nav-link" href="user-profile.html"><i class="bi bi-person-fill me-3"></i> Profile</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="user-home.html">🏠 Home</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="search-page.html">🔍 Search</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="artists-page.html">🎙️ Artists</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="user-playlists.html">📜 Playlists</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="user-profile.html">👤 Profile</a></li>
         </ul>
-        <div class="p-4 border-top">
-            <button class="btn btn-outline-danger w-100 fw-bold border-2" onclick="logout()">Logout</button>
+        <div class="p-3 border-top">
+            <button class="btn btn-outline-danger w-100" onclick="logout()">Logout</button>
         </div>
     </div>
 </div>
 
-<header class="search-header sticky-top">
+<header class="search-header sticky-top shadow-sm">
     <div class="container">
         <div class="position-relative">
             <i class="bi bi-search search-icon"></i>
-            <input type="text" id="mainSearch" class="form-control search-input-lg shadow-sm" placeholder="Artists, songs, or genres..." autofocus>
+            <input type="text" id="mainSearch" class="form-control search-input-lg" placeholder="What do you want to listen to?" autofocus>
         </div>
     </div>
 </header>
 
-<main class="container py-5">
+<main class="container py-4">
     <div id="emptyPrompt" class="empty-state">
-        <div class="mb-4 display-1 text-light"><i class="bi bi-compass"></i></div>
-        <h3 class="fw-bold text-dark">Ready to discover?</h3>
-        <p class="fs-5">Start typing to search through the HarmoniQ library.</p>
+        <i class="bi bi-search" style="font-size: 3rem;"></i>
+        <p class="mt-3 fs-5">Find your next favorite song or artist</p>
     </div>
 
     <section id="artistSection" style="display: none;" class="mb-5">
-        <h6 class="section-title">Top Artists</h6>
+        <h6 class="section-title">Artists</h6>
         <div class="row g-4" id="artistResults"></div>
     </section>
 
     <section id="songSection" style="display: none;">
-        <h6 class="section-title">Tracks</h6>
-        <div id="songResults" class="d-flex flex-column"></div>
+        <h6 class="section-title">Songs</h6>
+        <div id="songResults"></div>
     </section>
 
     <div id="noResults" class="empty-state" style="display: none;">
-        <i class="bi bi-question-circle display-4 mb-3"></i>
-        <p class="fs-5">We couldn't find a match for that query.</p>
+        <i class="bi bi-exclamation-circle" style="font-size: 2rem;"></i>
+        <p class="mt-2">We couldn't find anything for that search.</p>
     </div>
 </main>
 
-<div id="bottomPlayer" class="fixed-bottom py-3 px-4 shadow-lg" style="bottom: -160px; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1050;">
+<div id="bottomPlayer" class="fixed-bottom bg-white border-top py-3 px-4 shadow-lg" style="bottom: -150px; transition: 0.4s ease-in-out; z-index: 1050;">
     <div class="container-fluid">
         <div class="row align-items-center">
             <div class="col-4 col-md-3 d-flex align-items-center">
-                <img id="playerThumbnail" src="" class="rounded-3 shadow-sm me-3" style="width: 56px; height: 56px; object-fit: cover;">
+                <img id="playerThumbnail" src="" class="rounded border me-3" style="width: 50px; height: 50px; object-fit: cover;">
                 <div class="overflow-hidden">
-                    <div id="playerTitle" class="text-truncate fw-bold mb-0">Song Title</div>
+                    <div id="playerTitle" class="text-truncate fw-bold small mb-0">Song Title</div>
                     <div id="playerArtist" class="text-muted text-truncate small">Artist</div>
                 </div>
             </div>
-
             <div class="col-4 col-md-6 text-center">
-                <div class="d-flex justify-content-center align-items-center gap-4 mb-2">
-                    <i class="bi bi-skip-backward-fill fs-3 cursor-pointer text-dark"></i>
-                    <i id="playPauseBtn" class="bi bi-play-circle-fill fs-1 text-primary cursor-pointer" style="line-height: 1;"></i>
-                    <i class="bi bi-skip-forward-fill fs-3 cursor-pointer text-dark"></i>
+                <div class="d-flex justify-content-center align-items-center gap-3 mb-2">
+                    <i class="bi bi-skip-start-fill fs-3 cursor-pointer"></i>
+                    <i id="playPauseBtn" class="bi bi-play-circle-fill fs-1 text-primary cursor-pointer"></i>
+                    <i class="bi bi-skip-end-fill fs-3 cursor-pointer"></i>
                 </div>
-                <div class="d-flex align-items-center gap-3 px-md-5">
-                    <span id="currentTime" class="text-muted small">0:00</span>
-                    <div class="progress flex-grow-1" style="cursor: pointer;" onclick="seek(event)">
-                        <div id="progressBar" class="progress-bar" style="width: 0%"></div>
+                <div class="d-flex align-items-center gap-2 px-md-5">
+                    <span id="currentTime" class="text-muted" style="font-size: 11px;">0:00</span>
+                    <div class="progress flex-grow-1 bg-light border" style="height: 6px; cursor: pointer;" onclick="seek(event)">
+                        <div id="progressBar" class="progress-bar bg-primary" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
-
             <div class="col-4 col-md-3 d-flex align-items-center justify-content-end gap-3">
-                <div class="d-none d-lg-flex align-items-center gap-2 me-2">
-                    <i id="volumeIcon" class="bi bi-volume-up text-muted"></i>
-                    <input type="range" id="volumeSlider" class="form-range" style="width: 70px;" min="0" max="1" step="0.01" value="1">
+                <div class="d-none d-md-flex align-items-center gap-2 me-2">
+                    <i id="volumeIcon" class="bi bi-volume-up fs-5 text-muted"></i>
+                    <input type="range" id="volumeSlider" class="form-range" style="width: 80px;" min="0" max="1" step="0.01" value="1">
                 </div>
-                <i id="likeBtn" class="bi bi-heart fs-5 cursor-pointer text-muted" onclick="likeSong()"></i>
-                <i class="bi bi-plus-square fs-5 cursor-pointer text-muted" id="playlistBtn" data-bs-toggle="popover" data-bs-trigger="click"></i>
-                <i class="bi bi-x-lg fs-5 text-danger cursor-pointer ms-2" onclick="closePlayer()"></i>
+
+                <i id="likeBtn" class="bi bi-heart fs-5 cursor-pointer text-muted" title="Like" onclick="likeSong()"></i>
+
+                <i class="bi bi-bookmark-plus fs-5 cursor-pointer text-muted" id="playlistBtn" data-bs-toggle="popover" data-bs-trigger="click" title="Add to Playlist"></i>
+                <i class="bi bi-x-lg fs-5 text-danger cursor-pointer" onclick="closePlayer()"></i>
             </div>
         </div>
     </div>
@@ -234,7 +200,9 @@
     const userId = payload.id;
 
     $.ajaxSetup({
-        beforeSend: function(xhr) { if (token) xhr.setRequestHeader('Authorization', 'Bearer ' + token); }
+        beforeSend: function(xhr) {
+            if (token) xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+        }
     });
 
     let currentPlayingMusicId = null;
@@ -244,19 +212,56 @@
     $('#sidebar-sensor').on('mouseenter', () => sidebar.show());
 
     $(document).ready(function() {
+        if (localStorage.getItem("token") == null) {
+            window.location.href = "sign-in.html";
+        }
+
         Promise.all([
             $.get(`${apiBase}/artist/get-all`),
             $.get(`${apiBase}/music/get-all`)
         ]).then(([artistRes, musicRes]) => {
             allArtists = artistRes.data;
             allSongs = musicRes.data;
-        }).catch(err => { if(err.status === 403) logout(); });
+        }).catch(err => {
+            if(err.status === 403 || err.status === 401) logout();
+        });
 
         $('#mainSearch').on('input', function() {
             const query = $(this).val().toLowerCase().trim();
             if (query === "") { resetUI(); return; }
             filterAndRender(query);
         });
+    });
+
+    // Volume Control Logic
+    $('#volumeSlider').on('input', function() {
+        const vol = $(this).val();
+        audio.volume = vol;
+
+        // Update icon based on volume level
+        const icon = $('#volumeIcon');
+        if (vol == 0) {
+            icon.removeClass('bi-volume-up bi-volume-down').addClass('bi-volume-mute');
+        } else if (vol < 0.5) {
+            icon.removeClass('bi-volume-up bi-volume-mute').addClass('bi-volume-down');
+        } else {
+            icon.removeClass('bi-volume-down bi-volume-mute').addClass('bi-volume-up');
+        }
+    });
+
+    // Optional: Click icon to mute/unmute
+    $('#volumeIcon').on('click', function() {
+        if (audio.volume > 0) {
+            $(this).data('last-vol', audio.volume);
+            audio.volume = 0;
+            $('#volumeSlider').val(0);
+            $(this).removeClass('bi-volume-up bi-volume-down').addClass('bi-volume-mute');
+        } else {
+            const lastVol = $(this).data('last-vol') || 1;
+            audio.volume = lastVol;
+            $('#volumeSlider').val(lastVol);
+            $(this).removeClass('bi-volume-mute').addClass(lastVol < 0.5 ? 'bi-volume-down' : 'bi-volume-up');
+        }
     });
 
     function resetUI() {
@@ -268,7 +273,8 @@
     function filterAndRender(query) {
         const filteredArtists = allArtists.filter(a => a.name.toLowerCase().includes(query));
         const filteredSongs = allSongs.filter(s =>
-            s.musicTitle.toLowerCase().includes(query) || s.musicArtist.toLowerCase().includes(query)
+            s.musicTitle.toLowerCase().includes(query) ||
+            s.musicArtist.toLowerCase().includes(query)
         );
 
         $('#emptyPrompt').hide();
@@ -276,12 +282,13 @@
         if (filteredArtists.length > 0) {
             $('#artistSection').show();
             let html = '';
-            filteredArtists.forEach(a => {
+            filteredArtists.forEach((a) => {
+                const artistData = JSON.stringify(a).replace(/'/g, "&apos;");
                 html += `
                     <div class="col-6 col-md-3 col-lg-2">
-                        <div class="artist-card" onclick='viewArtistProfile(${JSON.stringify(a).replace(/'/g, "&apos;")})'>
-                            <img src="${apiBase}/artist/profile-pic/${a.id}" class="artist-img" onerror="this.src='https://via.placeholder.com/110?text=Artist'">
-                            <div class="fw-bold text-truncate">${a.name}</div>
+                        <div class="artist-item" onclick='viewArtistProfile(${artistData})'>
+                            <img src="${apiBase}/artist/profile-pic/${a.id}" class="artist-img" onerror="this.src='https://via.placeholder.com/100?text=Artist'">
+                            <div class="fw-bold small text-truncate">${a.name}</div>
                         </div>
                     </div>`;
             });
@@ -294,9 +301,9 @@
             filteredSongs.forEach(s => {
                 html += `
                     <div class="song-row d-flex align-items-center" onclick="playSong('${s.id}', '${s.musicTitle.replace(/'/g, "\\'")}', '${s.musicArtist.replace(/'/g, "\\'")}')">
-                        <img src="${apiBase}/music/thumbnail/${s.id}" class="song-img me-3" onerror="this.src='https://via.placeholder.com/60?text=Track'">
-                        <div class="flex-grow-1 overflow-hidden">
-                            <div class="fw-bold mb-0 text-dark text-truncate">${s.musicTitle}</div>
+                        <img src="${apiBase}/music/thumbnail/${s.id}" class="song-img me-3" onerror="this.src='https://via.placeholder.com/60?text=Song'">
+                        <div class="flex-grow-1">
+                            <div class="fw-bold mb-0 text-dark">${s.musicTitle}</div>
                             <div class="text-muted small">${s.musicArtist}</div>
                         </div>
                         <div class="text-primary fs-4 opacity-75"><i class="bi bi-play-circle-fill"></i></div>
@@ -305,40 +312,51 @@
             $('#songResults').html(html);
         } else { $('#songSection').hide(); }
 
-        $('#noResults').toggle(filteredArtists.length === 0 && filteredSongs.length === 0);
+        if (filteredArtists.length === 0 && filteredSongs.length === 0) { $('#noResults').show(); }
+        else { $('#noResults').hide(); }
     }
 
     function viewArtistProfile(artist) {
         localStorage.setItem("selectedArtist", JSON.stringify(artist));
+        localStorage.setItem("backLocation", "search-page.html");
         window.location.href = "artist-profile.html";
     }
 
+    // --- NEW: LIKE FUNCTIONS ---
     function checkLikeStatus() {
-        if (!currentPlayingMusicId) return;
+        if (!token || !currentPlayingMusicId) return;
         $.ajax({
             url: `${apiBase}/liked-song/check-like`,
             type: "POST",
             contentType: "application/json",
             data: JSON.stringify({ userId: userId, musicId: currentPlayingMusicId }),
-            success: (res) => {
+            success: function(response) {
                 const btn = $('#likeBtn');
-                if (res.data === "Liked") btn.removeClass("bi-heart text-muted").addClass("bi-heart-fill text-danger liked");
-                else btn.removeClass("bi-heart-fill text-danger liked").addClass("bi-heart text-muted");
+                if (response.data === "Liked") {
+                    btn.removeClass("bi-heart text-muted").addClass("bi-heart-fill text-danger liked");
+                } else {
+                    btn.removeClass("bi-heart-fill text-danger liked").addClass("bi-heart text-muted");
+                }
             }
         });
     }
 
     function likeSong() {
-        if (!currentPlayingMusicId) return;
+        if (!token || !currentPlayingMusicId) return;
         $.ajax({
             url: `${apiBase}/liked-song/add-or-remove`,
             type: "POST",
             contentType: "application/json",
             data: JSON.stringify({ userId: userId, musicId: currentPlayingMusicId }),
-            success: (res) => {
-                const btn = $('#likeBtn');
-                if (res.data === "Liked Song") btn.removeClass("bi-heart text-muted").addClass("bi-heart-fill text-danger liked");
-                else btn.removeClass("bi-heart-fill text-danger liked").addClass("bi-heart text-muted");
+            success: function(response) {
+                if (response.status === 200 || response.code === 200) {
+                    const btn = $('#likeBtn');
+                    if (response.data === "Liked Song") {
+                        btn.removeClass("bi-heart text-muted").addClass("bi-heart-fill text-danger liked");
+                    } else {
+                        btn.removeClass("bi-heart-fill text-danger liked").addClass("bi-heart text-muted");
+                    }
+                }
             }
         });
     }
@@ -352,56 +370,82 @@
         $("#bottomPlayer").addClass("active");
         audio.play();
         $("#playPauseBtn").removeClass("bi-play-circle-fill").addClass("bi-pause-circle-fill");
-        checkLikeStatus();
+
+        checkLikeStatus(); // Check if liked when song starts
     }
 
-    // Playlist Popover
-    new bootstrap.Popover(document.getElementById('playlistBtn'), {
+    // Popover Logic
+    const playlistPopover = new bootstrap.Popover(document.getElementById('playlistBtn'), {
         html: true,
-        placement: 'top',
-        content: function() { return `<div id="playlistPopoverContent" class="text-center p-2"><div class="spinner-border spinner-border-sm text-primary"></div></div>`; }
+        content: function() {
+            return `<div id="playlistPopoverContent" class="text-center p-2"><div class="spinner-border spinner-border-sm text-primary"></div></div>`;
+        }
     });
 
     document.getElementById('playlistBtn').addEventListener('shown.bs.popover', function () {
-        $.get(`${apiBase}/playlist/load/${username}`, (res) => {
-            let html = '<div class="list-group list-group-flush" style="width: 220px; max-height: 200px; overflow-y: auto;">';
-            if(!res.data || res.data.length === 0) html += '<div class="p-3 text-muted small text-center">No playlists found</div>';
-            else {
-                res.data.forEach(pl => {
-                    html += `<div class="p-3 hover-bg cursor-pointer border-bottom small fw-medium" onclick="addToPlaylist(${pl.id})">${pl.playlistName}</div>`;
+        $.get(`${apiBase}/playlist/load/${userId}`, (response) => {
+            let html = '<div class="list-group list-group-flush" style="width: 200px; max-height: 200px; overflow-y: auto;">';
+            if(!response.data || response.data.length === 0) {
+                html += '<div class="p-3 text-muted small">No playlists found</div>';
+            } else {
+                response.data.forEach(pl => {
+                    html += `<div class="playlist-item p-2 hover-bg cursor-pointer border-bottom small" onclick="addToPlaylist(${pl.id})">${pl.playlistName}</div>`;
                 });
             }
             html += '</div>';
-            $('.popover-body').html(html);
+            const popoverBody = document.querySelector('.popover-body');
+            if (popoverBody) popoverBody.innerHTML = html;
         });
     });
 
-    function addToPlaylist(pid) {
+    function addToPlaylist(playlistId) {
+        if (!currentPlayingMusicId) return;
         $.ajax({
             url: `${apiBase}/playlist-song/add`,
             type: "POST",
             contentType: "application/json",
-            data: JSON.stringify({ playlistId: pid, musicId: currentPlayingMusicId }),
-            success: () => { alert("Track Added!"); bootstrap.Popover.getInstance('#playlistBtn').hide(); }
+            data: JSON.stringify({ playlistId: playlistId, musicId: currentPlayingMusicId }),
+            success: function() {
+                alert("Song added to playlist! 🎶");
+                bootstrap.Popover.getInstance(document.getElementById('playlistBtn')).hide();
+            }
         });
     }
 
-    $('#volumeSlider').on('input', function() { audio.volume = $(this).val(); });
+    function closePlayer() {
+        audio.pause();
+        $("#bottomPlayer").removeClass("active");
+    }
+
     $("#playPauseBtn").on("click", () => {
-        if(audio.paused) { audio.play(); $("#playPauseBtn").removeClass("bi-play-circle-fill").addClass("bi-pause-circle-fill"); }
-        else { audio.pause(); $("#playPauseBtn").removeClass("bi-pause-circle-fill").addClass("bi-play-circle-fill"); }
+        if(audio.paused) {
+            audio.play();
+            $("#playPauseBtn").removeClass("bi-play-circle-fill").addClass("bi-pause-circle-fill");
+        } else {
+            audio.pause();
+            $("#playPauseBtn").removeClass("bi-pause-circle-fill").addClass("bi-play-circle-fill");
+        }
     });
+
     audio.ontimeupdate = () => {
         if(audio.duration) {
-            $("#progressBar").css("width", (audio.currentTime / audio.duration * 100) + "%");
-            let m = Math.floor(audio.currentTime / 60);
-            let s = Math.floor(audio.currentTime % 60);
-            $("#currentTime").text(`${m}:${s < 10 ? '0' : ''}${s}`);
+            let pct = (audio.currentTime / audio.duration) * 100;
+            $("#progressBar").css("width", pct + "%");
+            let mins = Math.floor(audio.currentTime / 60);
+            let secs = Math.floor(audio.currentTime % 60);
+            $("#currentTime").text(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
         }
     };
-    function seek(e) { audio.currentTime = (e.offsetX / e.currentTarget.offsetWidth) * audio.duration; }
-    function closePlayer() { audio.pause(); $("#bottomPlayer").removeClass("active"); }
-    function logout() { localStorage.clear(); window.location.href = "sign-in.html"; }
+
+    function seek(e) {
+        const percent = e.offsetX / e.currentTarget.offsetWidth;
+        audio.currentTime = percent * audio.duration;
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = "sign-in.html";
+    }
 </script>
 </body>
 </html>

@@ -10,101 +10,75 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
   <style>
-    body { background-color: #f8f9fa; color: #333; }
+    body { background-color: #121212; color: #e0e0e0; }
     .cursor-pointer { cursor: pointer; }
-    .hover-bg:hover { background-color: #e9ecef !important; }
-    .music-card { border: 1px solid #dee2e6; background: #fff; transition: 0.2s; border-radius: 12px; }
+    .hover-bg:hover { background-color: #2a2a2a !important; }
+    .music-card { border: 1px solid #333; background: #1e1e1e; transition: 0.2s; border-radius: 12px; }
+
+    #bottomPlayer { background-color: #1e1e1e !important; border-top: 1px solid #333 !important; }
     #bottomPlayer.active { bottom: 0 !important; }
 
-    .playlist-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 14px; }
-    .playlist-item:hover { background-color: #f8f9fa; color: #0d6efd; }
-    .popover-body { padding: 0; max-height: 200px; overflow-y: auto; width: 200px; }
+    .playlist-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #333; font-size: 14px; color: #e0e0e0; background: #1e1e1e; }
+    .playlist-item:hover { background-color: #2a2a2a; color: #0d6efd; }
+
+    .popover-body { padding: 0; max-height: 200px; overflow-y: auto; width: 200px; background-color: #1e1e1e; border: 1px solid #333; }
+    .popover { border-color: #333; }
 
     .text-primary-important { color: #0d6efd !important; }
     .liked { color: #dc3545 !important; }
 
-    #volumeSlider {
-      height: 4px;
-    }
-    #volumeSlider::-webkit-slider-thumb {
-      width: 12px;
-      height: 12px;
-      background: #0d6efd;
-    }
+    #volumeSlider { height: 4px; }
+    #volumeSlider::-webkit-slider-thumb { width: 12px; height: 12px; background: #0d6efd; }
 
     /* The Floating Button */
     .chat-launcher {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 60px;
-      height: 60px;
-      background-color: #007bff;
-      color: white;
-      border-radius: 50%;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      font-size: 24px;
-      z-index: 1000;
+      position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
+      background-color: #0d6efd; color: white; border-radius: 50%;
+      border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      font-size: 24px; z-index: 1000;
     }
 
     /* The Chat Window */
     .chat-container {
-      display: none; /* Hidden by default */
-      position: fixed;
-      bottom: 90px;
-      right: 20px;
-      width: 350px;
-      height: 500px;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      z-index: 1000;
-      border: 1px solid #eee;
+      display: none; position: fixed; bottom: 90px; right: 20px;
+      width: 350px; height: 500px; background: #1e1e1e;
+      border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      display: flex; flex-direction: column; overflow: hidden;
+      z-index: 1000; border: 1px solid #333;
     }
 
     /* Header Styling */
     .chat-header {
-      background: #007bff;
-      color: white;
-      padding: 15px;
-      font-weight: bold;
-      display: flex;
-      justify-content: space-between;
+      background: #0d6efd; color: white; padding: 15px;
+      font-weight: bold; display: flex; justify-content: space-between;
     }
 
     /* Messages Area */
-    #messages {
-      flex: 1;
-      padding: 15px;
-      overflow-y: auto;
-      background: #f9f9f9;
-    }
+    #messages { flex: 1; padding: 15px; overflow-y: auto; background: #121212; color: #e0e0e0; }
 
     /* Input Area */
-    .chat-footer {
-      padding: 15px;
-      border-top: 1px solid #eee;
-      display: flex;
-      gap: 8px;
-    }
+    .chat-footer { padding: 15px; border-top: 1px solid #333; display: flex; gap: 8px; background: #1e1e1e; }
+    #input { flex: 1; padding: 8px; border: 1px solid #444; border-radius: 4px; background: #2a2a2a; color: #e0e0e0; }
 
-    #input {
-      flex: 1;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+    .artist-item { transition: 0.2s; cursor: pointer; text-align: center; padding: 10px; border-radius: 10px; color: #e0e0e0; }
+    .artist-item:hover { background: #2a2a2a; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .artist-img {
+      width: 100px; height: 100px; object-fit: cover; border-radius: 50%;
+      margin-bottom: 10px; border: 3px solid #1e1e1e; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
     }
-
-    .artist-item { transition: 0.2s; cursor: pointer; text-align: center; padding: 10px; border-radius: 10px; }
-    .artist-item:hover { background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .artist-img { width: 100px; height: 100px; object-fit: cover; border-radius: 50%; margin-bottom: 10px; border: 3px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
     .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+
+    /* Overrides for Hardcoded Bootstrap Utility Classes */
+    .bg-white { background-color: #1e1e1e !important; }
+    .bg-light { background-color: #2a2a2a !important; }
+    .text-dark { color: #e0e0e0 !important; }
+    .text-secondary { color: #b0b0b0 !important; }
+    .text-muted { color: #888 !important; }
+    .border, .border-end, .border-bottom, .border-top { border-color: #333 !important; }
+    .shadow, .shadow-lg { box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important; }
+    .offcanvas { background-color: #1e1e1e !important; color: #e0e0e0; }
+    .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
   </style>
 </head>
 
@@ -253,14 +227,6 @@
         renderList("#musicContainer", musicList, "all");
       }
     });
-
-    // Fetch Liked Music Preview with Randomization
-    if(userId) {
-      fetchLikedSongs();
-      fetchFollowedArtistsSongs();
-      fetchRecentSongs();
-      fetchFollowingArtists()
-    }
   }
 
   function renderFollowedArtistsSongs(songs) {
@@ -297,10 +263,8 @@
         let randomPreview = [...likedListPreview];
         shuffleArray(randomPreview);
 
-        likedListPreview = randomPreview.slice(0, 3);
-
         // Show only first 3 random songs for preview
-        renderList("#likedSongsPreviewContainer", likedListPreview, "liked");
+        renderList("#likedSongsPreviewContainer", randomPreview.slice(0, 3), "liked");
       }
     });
   }
@@ -493,6 +457,10 @@
     });
   }
 
+  let listenedSeconds = 0;
+  let lastTime = 0;
+  let recentSaved = false;
+
   function playSong(index) {
     const activeList = shuffleMode ? shuffledList : (currentActiveListName === "liked" ? likedListPreview : (currentActiveListName === "followed" ? followedArtistsSongs : (currentActiveListName === "recent" ? recentListGlobal :  musicList)));
     if (index < 0 || index >= activeList.length) return;
@@ -501,13 +469,12 @@
     const music = activeList[index];
     currentMusicId = music.id;
 
-    audio.onplay = () => {
-      setTimeout(() => {
-        saveRecentSong(userId, currentMusicId);
-      }, 1000);
-    };
+    listenedSeconds = 0;
+    lastTime = 0;
+    recentSaved = false;
 
     audio.src = `${apiBase}/music/stream/${music.id}`;
+    audio.play();
 
     $("#playerTitle").text(music.musicTitle);
     $("#playerArtist").text(music.musicArtist);
@@ -591,10 +558,8 @@
         } else {
           btn.removeClass("bi-heart-fill text-danger liked").addClass("bi-heart text-muted");
           // Refresh liked preview if something was unliked
-          if(currentActiveListName === "liked") fetchInitialData();
+          if(currentActiveListName === "liked") fetchLikedSongs();
         }
-
-        fetchLikedSongs();
       }
     });
   }
@@ -639,13 +604,43 @@
     }
   });
 
+  audio.onseeked = () => {
+    // Reset lastTime so skip doesn't count as listening
+    lastTime = audio.currentTime;
+  };
+
+  audio.onpause = () => {
+    lastTime = audio.currentTime;
+  }
+
+  audio.onplay = () => {
+    lastTime = audio.currentTime;
+  };
+
   audio.ontimeupdate = () => {
-    if(audio.duration) {
-      let pct = (audio.currentTime / audio.duration) * 100;
-      $("#progressBar").css("width", pct + "%");
-      let mins = Math.floor(audio.currentTime / 60);
-      let secs = Math.floor(audio.currentTime % 60);
-      $("#currentTime").text(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
+    if(!audio.duration) return;
+
+    let current = audio.currentTime;
+    // Only count small continuous playback (no skipping)
+    let delta = current - lastTime;
+
+    if (delta > 0 && delta < 1) {
+      listenedSeconds += delta;
+    }
+
+    lastTime = current;
+
+    // UI update
+    let pct = (audio.currentTime / audio.duration) * 100;
+    $("#progressBar").css("width", pct + "%");
+
+    let mins = Math.floor(audio.currentTime / 60);
+    let secs = Math.floor(audio.currentTime % 60);
+    $("#currentTime").text(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
+
+    if (!recentSaved && listenedSeconds >= audio.duration / 2) {
+      saveRecentSong(userId, currentMusicId);
+      recentSaved = true;
     }
   };
 
@@ -653,6 +648,8 @@
     const percent = e.offsetX / e.currentTarget.offsetWidth;
     audio.currentTime = percent * audio.duration;
   }
+
+
 
   // Popover Logic
   const playlistPopover = new bootstrap.Popover(document.getElementById('playlistBtn'), {
@@ -710,9 +707,6 @@
       headers: { "Authorization": "Bearer " + token },
       contentType: "application/json",
       data: JSON.stringify({ userId, musicId }),
-      success: function() {
-        fetchRecentSongs();
-      }
     });
   }
 
@@ -729,9 +723,9 @@
         recentListGlobal = response.data || [];
 
         // show only few (optional)
-        recentListGlobal = recentListGlobal.slice(0, 6);
+        const limitedList = recentListGlobal.slice(0, 6);
 
-        renderList("#recentSongContainer", recentListGlobal, "recent");
+        renderList("#recentSongContainer", limitedList, "recent");
       },
       error: function(err) {
         console.error("Failed to load recent songs", err);
@@ -766,13 +760,14 @@
         "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
       },
       success: function(response) {
-        renderFollowingArtists(response.data);
+        renderFollowingArtists(response.data.slice(0,6));
       }
     });
   }
 
   function viewProfile(artist) {
     localStorage.setItem("selectedArtist", JSON.stringify(artist));
+    localStorage.setItem("backLocation", "user-home.html");
     window.location.href = "artist-profile.html";
   }
 
@@ -780,19 +775,37 @@
 
   function logout() { localStorage.clear(); window.location.href = "sign-in.html"; }
 
+  function startAI(userId) {
+    fetch("http://localhost:8080/api/v1/chat/start", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: userId })
+    });
+  }
+
   $(document).ready(() => {
     if (localStorage.getItem("token") == null) {
       window.location.href = "sign-in.html";
+      return;
     }
+
+    startAI(userId);
+
     fetchInitialData();
+    fetchFollowedArtistsSongs();
+    fetchRecentSongs();
+    fetchLikedSongs();
+    fetchFollowingArtists()
 
     // Initial Greeting
     document.getElementById("messages").innerHTML +=
             "<p><b>HarmoniQ AI:</b> Hello! How can I help you Today?</p>";
 
-    $("#input").on("keypress", function(e) {
+    $("#input").on("keydown", function(e) {
       if(e.which === 13) {
         send();
+      } else if (e.which === 27) {
+        toggleChat();
       }
     });
   });

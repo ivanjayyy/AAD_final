@@ -10,146 +10,170 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
   <style>
-    :root {
-      --hq-primary: #0d6efd;
-      --hq-danger: #ef4444;
-      --hq-bg: #f8fafc;
+    body { background-color: #f4f7f6; color: #333; }
+    .main-content { transition: margin-left 0.3s; padding: 40px; }
+    .cursor-pointer { cursor: pointer; }
+
+    /* Sidebar sensor */
+    #sidebar-sensor {
+      position: fixed;
+      top: 0; left: 0;
+      width: 15px; height: 100vh;
+      z-index: 1050;
     }
 
-    body { background-color: var(--hq-bg); color: #1e293b; font-family: 'Inter', system-ui, sans-serif; }
+    /* Sidebar Styling */
+    .sidebar-light {
+      background: #ffffff !important;
+      border-right: 1px solid #dee2e6;
+    }
+    .sidebar-light .nav-link {
+      color: #555;
+      padding: 12px 20px;
+      border-bottom: 1px solid #f8f9fa;
+      transition: 0.2s;
+    }
+    .sidebar-light .nav-link:hover {
+      background-color: #f8f9fa;
+      color: #0d6efd;
+    }
+    .sidebar-light .active-nav {
+      background-color: #eef5ff;
+      color: #0d6efd !important;
+      font-weight: bold;
+    }
 
-    /* Sidebar Sensor & Logic */
-    #sidebar-sensor { position: fixed; top: 0; left: 0; width: 12px; height: 100vh; z-index: 1050; }
-    .sidebar-custom { border: none; box-shadow: 10px 0 30px rgba(0,0,0,0.04); }
+    .profile-upload-container {
+      position: relative;
+      width: 100px;
+      margin: 0 auto;
+      cursor: pointer;
+    }
 
-    .nav-link {
-      padding: 14px 24px !important;
-      color: #64748b !important;
-      font-weight: 500;
+    .profile-preview-wrapper {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 4px solid #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      background: #f0f2f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: 0.3s;
-      border-radius: 12px;
-      margin: 4px 12px;
-    }
-    .nav-link:hover { background: #f1f5f9; color: var(--hq-primary) !important; }
-    .active-nav { background: #e0e7ff !important; color: var(--hq-primary) !important; font-weight: 700; }
-
-    /* Profile Cards */
-    .settings-card {
-      border: none;
-      border-radius: 24px;
-      background: white;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
-    .avatar-placeholder {
-      width: 100px; height: 100px;
-      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    .profile-preview-wrapper:hover {
+      transform: scale(1.05);
+      filter: brightness(0.9);
+    }
+
+    .profile-preview-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .edit-icon-badge {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      background: #0d6efd;
       color: white;
-      font-size: 2.5rem;
-      font-weight: 700;
-      box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid white;
     }
-
-    .form-label { color: #475569; letter-spacing: 0.5px; }
-    .form-control {
-      border-radius: 12px;
-      padding: 12px 16px;
-      border: 1px solid #e2e8f0;
-      background-color: #fcfcfc;
-    }
-    .form-control:focus { border-color: var(--hq-primary); box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1); }
   </style>
 </head>
 <body>
 
 <div id="sidebar-sensor"></div>
 
-<div class="offcanvas offcanvas-start sidebar-custom" tabindex="-1" id="navSidebar" style="width: 280px;">
-  <div class="offcanvas-header py-4 px-4">
-    <h5 class="offcanvas-title fw-bold text-primary d-flex align-items-center">
-      <i class="bi bi-music-note-beamed me-2 fs-3"></i> HarmoniQ <small class="ms-2 opacity-50 fw-normal" id="navRoleLabel"></small>
-    </h5>
-    <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas"></button>
+<div class="offcanvas offcanvas-start sidebar-light" tabindex="-1" id="navSidebar" style="width: 280px;">
+  <div class="offcanvas-header border-bottom">
+    <h5 class="offcanvas-title fw-bold text-primary">HarmoniQ <span id="navRoleLabel"></span></h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
   </div>
   <div class="offcanvas-body d-flex flex-column p-0">
     <ul class="nav flex-column mb-auto" id="dynamicNavLinks">
     </ul>
-    <div class="p-4 border-top">
-      <button class="btn btn-outline-danger w-100 fw-bold py-2" onclick="logout()">Logout</button>
+    <div class="p-3 border-top mt-auto">
+      <button class="btn btn-outline-danger w-100" onclick="logout()">Logout</button>
     </div>
   </div>
 </div>
 
-<div class="py-5">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-lg-10">
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12 col-xl-10 mx-auto">
 
-        <div class="d-flex align-items-center justify-content-between mb-5">
-          <div>
-            <h1 class="fw-bold mb-1">Account Settings</h1>
-            <p class="text-muted">Manage your personal identity and security</p>
-          </div>
-          <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill" id="displayRoleBadge">USER</span>
-        </div>
+        <h2 class="fw-bold mb-4">Account Settings</h2>
 
         <div class="row g-4">
           <div class="col-md-4">
-            <div class="settings-card text-center p-5">
-              <div class="avatar-placeholder rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" id="avatarCircle">
-                ?
-              </div>
-              <h4 id="displayUsername" class="fw-bold mb-1">---</h4>
-              <p id="displayEmail" class="text-muted small mb-0">---</p>
+            <div class="card border-0 shadow-sm text-center p-4">
+              <div class="mb-3">
+                <div class="profile-upload-container" onclick="$('#userProfilePicInput').click()">
 
-              <div class="mt-4 pt-4 border-top">
-                <div class="row text-center">
-                  <div class="col-6 border-end">
-                    <div class="fw-bold text-primary">12</div>
-                    <div class="small text-muted">Playlists</div>
+                  <div class="profile-preview-wrapper" style="width: 100px; height: 100px;">
+                    <img id="userProfilePreview"
+                         src=""
+                         alt="Profile"
+                         onerror="this.src=defaultProfileSVG">
                   </div>
-                  <div class="col-6">
-                    <div class="fw-bold text-primary">154</div>
-                    <div class="small text-muted">Liked</div>
+
+                  <div class="edit-icon-badge">
+                    <i class="bi bi-camera-fill"></i>
                   </div>
                 </div>
+
+                <input type="file" id="userProfilePicInput" class="d-none"
+                       accept="image/*"
+                       onchange="handleUserProfilePreview(this)">
               </div>
+              <h5 id="displayUsername" class="fw-bold mb-1">---</h5>
+              <p id="displayEmail" class="text-muted small">---</p>
+              <span class="badge bg-light text-primary border border-primary px-3 py-2 mt-2" id="displayRole">---</span>
             </div>
           </div>
 
           <div class="col-md-8">
-            <div class="settings-card p-5">
-              <h5 class="fw-bold mb-4 d-flex align-items-center">
-                <i class="bi bi-shield-check text-primary me-2"></i> Profile Details
-              </h5>
+            <div class="card border-0 shadow-sm p-4">
+              <h6 class="fw-bold mb-4 border-bottom pb-2">Personal Information</h6>
 
               <div class="row">
                 <div class="col-md-6 mb-3">
-                  <label class="form-label small fw-bold text-uppercase">Username</label>
-                  <input type="text" id="username" class="form-control" placeholder="Choose a name">
+                  <label class="form-label small fw-bold">Username</label>
+                  <input type="text" id="username" class="form-control">
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label class="form-label small fw-bold text-uppercase">Account Level</label>
-                  <input type="text" id="role" class="form-control bg-light opacity-75" readonly>
+                  <label class="form-label small fw-bold">Role</label>
+                  <input type="text" id="role" class="form-control bg-light" readonly>
                 </div>
                 <div class="col-12 mb-4">
-                  <label class="form-label small fw-bold text-uppercase">Email Address</label>
-                  <input type="email" id="email" class="form-control" placeholder="name@example.com">
+                  <label class="form-label small fw-bold">Email Address</label>
+                  <input type="email" id="email" class="form-control">
                 </div>
               </div>
 
-              <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 mt-4 pt-4 border-top">
-                <button class="btn btn-link text-danger fw-bold text-decoration-none p-0" onclick="deleteAccount()">
-                  <i class="bi bi-trash3 me-2"></i>Delete My Account
+              <div class="d-flex justify-content-between align-items-center border-top pt-4 mt-2">
+                <button class="btn btn-danger btn-sm px-3" onclick="deleteAccount()">
+                  <i class="bi bi-trash me-2"></i>Delete Account
                 </button>
-                <button class="btn btn-primary px-5 py-3 fw-bold shadow-sm" style="border-radius: 14px;" onclick="updateUser()">
-                  Update Profile
+                <button class="btn btn-primary px-4 fw-bold" onclick="updateUser()">
+                  Save Changes
                 </button>
               </div>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
@@ -160,23 +184,18 @@
 <script>
   const token = localStorage.getItem("token");
   const sidebar = new bootstrap.Offcanvas(document.getElementById('navSidebar'));
+  const defaultProfileSVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 24 24' fill='none' stroke='%23adb5bd' stroke-width='1'%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3Cpath d='M5.5 21a6.5 6.5 0 0 1 13 0'/%3E%3C/svg%3E";
 
-  // Global Auth Config
-  $.ajaxSetup({
-    headers: { 'Authorization': "Bearer " + token }
-  });
+  if(!token) {
+    window.location.href="signin.html";
+  }
 
-  if(!token) window.location.href="sign-in.html";
-
-  // Parse Token safely
-  let payload = {};
-  try {
-    payload = JSON.parse(atob(token.split('.')[1]));
-  } catch(e) { logout(); }
-
+  // Parse Token
+  const payload = JSON.parse(atob(token.split('.')[1]));
   const userId = payload.id;
-  const userRole = payload.role; // Assuming role is in JWT
+  const userRole = payload.role; // Ensure your backend includes 'role' in JWT payload
 
+  // Initialize Sidebar Hover
   $('#sidebar-sensor').on('mouseenter', () => sidebar.show());
 
   function setupNavbar() {
@@ -184,42 +203,50 @@
     navContainer.empty();
 
     if (userRole === "ADMIN") {
-      $("#navRoleLabel").text("(Admin)");
+      $("#navRoleLabel").text("Admin 🛠️");
       navContainer.append(`
-        <li><a href="admin-dashboard.html" class="nav-link"><i class="bi bi-speedometer2 me-3"></i> Admin Dashboard</a></li>
-        <li><a href="music-management.html" class="nav-link"><i class="bi bi-music-note-beamed me-3"></i> Manage Music</a></li>
-        <li><a href="artist-management.html" class="nav-link"><i class="bi bi-mic me-3"></i> Manage Artists</a></li>
-        <li><a href="user-management.html" class="nav-link"><i class="bi bi-people me-3"></i> User Directory</a></li>
-        <li><a href="user-profile.html" class="nav-link active-nav"><i class="bi bi-person-circle me-3"></i> My Profile</a></li>
+        <li><a href="admin-dashboard.html" class="nav-link p-3 text-primary fw-bold bg-light rounded"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
+        <li><a href="music-management.html" class="nav-link p-3 text-dark"><i class="bi bi-music-note-beamed me-3"></i> Music Management</a></li>
+        <li><a href="artist-management.html" class="nav-link p-3 text-dark"><i class="bi bi-mic me-3"></i> Artists</a></li>
+        <li><a href="user-management.html" class="nav-link p-3 text-dark"><i class="bi bi-people me-3"></i> User Directory</a></li>
+        <li><a href="user-profile.html" class="nav-link p-3 text-dark"><i class="bi bi-person-circle me-3"></i> Profile</a></li>
       `);
     } else {
-      $("#navRoleLabel").text("(Listener)");
+      $("#navRoleLabel").text("User 🎶");
       navContainer.append(`
-        <li><a class="nav-link" href="user-home.html"><i class="bi bi-house me-3"></i> Home</a></li>
-        <li><a class="nav-link" href="search-page.html"><i class="bi bi-search me-3"></i> Search Music</a></li>
-        <li><a class="nav-link" href="artists-page.html"><i class="bi bi-mic me-3"></i> Artists</a></li>
-        <li><a class="nav-link" href="user-playlists.html"><i class="bi bi-collection me-3"></i> My Playlists</a></li>
-        <li><a class="nav-link active-nav" href="user-profile.html"><i class="bi bi-person-circle me-3"></i> Profile Settings</a></li>
+        <li><a class="nav-link" href="user-home.html">🏠 Home</a></li>
+        <li><a class="nav-link" href="search-page.html">🔍 Search</a></li>
+        <li><a class="nav-link" href="artists-page.html">🎙️ Artists</a></li>
+        <li><a class="nav-link" href="user-playlists.html">📜 Playlists</a></li>
+        <li><a class="nav-link active-nav" href="user-profile.html">👤 Profile</a></li>
       `);
     }
   }
 
   function loadUser() {
-    $.get(`http://localhost:8080/api/v1/user/get/${userId}`, function(res) {
-      const u = res.data;
-      $("#username").val(u.username);
-      $("#email").val(u.email);
-      $("#role").val(u.role);
+    $.ajax({
+      url: `http://localhost:8080/api/v1/user/get/${userId}`,
+      type: "GET",
+      headers: { "Authorization": "Bearer " + token },
+      success: function(response) {
+        const user = response.data;
+        $("#username").val(user.username);
+        $("#email").val(user.email);
+        $("#role").val(user.role);
 
-      $("#displayUsername").text(u.username);
-      $("#displayEmail").text(u.email);
-      $("#displayRoleBadge").text(u.role);
-      $("#avatarCircle").text(u.username.charAt(0).toUpperCase());
-    }).fail(() => logout());
+        $("#displayUsername").text(user.username);
+        $("#displayEmail").text(user.email);
+        $("#displayRole").text(user.role);
+      },
+      error: () => {
+        alert("Session expired. Please login again.");
+        logout();
+      }
+    });
   }
 
   function updateUser() {
-    const data = {
+    const updateData = {
       id: userId,
       username: $("#username").val(),
       email: $("#email").val(),
@@ -229,24 +256,75 @@
     $.ajax({
       url: "http://localhost:8080/api/v1/user/update",
       type: "PUT",
+      headers: { "Authorization": "Bearer " + token },
       contentType: "application/json",
-      data: JSON.stringify(data),
+      data: JSON.stringify(updateData),
       success: function() {
-        alert("Settings saved successfully!");
+        alert("Profile Updated Successfully!");
         loadUser();
       },
-      error: (xhr) => alert(xhr.responseJSON?.message || "Update failed")
+      error: (xhr) => {
+        const msg = xhr.responseJSON ? xhr.responseJSON.message : "Update failed";
+        alert(msg);
+      }
     });
   }
 
   function deleteAccount() {
-    if(!confirm("Warning: This will permanently delete your HarmoniQ account. Continue?")) return;
+    if(!confirm("Are you sure? This will permanently delete your account and all data.")) return;
     $.ajax({
       url: "http://localhost:8080/api/v1/user/delete/" + userId,
       type: "DELETE",
-      success: () => {
-        alert("Your account has been removed.");
+      headers: { "Authorization": "Bearer " + token },
+      success: function() {
+        alert("Account deleted.");
         logout();
+      }
+    });
+  }
+
+  function handleUserProfilePreview(input) {
+    if (input.files && input.files[0]) {
+
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        $('#userProfilePreview').attr('src', e.target.result);
+      };
+
+      reader.readAsDataURL(input.files[0]);
+
+      // AUTO upload after selecting
+      uploadUserProfilePic(input.files[0]);
+    }
+  }
+
+  function uploadUserProfilePic(file) {
+
+    let formData = new FormData();
+    formData.append("userId", userId);
+    formData.append("profilePic", file);
+
+    $.ajax({
+      url: "http://localhost:8080/api/v1/user/upload-profile-pic",
+      type: "POST", // or PUT depending on backend
+      headers: {
+        "Authorization": "Bearer " + token
+      },
+      data: formData,
+      processData: false,
+      contentType: false,
+
+      success: function () {
+        // refresh with real image (avoid cache)
+        $('#userProfilePreview').attr(
+                'src',
+                `http://localhost:8080/api/v1/user/get-profile-pic/${userId}`
+        );
+      },
+
+      error: function () {
+        alert("Profile picture upload failed");
       }
     });
   }
@@ -256,9 +334,20 @@
     window.location.href = "sign-in.html";
   }
 
+  function loadProfilePhoto() {
+    $('#userProfilePreview').attr(
+            'src',
+            `http://localhost:8080/api/v1/user/get-profile-pic/${userId}?t=${new Date().getTime()}`
+    );
+  }
+
   $(document).ready(() => {
+    if (localStorage.getItem("token") == null) {
+      window.location.href = "sign-in.html";
+    }
     setupNavbar();
     loadUser();
+    loadProfilePhoto();
   });
 </script>
 

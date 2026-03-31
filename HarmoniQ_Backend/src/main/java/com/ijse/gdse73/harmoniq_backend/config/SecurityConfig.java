@@ -37,6 +37,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/music/thumbnail/**").permitAll() // allow upload for now
+                        .requestMatchers("/api/v1/user/get-profile-pic/**").permitAll()
                         .requestMatchers("/api/v1/music/stream/**").permitAll()
                         .requestMatchers("/api/v1/rag/**").permitAll()
                         .requestMatchers("/api/v1/chat/**").permitAll()
