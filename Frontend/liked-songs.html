@@ -186,7 +186,7 @@
 
         playlistBtn.addEventListener('shown.bs.popover', function () {
             $.get(`${apiBase}/playlist/load/${userId}`, (response) => {
-                let html = '<div class="list-group list-group-flush" style="width: 200px; max-height: 200px; overflow-y: auto;">';
+                let html = '<div class="list-group list-group-flush" style="width: 200px; height: 200px; overflow-y: auto;">';
                 if(!response.data || response.data.length === 0) {
                     html += '<div class="p-2 text-muted small">No playlists found</div>';
                 } else {

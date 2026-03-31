@@ -60,7 +60,7 @@
         .text-primary-important { color: #0d6efd !important; }
         .playlist-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 14px; }
         .playlist-item:hover { background-color: #f8f9fa; color: #0d6efd; }
-        .popover-body { padding: 0; max-height: 200px; overflow-y: auto; width: 200px; }
+        .popover-body { padding: 0; height: 200px; overflow-y: auto; width: 200px; }
 
         /* Follow Button Style */
         .btn-follow {
@@ -86,7 +86,7 @@
 <body>
 
 <div class="profile-header text-center position-relative">
-    <a href="artists-page.html" class="back-btn"><i class="bi bi-arrow-left"></i> Back</a>
+    <a href="" class="back-btn"><i class="bi bi-arrow-left"></i> Back</a>
     <div class="container">
         <img id="artistImg" src="" class="rounded-circle profile-main-img mb-4" onerror="this.src='https://via.placeholder.com/180'">
 
@@ -189,9 +189,12 @@
         }
         const artistData = localStorage.getItem("selectedArtist");
         if (!artistData) {
-            window.location.href = "artists-page.html";
+            window.location.href = localStorage.getItem("backLocation" || "artists-page.html");
             return;
         }
+
+        const backPage = localStorage.getItem("backLocation") || "artists-page.html";
+        $(".back-btn").attr("href", backPage);
 
         const artist = JSON.parse(artistData);
         currentArtistId = artist.id;

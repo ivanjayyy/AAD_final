@@ -80,8 +80,11 @@ public class PlaylistServiceImpl implements PlaylistService {
     }
 
     @Override
-    public void updatePlaylist(PlaylistDTO playlistDTO) {
-
+    public void updatePlaylist(Long playlistId, PlaylistDTO playlistDTO) {
+        playlistRepo.findById(playlistId).ifPresent(playlist -> {
+            playlist.setPlaylistName(playlistDTO.getPlaylistName());
+            playlistRepo.save(playlist);
+        });
     }
 
     @Override

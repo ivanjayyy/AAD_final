@@ -48,8 +48,8 @@ public class PlaylistController {
 
     @PutMapping("/update/{playlistId}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<APIResponse> updatePlaylist(@PathVariable String playlistId, @RequestBody PlaylistDTO playlistDTO) {
-//        playlistService.updatePlaylist(playlistId, playlistDTO);
+    public ResponseEntity<APIResponse> updatePlaylist(@PathVariable Long playlistId, @RequestBody PlaylistDTO playlistDTO) {
+        playlistService.updatePlaylist(playlistId, playlistDTO);
         return ResponseEntity.ok(new APIResponse(
                 200, "Playlist updated successfully", null
         ));

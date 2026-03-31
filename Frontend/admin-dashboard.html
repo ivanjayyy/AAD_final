@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>HarmoniQ | Admin Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>HarmoniQ | Admin Panel</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
@@ -11,130 +11,169 @@
 
     <style>
         body { background-color: #f8f9fa; color: #212529; }
-        .sidebar-sensor { width: 15px; z-index: 1060; cursor: pointer; }
-        .card { border: none; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); }
-        .nav-link:hover { background-color: #f1f3f5; border-radius: 5px; }
-        .table thead { background-color: #f1f3f5; }
+        .card { border: none; box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); }
+        .nav-link:hover { background-color: #f8f9fa; }
+        .sidebar-sensor { width: 15px; z-index: 1060; }
+        .stat-card { transition: transform 0.2s; cursor: pointer; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15); }
+        .card-icon { font-size: 2rem; opacity: 0.7; }
     </style>
 </head>
 
-<body class="overflow-hidden">
+<body class="p-4">
 
 <div id="admin-sidebar-sensor" class="position-fixed top-0 start-0 vh-100 sidebar-sensor"></div>
 
 <div class="offcanvas offcanvas-start bg-white border-end shadow" tabindex="-1" id="adminSidebar" style="width: 280px;">
     <div class="offcanvas-header border-bottom">
-        <h5 class="offcanvas-title text-primary fw-bold"><i class="bi bi-shield-lock-fill me-2"></i>Admin Panel</h5>
+        <h5 class="offcanvas-title text-primary fw-bold"><i class="bi bi-shield-lock-fill me-2"></i>Admin HQ</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
     </div>
     <div class="offcanvas-body d-flex flex-column p-0">
-        <div class="p-3">
-            <ul class="nav flex-column mb-auto">
-                <li><a href="admin-dashboard.html" class="nav-link p-3 text-dark"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
-                <li><a href="music-management.html" class="nav-link p-3 text-dark"><i class="bi bi-music-note-beamed me-3"></i> Music Management</a></li>
-                <li><a href="artist-management.html" class="nav-link p-3 text-dark"><i class="bi bi-mic me-3"></i> Artists</a></li>
-                <li><a href="user-management.html" class="nav-link p-3 text-dark"><i class="bi bi-people me-3"></i> User Directory</a></li>
-                <li><a href="genre-management.html" class="nav-link p-3 text-dark"><i class="bi bi-tags me-3"></i> Genres</a></li>
-                <li><a href="user-profile.html" class="nav-link p-3 text-dark"><i class="bi bi-person-circle me-3"></i> Profile</a></li>
-            </ul>
-        </div>
-        <div class="mt-auto p-3 border-top">
-            <button class="btn btn-outline-danger w-100 fw-bold" onclick="logout()">Logout</button>
+        <ul class="nav flex-column mb-auto">
+            <li><a href="admin-dashboard.html" class="nav-link p-3 text-dark"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
+            <li><a href="music-management.html" class="nav-link p-3 text-dark"><i class="bi bi-music-note-beamed me-3"></i> Music Management</a></li>
+            <li><a href="artist-management.html" class="nav-link p-3 text-dark"><i class="bi bi-mic me-3"></i> Artists</a></li>
+            <li><a href="user-management.html" class="nav-link p-3 text-dark"><i class="bi bi-people me-3"></i> User Directory</a></li>
+            <li><a href="genre-management.html" class="nav-link p-3 text-dark"><i class="bi bi-tags me-3"></i> Genres</a></li>
+            <li><a href="user-profile.html" class="nav-link p-3 text-dark"><i class="bi bi-person-circle me-3"></i> Profile</a></li>
+        </ul>
+        <div class="p-3 border-top mt-auto">
+            <button class="btn btn-outline-danger w-100" onclick="logout()">Logout</button>
         </div>
     </div>
 </div>
 
-<main class="vh-100 overflow-auto p-4">
-    <div class="container-fluid">
+<div class="container">
+    <h2 class="fw-bold mb-4">Admin Dashboard</h2>
 
-        <div class="mb-4">
-            <h2 class="fw-bold">Overview</h2>
-            <p class="text-muted small">← Hover the left edge to open the menu</p>
-        </div>
-
-        <div class="row g-4 mb-5">
-            <div class="col-12 col-md-4">
-                <div class="card p-3">
-                    <div class="card-body">
-                        <div class="text-muted small text-uppercase fw-bold mb-1">Total Streams</div>
-                        <h2 class="fw-bold text-dark mb-0">1.2M</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-4">
-                <div class="card p-3">
-                    <div class="card-body">
-                        <div class="text-muted small text-uppercase fw-bold mb-1">Active Users</div>
-                        <h2 class="fw-bold text-dark mb-0">24.5K</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-4">
-                <div class="card p-3">
-                    <div class="card-body">
-                        <div class="text-muted small text-uppercase fw-bold mb-1">Pending Artists</div>
-                        <h2 class="fw-bold text-warning mb-0">14</h2>
-                    </div>
-                </div>
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card stat-card text-center p-3" onclick="window.location.href='music-management.html'">
+                <i class="bi bi-music-note-beamed text-primary card-icon mb-2"></i>
+                <h6 class="fw-bold mb-1">Total Tracks</h6>
+                <h4 id="totalTracks" class="text-dark">0</h4>
             </div>
         </div>
-
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="fw-bold mb-0">Recent Content</h5>
-            <a href="music-management.html" class="btn btn-primary btn-sm fw-bold px-3">
-                <i class="bi bi-plus-lg me-1"></i> Add Track
-            </a>
-        </div>
-
-        <div class="card">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="small text-uppercase text-muted">
-                    <tr>
-                        <th class="ps-4">Music</th>
-                        <th>Artist</th>
-                        <th>Status</th>
-                        <th>Date Added</th>
-                        <th class="text-end pe-4">Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody class="border-top-0">
-                    <tr>
-                        <td class="ps-4">
-                            <div class="d-flex align-items-center">
-                                <div class="bg-light rounded border me-3" style="width: 40px; height: 40px;"></div>
-                                <span class="fw-medium">Starlight Serenade</span>
-                            </div>
-                        </td>
-                        <td>Luna Ray</td>
-                        <td><span class="badge bg-success-subtle text-success border border-success-subtle px-2">Live</span></td>
-                        <td>Oct 24, 2023</td>
-                        <td class="text-end pe-4">
-                            <button class="btn btn-sm btn-outline-secondary border-0"><i class="bi bi-pencil"></i></button>
-                            <button class="btn btn-sm btn-outline-danger border-0 ms-2"><i class="bi bi-trash"></i></button>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+        <div class="col-md-3">
+            <div class="card stat-card text-center p-3" onclick="window.location.href='artist-management.html'">
+                <i class="bi bi-mic text-success card-icon mb-2"></i>
+                <h6 class="fw-bold mb-1">Total Artists</h6>
+                <h4 id="totalArtists" class="text-dark">0</h4>
             </div>
         </div>
-
+        <div class="col-md-3">
+            <div class="card stat-card text-center p-3" onclick="window.location.href='user-management.html'">
+                <i class="bi bi-people text-warning card-icon mb-2"></i>
+                <h6 class="fw-bold mb-1">Total Users</h6>
+                <h4 id="totalUsers" class="text-dark">0</h4>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card text-center p-3" onclick="window.location.href='genre-management.html'">
+                <i class="bi bi-tags-fill text-danger card-icon mb-2"></i>
+                <h6 class="fw-bold mb-1">Total Genres</h6>
+                <h4 id="totalGenres" class="text-dark">0</h4>
+            </div>
+        </div>
     </div>
-</main>
+
+    <!-- Recent Activity Table -->
+    <div class="card border-0 shadow-sm mb-5">
+        <div class="card-header bg-white py-3">
+            <h6 class="mb-0 text-secondary fw-bold"><i class="bi bi-clock-history me-2"></i> Recent Activity</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="recentActivityTable">
+                <thead class="table-light small text-uppercase">
+                <tr>
+                    <th class="ps-3">ID</th>
+                    <th>Type</th>
+                    <th>Item</th>
+                    <th>User</th>
+                    <th class="text-end pe-3">Date</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    const adminMenu = new bootstrap.Offcanvas(document.getElementById('adminSidebar'));
+    const sidebar = new bootstrap.Offcanvas(document.getElementById('adminSidebar'));
+    $('#admin-sidebar-sensor').on('mouseenter', () => sidebar.show());
 
-    // Trigger sidebar on hover
-    $('#admin-sidebar-sensor').on('mouseenter', () => adminMenu.show());
+    if (!localStorage.getItem("token")) {
+        window.location.href = "sign-in.html";
+    }
+
+    // Fetch stats
+    function fetchStats() {
+        $.ajax({
+            url: "http://localhost:8080/api/v1/music/get-all",
+            method: "GET",
+            headers: { "Authorization": "Bearer " + localStorage.getItem("token") },
+            success: (res) => $("#totalTracks").text(res.data.length)
+        });
+
+        $.ajax({
+            url: "http://localhost:8080/api/v1/artist/get-all",
+            method: "GET",
+            headers: { "Authorization": "Bearer " + localStorage.getItem("token") },
+            success: (res) => $("#totalArtists").text(res.data.length)
+        });
+
+        $.ajax({
+            url: "http://localhost:8080/api/v1/user/get-all",
+            method: "GET",
+            headers: { "Authorization": "Bearer " + localStorage.getItem("token") },
+            success: (res) => $("#totalUsers").text(res.data.length)
+        });
+
+        $.ajax({
+            url: "http://localhost:8080/api/v1/genre/get-all",
+            method: "GET",
+            headers: { "Authorization": "Bearer " + localStorage.getItem("token") },
+            success: (res) => $("#totalGenres").text(res.data.length)
+        });
+    }
+
+    // Fetch recent activity
+    function fetchRecentActivity() {
+        $.ajax({
+            url: "http://localhost:8080/api/v1/activity/recent",
+            method: "GET",
+            headers: { "Authorization": "Bearer " + localStorage.getItem("token") },
+            success: (res) => {
+                const tbody = $("#recentActivityTable tbody").empty();
+                res.data.forEach(a => {
+                    tbody.append(`
+          <tr>
+            <td class="ps-3 text-muted">#${a.id}</td>
+            <td>${a.type}</td>
+            <td>${a.item}</td>
+            <td>${a.username}</td>
+            <td class="text-end pe-3">${new Date(a.date).toLocaleString()}</td>
+          </tr>
+        `);
+                });
+            }
+        });
+    }
 
     function logout() {
         localStorage.clear();
         window.location.href = "sign-in.html";
     }
-</script>
 
+    $(document).ready(() => {
+        fetchStats();
+        fetchRecentActivity();
+    });
+</script>
 </body>
 </html>

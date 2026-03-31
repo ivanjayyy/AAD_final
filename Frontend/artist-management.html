@@ -281,13 +281,20 @@
       data: formData,
       processData: false,
       contentType: false,
-      success: () => {
+      success: (response) => {
         $('#addArtistModal').modal('hide');
         $('#artistName, #artistBio, #profilePic').val('');
         $('#previewImage').attr('src', placeholderSVG);
         fetchArtists();
       },
-      error: () => alert("Add failed")
+      error: (error) => {
+        let msg = "Add failed"
+        if (error.responseJSON) {
+          msg = error.responseJSON.data || error.responseJSON.message;
+        }
+        alert(msg);
+        // alert("Add failed")
+      }
     });
   }
 

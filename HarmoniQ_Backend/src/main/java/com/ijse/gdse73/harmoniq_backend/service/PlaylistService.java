@@ -9,7 +9,7 @@ public interface PlaylistService {
     void createPlaylist(PlaylistDTO playlistDTO);
     List<PlaylistDTO> getPlaylistsByUserId(Long userId);
     void deletePlaylist(Long id);
-    void updatePlaylist(PlaylistDTO playlistDTO);
+    void updatePlaylist(Long playlistId, PlaylistDTO playlistDTO);
 
     List<MusicDTO> getSongsFromPlaylists(Long userId);
     Long getPlaylistId(String playlistName);

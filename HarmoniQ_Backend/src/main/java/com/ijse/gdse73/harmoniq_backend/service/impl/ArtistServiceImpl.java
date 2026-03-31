@@ -20,7 +20,11 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     public void addArtist(ArtistDTO artistDTO) {
         if (artistRepo.findByName(artistDTO.getName()) != null) {
-            return;
+            throw new CustomException("Artist already exists");
+        }
+
+        if (artistRepo.findByPfpPath(artistDTO.getPfpPath())) {
+            throw new CustomException("Artist profile picture already exists");
         }
         artistRepo.save(modelMapper.map(artistDTO, Artist.class));
     }

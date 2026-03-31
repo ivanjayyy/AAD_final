@@ -223,6 +223,7 @@
 
     function filterAndRender(query) {
         const filteredArtists = allArtists.filter(a => a.name.toLowerCase().includes(query));
+        localStorage.setItem("artistList",JSON.stringify(filteredArtists));
         const filteredSongs = allSongs.filter(s =>
             s.musicTitle.toLowerCase().includes(query) ||
             s.musicArtist.toLowerCase().includes(query)
@@ -335,7 +336,7 @@
 
     document.getElementById('playlistBtn').addEventListener('shown.bs.popover', function () {
         $.get(`${apiBase}/playlist/load/${userId}`, (response) => {
-            let html = '<div class="list-group list-group-flush" style="width: 200px; max-height: 200px; overflow-y: auto;">';
+            let html = '<div class="list-group list-group-flush" style="width: 200px; height: 200px; overflow-y: auto;">';
             if(!response.data || response.data.length === 0) {
                 html += '<div class="p-3 text-muted small">No playlists found</div>';
             } else {

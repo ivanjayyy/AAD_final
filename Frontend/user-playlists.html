@@ -125,6 +125,23 @@
     </div>
 </div>
 
+<div class="modal fade" id="updateModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <h4 class="fw-bold mb-3">Update Playlist</h4>
+                <input type="text" id="updatePlaylistName"
+                       class="form-control form-control-lg text-center border-0 bg-light mb-3">
+                <button class="btn btn-primary w-100 rounded-pill"
+                        onclick="updatePlaylist()">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
@@ -160,13 +177,25 @@
                 response.data.forEach(pl => {
                     container.append(`
                         <div class="col-6 col-md-4 col-lg-3 col-xl-2">
-                            <div class="card h-100 shadow-sm text-center p-4 playlist-card cursor-pointer"
-                                 onclick="openPlaylist(${pl.id}, '${pl.playlistName}')">
-                                <div class="icon-box">
-                                    <i class="bi bi-music-note-list"></i>
+                            <div class="card h-100 shadow-sm text-center p-4 playlist-card position-relative">
+
+                                <!-- Action Buttons -->
+                                <div class="position-absolute top-0 end-0 m-2 d-flex gap-2">
+                                    <i class="bi bi-pencil-square text-primary cursor-pointer"
+                                       onclick="event.stopPropagation(); showUpdateModal(${pl.id}, '${pl.playlistName}')"></i>
+
+                                    <i class="bi bi-trash text-danger cursor-pointer"
+                                       onclick="event.stopPropagation(); deletePlaylist(${pl.id})"></i>
                                 </div>
-                                <div class="playlist-title text-truncate">${pl.playlistName}</div>
-                                <div class="playlist-subtitle">Playlist</div>
+
+                                <div onclick="openPlaylist(${pl.id}, '${pl.playlistName}')">
+                                    <div class="icon-box">
+                                        <i class="bi bi-music-note-list"></i>
+                                    </div>
+                                    <div class="playlist-title text-truncate">${pl.playlistName}</div>
+                                    <div class="playlist-subtitle">Playlist</div>
+                                </div>
+
                             </div>
                         </div>
                     `);
@@ -182,6 +211,52 @@
         localStorage.setItem("selectedPlaylistId", id);
         localStorage.setItem("selectedPlaylistName", name);
         window.location.href = "user-playlist-songs.html";
+    }
+
+    let currentPlaylistId = null;
+
+    function showUpdateModal(id, name) {
+        currentPlaylistId = id;
+        $("#updatePlaylistName").val(name);
+        new bootstrap.Modal(document.getElementById('updateModal')).show();
+    }
+
+    function updatePlaylist() {
+        const newName = $("#updatePlaylistName").val();
+
+        if (!newName) return alert("Enter a name");
+
+        $.ajax({
+            url: "http://localhost:8080/api/v1/playlist/update/" + currentPlaylistId,
+            method: "PUT",
+            contentType: "application/json",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            data: JSON.stringify({
+                playlistName: newName,
+                userIds: userId
+            }),
+            success: function () {
+                bootstrap.Modal.getInstance(document.getElementById('updateModal')).hide();
+                loadPlaylists();
+            }
+        });
+    }
+
+    function deletePlaylist(id) {
+        if (!confirm("Are you sure you want to delete this playlist?")) return;
+
+        $.ajax({
+            url: "http://localhost:8080/api/v1/playlist/delete/" + id,
+            method: "DELETE",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            success: function () {
+                loadPlaylists();
+            }
+        });
     }
 
     function createPlaylist(){

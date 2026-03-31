@@ -18,7 +18,7 @@
 
         .playlist-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 14px; }
         .playlist-item:hover { background-color: #f8f9fa; color: #0d6efd; }
-        .popover-body { padding: 0; max-height: 200px; overflow-y: auto; width: 200px; }
+        .popover-body { padding: 0; height: 200px; overflow-y: auto; width: 200px; }
 
         .text-primary-important { color: #0d6efd !important; }
         .liked { color: #dc3545 !important; }
@@ -289,8 +289,10 @@
                 let randomPreview = [...likedListPreview];
                 shuffleArray(randomPreview);
 
+                likedListPreview = randomPreview.slice(0, 6);
+
                 // Show only first 3 random songs for preview
-                renderList("#likedSongsPreviewContainer", randomPreview.slice(0, 3), "liked");
+                renderList("#likedSongsPreviewContainer", likedListPreview, "liked");
             }
         });
     }
@@ -584,7 +586,7 @@
                 } else {
                     btn.removeClass("bi-heart-fill text-danger liked").addClass("bi-heart text-muted");
                     // Refresh liked preview if something was unliked
-                    if(currentActiveListName === "liked") fetchLikedSongs();
+                    fetchLikedSongs();
                 }
             }
         });
@@ -787,6 +789,7 @@
             },
             success: function(response) {
                 renderFollowingArtists(response.data.slice(0,6));
+                localStorage.setItem("artistList",JSON.stringify(response.data));
             }
         });
     }

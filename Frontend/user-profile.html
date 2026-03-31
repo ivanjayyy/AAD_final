@@ -205,20 +205,21 @@
     if (userRole === "ADMIN") {
       $("#navRoleLabel").text("Admin 🛠️");
       navContainer.append(`
-        <li><a href="admin-dashboard.html" class="nav-link p-3 text-primary fw-bold bg-light rounded"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
+        <li><a href="admin-dashboard.html" class="nav-link p-3 text-dark"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
         <li><a href="music-management.html" class="nav-link p-3 text-dark"><i class="bi bi-music-note-beamed me-3"></i> Music Management</a></li>
         <li><a href="artist-management.html" class="nav-link p-3 text-dark"><i class="bi bi-mic me-3"></i> Artists</a></li>
         <li><a href="user-management.html" class="nav-link p-3 text-dark"><i class="bi bi-people me-3"></i> User Directory</a></li>
+        <li><a href="genre-management.html" class="nav-link p-3 text-dark"><i class="bi bi-tags me-3"></i> Genres</a></li>
         <li><a href="user-profile.html" class="nav-link p-3 text-dark"><i class="bi bi-person-circle me-3"></i> Profile</a></li>
       `);
     } else {
       $("#navRoleLabel").text("User 🎶");
       navContainer.append(`
-        <li><a class="nav-link" href="user-home.html">🏠 Home</a></li>
-        <li><a class="nav-link" href="search-page.html">🔍 Search</a></li>
-        <li><a class="nav-link" href="artists-page.html">🎙️ Artists</a></li>
-        <li><a class="nav-link" href="user-playlists.html">📜 Playlists</a></li>
-        <li><a class="nav-link active-nav" href="user-profile.html">👤 Profile</a></li>
+        <li><a class="nav-link text-dark p-3 fw-medium" href="user-home.html">🏠 Home</a></li>
+        <li><a class="nav-link text-dark p-3 fw-medium" href="search-page.html">🔍 Search</a></li>
+        <li><a class="nav-link text-dark p-3 fw-medium" href="artists-page.html">🎙️ Artists</a></li>
+        <li><a class="nav-link text-dark p-3 fw-medium" href="user-playlists.html">📜 Playlists</a></li>
+        <li><a class="nav-link text-dark p-3 fw-medium" href="user-profile.html">👤 Profile</a></li>
       `);
     }
   }
@@ -227,8 +228,8 @@
     $.ajax({
       url: `http://localhost:8080/api/v1/user/get/${userId}`,
       type: "GET",
-      headers: { "Authorization": "Bearer " + token },
-      success: function(response) {
+      headers: {"Authorization": "Bearer " + token},
+      success: function (response) {
         const user = response.data;
         $("#username").val(user.username);
         $("#email").val(user.email);
