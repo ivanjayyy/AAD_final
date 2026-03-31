@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HarmoniQ | Genre Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <style>
+    body { background-color: #f8f9fa; color: #212529; }
+    .card { border: none; box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); }
+    .nav-link:hover { background-color: #f8f9fa; }
+    .table-hover tbody tr:hover { background-color: #fcfcfc; }
+  </style>
+</head>
+<body class="p-4">
+
+<div id="admin-sidebar-sensor" class="position-fixed top-0 start-0 vh-100" style="width: 15px; z-index: 1060;"></div>
+
+<div class="offcanvas offcanvas-start bg-white border-end" tabindex="-1" id="adminSidebar" style="width: 280px;">
+  <div class="offcanvas-header border-bottom">
+    <h5 class="offcanvas-title text-primary fw-bold"><i class="bi bi-shield-lock-fill me-2"></i>Admin HQ</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column p-0">
+    <ul class="nav flex-column mb-auto">
+      <li><a href="admin-dashboard.html" class="nav-link p-3 text-dark"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
+      <li><a href="music-management.html" class="nav-link p-3 text-dark"><i class="bi bi-music-note-beamed me-3"></i> Music Management</a></li>
+      <li><a href="artist-management.html" class="nav-link p-3 text-dark"><i class="bi bi-mic me-3"></i> Artists</a></li>
+      <li><a href="user-management.html" class="nav-link p-3 text-dark"><i class="bi bi-people me-3"></i> User Directory</a></li>
+      <li><a href="genre-management.html" class="nav-link p-3 text-dark"><i class="bi bi-tags me-3"></i> Genres</a></li>
+      <li><a href="user-profile.html" class="nav-link p-3 text-dark"><i class="bi bi-person-circle me-3"></i> Profile</a></li>
+    </ul>
+    <div class="p-3 mt-auto border-top">
+      <button class="btn btn-outline-danger w-100" onclick="logout()">Logout</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <h2 class="fw-bold mb-4">Genre Management</h2>
+
+  <div class="mb-4">
+    <button class="btn btn-success fw-bold" onclick="showAddModal()">
+      <i class="bi bi-plus-circle-fill me-2"></i> Add Genre
+    </button>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3">
+      <h6 class="mb-0 text-primary fw-bold"><i class="bi bi-tags-fill me-2"></i> All Genres</h6>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0" id="genreTable">
+        <thead class="table-light small text-uppercase">
+        <tr>
+          <th class="ps-3">ID</th>
+          <th>Genre Name</th>
+          <th class="text-center">Tracks Count</th>
+          <th class="text-end pe-3">Actions</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="genreModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="genreModalTitle">Add Genre</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <input type="hidden" id="modalGenreId">
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-muted">Genre Name</label>
+          <input type="text" id="modalGenreName" class="form-control" placeholder="Enter genre name">
+        </div>
+      </div>
+      <div class="modal-footer border-0 p-3">
+        <button class="btn btn-primary w-100 fw-bold" onclick="saveGenre()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  const sidebar = new bootstrap.Offcanvas(document.getElementById('adminSidebar'));
+  $('#admin-sidebar-sensor').on('mouseenter', () => sidebar.show());
+
+  if (!localStorage.getItem("token")) window.location.href = "sign-in.html";
+
+  function fetchGenres() {
+    $.ajax({
+      url: "http://localhost:8080/api/v1/genre/get-all",
+      method: "GET",
+      headers: { "Authorization": "Bearer " + localStorage.getItem("token") },
+      success: (res) => {
+        const tbody = $("#genreTable tbody").empty();
+        res.data.forEach(g => {
+          tbody.append(`
+          <tr>
+            <td class="ps-3 text-muted">#${g.id}</td>
+            <td>${g.name}</td>
+            <td class="text-center">${g.trackCount || 0}</td>
+            <td class="text-end pe-3">
+              <button class="btn btn-sm btn-outline-primary" onclick="editGenre(${g.id}, '${g.name}')"><i class="bi bi-pencil"></i> Edit</button>
+              <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteGenre(${g.id})"><i class="bi bi-trash"></i></button>
+            </td>
+          </tr>
+        `);
+        });
+      }
+    });
+  }
+
+  function showAddModal() {
+    $("#genreModalTitle").text("Add Genre");
+    $("#modalGenreId").val("");
+    $("#modalGenreName").val("");
+    new bootstrap.Modal(document.getElementById("genreModal")).show();
+  }
+
+  function editGenre(id, name) {
+    $("#genreModalTitle").text("Edit Genre");
+    $("#modalGenreId").val(id);
+    $("#modalGenreName").val(name);
+    new bootstrap.Modal(document.getElementById("genreModal")).show();
+  }
+
+  function saveGenre() {
+    const id = $("#modalGenreId").val();
+    const name = $("#modalGenreName").val().trim();
+    if (!name) return alert("Genre name cannot be empty!");
+
+    const url = id ? `http://localhost:8080/api/v1/genre/update/${id}` : `http://localhost:8080/api/v1/genre/add`;
+    const type = id ? "PUT" : "POST";
+
+    $.ajax({
+      url,
+      type,
+      headers: { "Authorization": "Bearer " + localStorage.getItem("token") },
+      contentType: "application/json",
+      data: JSON.stringify({ name }),
+      success: () => {
+        bootstrap.Modal.getInstance(document.getElementById("genreModal")).hide();
+        fetchGenres();
+      }
+    });
+  }
+
+  function deleteGenre(id) {
+    if (!confirm("Are you sure you want to delete this genre?")) return;
+    $.ajax({
+      url: `http://localhost:8080/api/v1/genre/delete/${id}`,
+      type: "DELETE",
+      headers: { "Authorization": "Bearer " + localStorage.getItem("token") },
+      success: fetchGenres
+    });
+  }
+
+  function logout() {
+    localStorage.clear();
+    window.location.href = "sign-in.html";
+  }
+
+  $(document).ready(fetchGenres);
+</script>
+
+</body>
+</html>

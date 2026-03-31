@@ -45,7 +45,7 @@ public class FollowedArtistController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<APIResponse> getRandomSongs(@PathVariable Long userId){
         return ResponseEntity.ok(new APIResponse(
-                200,"OK",followedArtistService.getRandomFollowedArtistMusic(userId,3,3)
+                200,"OK",followedArtistService.getRandomFollowedArtistMusic(userId,3,2)
         ));
     }
 

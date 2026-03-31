@@ -73,7 +73,7 @@ public class FollowedArtistServiceImpl implements FollowedArtistService {
     }
 
     @Override
-    public List<Music> getRandomFollowedArtistMusic(Long userId, int artistCount, int songsPerArtist) {
+    public List<MusicDTO> getRandomFollowedArtistMusic(Long userId, int artistCount, int songsPerArtist) {
 
         User user = userRepo.findById(userId).orElseThrow(
                 () -> new CustomException("User not found")
@@ -110,7 +110,8 @@ public class FollowedArtistServiceImpl implements FollowedArtistService {
         // 4️⃣ Shuffle final combined list
         Collections.shuffle(randomMusicList);
 
-        return randomMusicList;
+        return randomMusicList.stream()
+                .map(music -> modelMapper.map(music, MusicDTO.class)).toList();
     }
 
     @Override

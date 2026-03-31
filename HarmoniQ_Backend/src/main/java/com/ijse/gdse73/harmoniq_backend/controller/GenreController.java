@@ -25,12 +25,31 @@ public class GenreController {
         ));
     }
 
+    @PutMapping("/update/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<APIResponse> updateGenre(@RequestBody GenreDTO genreDTO , @PathVariable Long id){
+        genreService.updateGenre(id, genreDTO);
+
+        return ResponseEntity.ok(new APIResponse(
+                200,"OK",null
+        ));
+    }
+
     @GetMapping("/get-all")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<APIResponse> getAllGenre(){
 
         return ResponseEntity.ok(new APIResponse(
                 200,"OK",genreService.getAllGenre()
+        ));
+    }
+
+    @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<APIResponse> deleteGenre(@PathVariable Long id){
+
+        return ResponseEntity.ok(new APIResponse(
+                200,"OK",genreService.deleteGenre(id)
         ));
     }
 }

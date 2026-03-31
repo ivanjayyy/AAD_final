@@ -269,6 +269,7 @@
 
     function viewArtistProfile(artist) {
         localStorage.setItem("selectedArtist", JSON.stringify(artist));
+        localStorage.setItem("backLocation", "search-page.html");
         window.location.href = "artist-profile.html";
     }
 

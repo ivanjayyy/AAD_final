@@ -5,93 +5,107 @@
     <title>HarmoniQ | Artists</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <style>
         :root {
-            --primary-blue: #0061ff;
-            --soft-blue: #eef4ff;
-            --dark-text: #1e293b;
-            --light-text: #64748b;
+            --app-bg: #f8fafc;
+            --primary-blue: #0d6efd;
+            --surface-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            --card-hover-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
         }
 
         body {
-            background-color: #f8fafc;
-            color: var(--dark-text);
-            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--app-bg);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Sidebar Styling */
-        .sidebar-sensor { width: 12px; z-index: 1060; cursor: pointer; }
-        .offcanvas { border: none !important; border-radius: 0 20px 20px 0; }
-        .nav-link {
-            border-radius: 12px;
-            margin: 4px 15px;
-            padding: 12px 16px !important;
-            transition: 0.2s;
-            color: var(--light-text) !important;
-            font-weight: 500;
-        }
-        .nav-link:hover {
-            background-color: var(--soft-blue);
-            color: var(--primary-blue) !important;
-            transform: translateX(5px);
-        }
-        .nav-link.active-page {
-            background-color: var(--primary-blue);
-            color: white !important;
-            box-shadow: 0 4px 12px rgba(0, 97, 255, 0.2);
-        }
+        /* Sidebar Sensor */
+        .sidebar-sensor { width: 15px; z-index: 1060; }
 
-        /* Artist Card Refinement */
+        /* Modern Artist Cards */
         .artist-card {
             transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            border: 1px solid rgba(0,0,0,0.04) !important;
-            border-radius: 24px;
-            background: #fff;
+            border: 1px solid rgba(0,0,0,0.03) !important;
+            border-radius: 24px !important;
+            background: var(--surface-bg);
             overflow: hidden;
         }
+
         .artist-card:hover {
-            transform: translateY(-12px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.06) !important;
-            border-color: var(--primary-blue) !important;
+            transform: translateY(-8px);
+            box-shadow: var(--card-hover-shadow) !important;
+            border-color: rgba(13, 110, 253, 0.1) !important;
         }
+
+        .profile-img-container {
+            position: relative;
+            width: 130px;
+            height: 130px;
+            margin: 0 auto;
+        }
+
         .profile-img {
-            width: 110px;
-            height: 110px;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
+            border-radius: 50%;
             border: 4px solid #fff;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
-            transition: 0.3s;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            transition: transform 0.4s ease;
         }
+
         .artist-card:hover .profile-img {
             transform: scale(1.05);
         }
+
         .bio-text {
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            font-size: 0.85rem;
-            color: var(--light-text);
+            font-size: 0.875rem;
+            color: var(--text-muted);
             line-height: 1.6;
         }
 
-        .view-btn {
-            background: var(--soft-blue);
+        /* Badge Styling */
+        .view-profile-badge {
+            background: rgba(13, 110, 253, 0.05);
             color: var(--primary-blue);
-            font-weight: 700;
+            font-weight: 600;
             font-size: 0.8rem;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            border: none;
-            transition: 0.2s;
+            letter-spacing: 0.02em;
+            padding: 10px 20px !important;
+            border: 1px solid rgba(13, 110, 253, 0.1);
+            transition: 0.3s;
         }
-        .artist-card:hover .view-btn {
+
+        .artist-card:hover .view-profile-badge {
             background: var(--primary-blue);
-            color: white;
+            color: #fff;
+        }
+
+        /* Sidebar Enhancements */
+        .offcanvas { border-radius: 0 24px 24px 0; border: none !important; }
+        .nav-link { border-radius: 12px; margin: 4px 16px; transition: 0.2s; }
+        .nav-link:hover { background: var(--app-bg); color: var(--primary-blue) !important; transform: translateX(4px); }
+
+        /* Page Heading */
+        .page-title {
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: #0f172a;
         }
     </style>
 </head>
@@ -100,39 +114,30 @@
 
 <div id="sidebar-sensor" class="position-fixed top-0 start-0 vh-100 sidebar-sensor"></div>
 
-<div class="offcanvas offcanvas-start bg-white shadow-lg" tabindex="-1" id="navSidebar" style="width: 280px;">
-    <div class="offcanvas-header py-4 px-4">
-        <h5 class="offcanvas-title text-primary fw-bold d-flex align-items-center">
-            <span class="p-2 bg-primary text-white rounded-3 me-2" style="line-height: 1;">
-                <i class="bi bi-waveform"></i>
-            </span>
-            HarmoniQ
-        </h5>
-        <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas"></button>
+<div class="offcanvas offcanvas-start shadow" tabindex="-1" id="navSidebar" style="width: 280px;">
+    <div class="offcanvas-header border-bottom px-4 py-4">
+        <h5 class="offcanvas-title text-primary fs-4 fw-bold">HarmoniQ <i class="bi bi-music-note-beamed"></i></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
     </div>
-    <div class="offcanvas-body d-flex flex-column p-0 pt-2">
+    <div class="offcanvas-body d-flex flex-column p-0 py-3">
         <ul class="nav flex-column mb-auto">
-            <li><a class="nav-link" href="user-home.html"><i class="bi bi-house-door-fill me-3"></i> Home</a></li>
-            <li><a class="nav-link" href="search-page.html"><i class="bi bi-search me-3"></i> Search</a></li>
-            <li><a class="nav-link active-page" href="artists-page.html"><i class="bi bi-mic-fill me-3"></i> Artists</a></li>
-            <li><a class="nav-link" href="user-playlists.html"><i class="bi bi-collection-play-fill me-3"></i> Playlists</a></li>
-            <li><a class="nav-link" href="user-profile.html"><i class="bi bi-person-circle me-3"></i> Profile</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="user-home.html"><i class="bi bi-house-door-fill me-3 text-secondary"></i>Home</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="search-page.html"><i class="bi bi-search me-3 text-secondary"></i>Search</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="artists-page.html"><i class="bi bi-mic-fill me-3 text-secondary"></i>Artists</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="user-playlists.html"><i class="bi bi-collection-play-fill me-3 text-secondary"></i>Playlists</a></li>
+            <li><a class="nav-link text-dark p-3 fw-medium" href="user-profile.html"><i class="bi bi-person-fill me-3 text-secondary"></i>Profile</a></li>
         </ul>
-        <div class="p-4 mt-auto border-top">
-            <button class="btn btn-outline-danger w-100 fw-bold border-2" onclick="logout()">
-                <i class="bi bi-box-arrow-left me-2"></i> Logout
-            </button>
+        <div class="p-4 mt-auto">
+            <button class="btn btn-outline-danger w-100 rounded-pill fw-medium" onclick="logout()">Logout</button>
         </div>
     </div>
 </div>
 
 <main class="container py-5">
-    <div class="d-flex justify-content-between align-items-end mb-5">
-        <div>
-            <h1 class="fw-bold tracking-tight mb-1">Featured Artists</h1>
-            <p class="text-muted mb-0">Discover the creative minds behind your favorite sounds.</p>
-        </div>
-    </div>
+    <header class="mb-5">
+        <h1 class="page-title mb-2">Featured Artists</h1>
+        <p class="text-muted fs-5">Explore the creators behind your favorite melodies.</p>
+    </header>
 
     <div class="row g-4" id="artistContainer">
     </div>
@@ -142,13 +147,14 @@
 
 <script>
     const sidebar = new bootstrap.Offcanvas(document.getElementById('navSidebar'));
-    const apiBase = "http://localhost:8080/api/v1/artist";
+    const apiBase = "http://localhost:8080/api/v1";
 
+    // Reveal sidebar on left edge hover
     $('#sidebar-sensor').on('mouseenter', () => sidebar.show());
 
     function fetchArtists() {
         $.ajax({
-            url: `${apiBase}/get-all`,
+            url: `${apiBase}/artist/get-all`,
             type: "GET",
             headers: {
                 "Authorization": "Bearer " + localStorage.getItem("token")
@@ -157,12 +163,12 @@
                 renderArtists(response.data);
             },
             error: function() {
-                // Professional mock fallback
+                // Mock data fallback with modern bios
                 const mockData = [
-                    { id: 1, name: "Luna Ray", bio: "Indie pop sensation from the northern lights. Bringing ethereal vibes to your ears." },
-                    { id: 2, name: "Echo Bass", bio: "Electronic producer specializing in deep house and futuristic synth soundscapes." },
-                    { id: 3, name: "The Harmonics", bio: "Alternative rock band with a passion for soulful lyrics and heavy riffs." },
-                    { id: 4, name: "Solaris", bio: "Ambient synth-wave explorer focusing on celestial textures." }
+                    { id: 1, name: "Luna Ray", bio: "Ethereal pop melodies woven with cinematic soundscapes. A journey through light and sound.", songCount: 12 },
+                    { id: 2, name: "Echo Bass", bio: "Defining the future of electronic music. Pulsating rhythms and deep house textures.", songCount: 8 },
+                    { id: 3, name: "The Harmonics", bio: "Raw energy meets soulful storytelling. Revitalizing alternative rock for a new generation.", songCount: 15 },
+                    { id: 4, name: "Indigo Soul", bio: "Smooth jazz-fusion with a touch of modern R&B. Music for the late-night thinkers.", songCount: 10 }
                 ];
                 renderArtists(mockData);
             }
@@ -179,16 +185,19 @@
             container.append(`
             <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
                 <div class="card h-100 artist-card shadow-sm text-center p-4"
-                     onclick='viewProfile(${artistData})' style="cursor: pointer;">
+                     style="cursor: pointer;"
+                     onclick='viewProfile(${artistData})'>
                     <div class="mb-4">
-                        <img src="${apiBase}/profile-pic/${artist.id}"
-                             class="rounded-circle profile-img mx-auto"
-                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%23eef4ff%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2224%22 fill=%22%230061ff%22%3E${artist.name.charAt(0)}%3C/text%3E%3C/svg%3E'">
+                        <div class="profile-img-container">
+                            <img src="${apiBase}/artist/profile-pic/${artist.id}"
+                                 class="profile-img"
+                                 onerror="this.src='https://via.placeholder.com/150?text=Artist'">
+                        </div>
                     </div>
                     <h5 class="fw-bold mb-2 text-dark">${artist.name}</h5>
                     <p class="bio-text mb-4 px-2">${artist.bio}</p>
                     <div class="mt-auto">
-                        <span class="badge rounded-pill px-4 py-2 view-btn">
+                        <span class="badge rounded-pill view-profile-badge">
                              View Profile
                         </span>
                     </div>
@@ -208,7 +217,12 @@
         window.location.href = "sign-in.html";
     }
 
-    $(document).ready(() => fetchArtists());
+    $(document).ready(() => {
+        if (localStorage.getItem("token") == null) {
+            window.location.href = "sign-in.html";
+        }
+        fetchArtists();
+    });
 </script>
 
 </body>

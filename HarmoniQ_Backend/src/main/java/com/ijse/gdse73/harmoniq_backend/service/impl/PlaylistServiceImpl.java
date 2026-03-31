@@ -109,4 +109,10 @@ public class PlaylistServiceImpl implements PlaylistService {
                 .map(music -> modelMapper.map(music, MusicDTO.class))
                 .toList();
     }
+
+    @Override
+    public Long getPlaylistId(String playlistName) {
+        Playlist playlist = playlistRepo.findByPlaylistName(playlistName);
+        return playlist.getId();
+    }
 }

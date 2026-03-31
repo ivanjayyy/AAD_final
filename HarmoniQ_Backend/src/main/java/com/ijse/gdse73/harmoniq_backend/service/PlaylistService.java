@@ -12,4 +12,5 @@ public interface PlaylistService {
     void updatePlaylist(PlaylistDTO playlistDTO);
 
     List<MusicDTO> getSongsFromPlaylists(Long userId);
+    Long getPlaylistId(String playlistName);
 }

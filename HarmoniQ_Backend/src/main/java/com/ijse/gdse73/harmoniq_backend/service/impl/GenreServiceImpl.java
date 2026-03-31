@@ -1,6 +1,7 @@
 package com.ijse.gdse73.harmoniq_backend.service.impl;
 
 import com.ijse.gdse73.harmoniq_backend.dto.GenreDTO;
+import com.ijse.gdse73.harmoniq_backend.dto.GenreWithTrackCountDTO;
 import com.ijse.gdse73.harmoniq_backend.entity.Genre;
 import com.ijse.gdse73.harmoniq_backend.repo.GenreRepo;
 import com.ijse.gdse73.harmoniq_backend.service.GenreService;
@@ -30,10 +31,39 @@ public class GenreServiceImpl implements GenreService {
     }
 
     @Override
-    public List<GenreDTO> getAllGenre() {
+    public List<GenreWithTrackCountDTO> getAllGenre() {
         return genreRepo.findAll()
                 .stream()
-                .map(genre -> modelMapper.map(genre, GenreDTO.class))
+                .map(genre -> {
+                    GenreDTO genreDTO = modelMapper.map(genre, GenreDTO.class);
+                    GenreWithTrackCountDTO dto = modelMapper.map(genreDTO, GenreWithTrackCountDTO.class);
+                    dto.setTrackCount(genre.getMusics() != null ? genre.getMusics().size() : 0);
+                    return dto;
+                })
                 .toList();
+    }
+
+    @Override
+    public String deleteGenre(Long id) {
+        if (genreRepo.findById(id).isPresent()){
+            genreRepo.deleteById(id);
+            return "Genre deleted successfully";
+        } else {
+            return "Genre not found";
+        }
+    }
+
+    @Override
+    public void updateGenre(Long id, GenreDTO genreDTO) {
+        if (genreDTO == null){
+            throw new NullPointerException("GenreDTO cannot be null");
+        }
+
+        if (genreRepo.findGenreByName(genreDTO.getName()) != null){
+            return;
+        }
+
+        genreDTO.setId(id);
+        genreRepo.save(modelMapper.map(genreDTO, Genre.class));
     }
 }

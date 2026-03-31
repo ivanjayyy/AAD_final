@@ -89,12 +89,25 @@
     <a href="artists-page.html" class="back-btn"><i class="bi bi-arrow-left"></i> Back</a>
     <div class="container">
         <img id="artistImg" src="" class="rounded-circle profile-main-img mb-4" onerror="this.src='https://via.placeholder.com/180'">
+
         <h1 id="artistName" class="display-5 fw-bold">Loading...</h1>
-        <p id="artistBio" class="lead opacity-75 mx-auto mb-4" style="max-width: 600px;">Artist Biography...</p>
+
+        <div class="d-flex justify-content-center gap-3 mt-3">
+            <button class="btn btn-light" onclick="prevArtist()">
+                <i class="bi bi-arrow-left"></i> Prev Artist
+            </button>
+
+            <p id="artistBio" class="lead opacity-75 mx-auto mb-4" style="max-width: 600px;">Artist Biography...</p>
+
+            <button class="btn btn-light" onclick="nextArtist()">
+                Next Artist <i class="bi bi-arrow-right"></i>
+            </button>
+        </div>
 
         <button id="followBtn" class="btn btn-outline-light btn-follow" onclick="toggleFollow()">
             <i class="bi bi-person-plus-fill me-2"></i>Follow
         </button>
+
     </div>
 </div>
 
@@ -154,6 +167,9 @@
     const username = payload.sub;
     const userId = payload.id;
 
+    let artistList = [];
+    let currentArtistIndex = -1;
+
     let currentArtistId = null;
     let artistSongs = [];
     let shuffledList = [];
@@ -180,6 +196,15 @@
         const artist = JSON.parse(artistData);
         currentArtistId = artist.id;
 
+        const storedList = localStorage.getItem("artistList");
+        if (storedList) {
+            artistList = JSON.parse(storedList);
+            currentArtistIndex = artistList.findIndex(a => a.id === currentArtistId);
+            if (currentArtistIndex === -1) {
+                window.location.href = "artists-page.html";
+            }
+        }
+
         $("#artistName").text(artist.name);
         $("#artistBio").text(artist.bio);
         $("#artistImg").attr("src", `${apiBase}/artist/profile-pic/${artist.id}`);
@@ -189,6 +214,20 @@
         checkFollowStatus(); // Load follow status on page load
         initPlaylistPopover();
     });
+
+    function nextArtist() {
+        if (artistList.length === 0) return;
+
+        currentArtistIndex = (currentArtistIndex + 1) % artistList.length;
+        switchArtist();
+    }
+
+    function prevArtist() {
+        if (artistList.length === 0) return;
+
+        currentArtistIndex = (currentArtistIndex - 1 + artistList.length) % artistList.length;
+        switchArtist();
+    }
 
     // --- FOLLOW LOGIC ---
     function checkFollowStatus() {
@@ -485,6 +524,42 @@
             }
         });
     }
+
+    function switchArtist() {
+        const artist = artistList[currentArtistIndex];
+
+        currentArtistId = artist.id;
+
+        $("#artistName").text(artist.name);
+        $("#artistBio").text(artist.bio);
+        $("#artistImg").attr("src", `${apiBase}/artist/profile-pic/${artist.id}`);
+
+        fetchArtistSongs(artist.id, artist.name);
+        checkFollowStatus();
+    }
+
+    document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape") {
+            window.location.href = localStorage.getItem("backLocation");
+            return;
+        }
+    });
+
+    // function changeArtist(artistId) {
+    //     $.ajax({
+    //         url: `${apiBase}/artist/find/${artistId}`,
+    //         type: "GET",
+    //         contentType: "application/json",
+    //         headers: {
+    //             "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+    //         },
+    //         success: function(response) {
+    //             const artist = JSON.stringify(response.data).replace(/'/g, "&apos;")
+    //             localStorage.setItem("selectedArtist", JSON.stringify(artist));
+    //             location.reload();
+    //         }
+    //     });
+    // }
 </script>
 
 </body>

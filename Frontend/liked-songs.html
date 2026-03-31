@@ -148,10 +148,19 @@
         }
     });
 
+    document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape") {
+            window.location.href = "user-home.html";
+            return;
+        }
+    });
+
     $(document).ready(function() {
         if (localStorage.getItem("token") == null) {
             window.location.href = "sign-in.html";
+            return;
         }
+
         fetchLikedSongs();
         initPlaylistPopover();
     });

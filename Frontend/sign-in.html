@@ -84,6 +84,7 @@
           const token = localStorage.getItem("token");
           const payload = JSON.parse(atob(token.split('.')[1]));
           const role = payload.role;
+          const userId = payload.id;
 
           if (role === "ADMIN") {
             window.location.href = "admin-dashboard.html";

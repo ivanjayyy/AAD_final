@@ -383,6 +383,13 @@
     }
   };
 
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+      window.location.href = "user-playlists.html";
+      return;
+    }
+  });
+
   function seek(e) {
     const percent = e.offsetX / $(e.target).closest('.progress').width();
     audio.currentTime = percent * audio.duration;

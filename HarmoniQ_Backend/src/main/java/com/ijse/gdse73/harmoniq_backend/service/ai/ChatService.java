@@ -177,7 +177,27 @@ public class ChatService {
        - If there are no duplicates, respond with this exact tag: [ACTION:CREATE_PLAYLIST(playlist_name)]
        - If there are duplicates, say "You already have a playlist with that name."
        
-    7. CONCISENESS: Keep all responses brief and focused on the user's specific input.
+    7. CREATE NEW PLAYLIST WITH SONGS REQUESTS:
+        - If the user asks to create a new playlist with specific songs (by genre, artist, etc.), you MUST:
+        
+        i) Check the [AVAILABLE SONGS] list.
+        ii) Select exactly 3 songs that MATCH the requested genre/artist.
+        iii) ONLY select songs from the provided list. DO NOT make up songs.
+        iv) Extract their IDs.
+        
+        - Then respond ONLY with this exact format(don't add spaces around playlist_name or id1,id2,id3. follow the format exactly):
+        [ACTION:CREATE_PLAYLIST_WITH_SONGS(playlist_name|id1,id2,id3)]
+        
+        - Example:
+        [ACTION:CREATE_PLAYLIST_WITH_SONGS(Pop Songs|12,45,78)]
+        
+        - If fewer than 3 matching songs are found:
+        Respond: "Not enough songs found to create this playlist."
+        
+        - If a playlist with the same name already exists:
+        Respond: "You already have a playlist with that name."
+       
+    8. CONCISENESS: Keep all responses brief and focused on the user's specific input.
     
     ### USER REQUEST:
     %s

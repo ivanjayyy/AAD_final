@@ -32,6 +32,74 @@
             background: #0d6efd;
         }
 
+        /* The Floating Button */
+        .chat-launcher {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            font-size: 24px;
+            z-index: 1000;
+        }
+
+        /* The Chat Window */
+        .chat-container {
+            display: none; /* Hidden by default */
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+            border: 1px solid #eee;
+        }
+
+        /* Header Styling */
+        .chat-header {
+            background: #007bff;
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Messages Area */
+        #messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f9f9f9;
+        }
+
+        /* Input Area */
+        .chat-footer {
+            padding: 15px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 8px;
+        }
+
+        #input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
         .artist-item { transition: 0.2s; cursor: pointer; text-align: center; padding: 10px; border-radius: 10px; }
         .artist-item:hover { background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .artist-img { width: 100px; height: 100px; object-fit: cover; border-radius: 50%; margin-bottom: 10px; border: 3px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
@@ -43,6 +111,22 @@
 <body class="overflow-x-hidden" style="padding-bottom: 120px;">
 
 <div id="sidebar-sensor" class="position-fixed top-0 start-0 vh-100" style="width: 15px; z-index: 1060;"></div>
+
+<button class="chat-launcher" onclick="toggleChat()">💬</button>
+
+<div class="chat-container" id="chatWindow" style="display: none;">
+    <div class="chat-header">
+        <span>HarmoniQ AI</span>
+        <button onclick="toggleChat()" style="background:none; border:none; color:white; cursor:pointer;">✕</button>
+    </div>
+
+    <div id="messages"></div>
+
+    <div class="chat-footer">
+        <input type="text" id="input" placeholder="Ask something..." />
+        <button onclick="send()">Send</button>
+    </div>
+</div>
 
 <div class="offcanvas offcanvas-start bg-white border-end shadow" tabindex="-1" id="navSidebar" style="width: 280px;">
     <div class="offcanvas-header border-bottom">
@@ -75,6 +159,11 @@
             <a href="liked-songs.html" class="btn btn-sm btn-outline-primary rounded-pill px-3">View All</a>
         </div>
         <div class="row g-3" id="likedSongsPreviewContainer"></div>
+    </div>
+
+    <div class="mb-5">
+        <h5 class="fw-bold mb-4 text-secondary"><i class="bi bi-music-player-fill me-2"></i>Songs from Followed Artists</h5>
+        <div class="row g-3" id="followedArtistsSongsContainer"></div>
     </div>
 
     <div class="mb-5">
@@ -142,6 +231,7 @@
     const userId = payload.id;
 
     let musicList = [];
+    let followedArtistsSongs = []; // Global list
     let recentListGlobal = [];
     let likedListPreview = [];
     let shuffledList = [];
@@ -163,11 +253,28 @@
                 renderList("#musicContainer", musicList, "all");
             }
         });
+    }
 
-        // Fetch Liked Music Preview with Randomization
-        if(userId) {
-            fetchLikedSongs();
-        }
+    function renderFollowedArtistsSongs(songs) {
+        followedArtistsSongs = songs || [];
+        renderList("#followedArtistsSongsContainer", followedArtistsSongs, "followed");
+    }
+
+    function fetchFollowedArtistsSongs() {
+        if (!userId) return;
+
+        $.ajax({
+            url: `${apiBase}/follow-artist/random-songs/${userId}`, // adjust endpoint
+            type: "GET",
+            headers: { "Authorization": "Bearer " + token },
+            contentType: "application/json",
+            success: function(response) {
+                renderFollowedArtistsSongs(response.data || []);
+            },
+            error: function(err) {
+                console.error("Failed to fetch followed artists songs", err);
+            }
+        });
     }
 
     function fetchLikedSongs() {
@@ -184,6 +291,125 @@
 
                 // Show only first 3 random songs for preview
                 renderList("#likedSongsPreviewContainer", randomPreview.slice(0, 3), "liked");
+            }
+        });
+    }
+
+    // Toggle Chat Visibility
+    function toggleChat() {
+        const chat = document.getElementById("chatWindow");
+        chat.style.display = (chat.style.display === "none") ? "flex" : "none";
+    }
+
+    function send() {
+        let inputField = document.getElementById("input");
+        let input = inputField.value;
+        if (!input.trim()) return;
+
+        const messagesDiv = document.getElementById("messages");
+
+        // Show user message
+        messagesDiv.innerHTML += `<p><b>${username}:</b> ${input}</p>`;
+        inputField.value = "";
+
+        // Placeholder for AI
+        const aiMessageId = "ai-resp-" + Date.now();
+        messagesDiv.innerHTML += `<p><b>HarmoniQ AI:</b> <span id="${aiMessageId}">Typing...</span></p>`;
+
+        $.ajax({
+            url: "http://localhost:8080/api/v1/chat/response",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ message: input }),
+
+            success: function(response) {
+
+                // Show response in UI
+                document.getElementById(aiMessageId).innerText = response;
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+                // ✅ Detect [ACTION:PLAY_SONG(id_number)]
+                const matchSong = response.match(/\[ACTION:PLAY_SONG\((\d+)\)\]/);
+                const matchCreateWithSongs = response.match(/\[ACTION:CREATE_PLAYLIST_WITH_SONGS\((.+?)\|([\d,]+)\)\]/);
+                const matchPlaylist = response.match(/\[ACTION:CREATE_PLAYLIST\(([^)]+)\)\]/);
+
+                if (matchSong) {
+                    const songId = matchSong[1]; // extracted number
+                    console.log("PLAY SONG ID:", songId);
+                    playFromSpecificList(parseInt(songId) - 1, "all")
+                } else if (matchCreateWithSongs) {
+
+                    const playlistName = matchCreateWithSongs[1].trim();
+
+                    const songList = matchCreateWithSongs[2]
+                        .split(',')
+                        .map(id => parseInt(id.trim()));
+
+                    console.log("Playlist Name:", playlistName);
+                    console.log("Song IDs:", songList);
+
+                    createPlaylistUsingAI(playlistName, songList);
+                } else if (matchPlaylist) {
+                    const playlistName = matchPlaylist[1].trim(); // extracted name
+                    console.log("CREATE PLAYLIST:", playlistName);
+                    const songList = [];
+                    createPlaylistUsingAI(playlistName, songList);
+                }
+            },
+
+            error: function(err) {
+                console.error("AJAX error:", err);
+                document.getElementById(aiMessageId).innerText = "Error occurred.";
+            }
+        });
+    }
+
+    function createPlaylistUsingAI(playlistName, songList){
+        $.ajax({
+            url: "http://localhost:8080/api/v1/playlist/create",
+            method: 'POST',
+            contentType: 'application/json',
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+            },
+            data: JSON.stringify({ "playlistName": playlistName, "userId": userId }),
+            success: function () {
+                alert("Playlist created successfully!");
+
+                if (songList) {
+                    getPlaylistId(playlistName, songList);
+                }
+            },
+            error: function (err) {
+                alert("Error creating playlist: " + err.message);
+            }
+        });
+    }
+
+    function createAIPlaylistWithSongs(playlistId, songList) {
+        songList.forEach(songId => {
+            $.ajax({
+                url: `${apiBase}/playlist-song/add`,
+                type: "POST",
+                headers: { "Authorization": "Bearer " + token },
+                contentType: "application/json",
+                data: JSON.stringify({
+                    playlistId: playlistId,
+                    musicId: songId
+                })
+            });
+        });
+    }
+
+    function getPlaylistId(playlistName, songList) {
+        return $.ajax({
+            url: `${apiBase}/playlist/get-id/` + playlistName,
+            type: "GET",
+            headers: { "Authorization": "Bearer " + token },
+            success: function(response) {
+                const playlistId = response.data;
+                console.log("Playlist ID:", playlistId);
+                createAIPlaylistWithSongs(playlistId, songList);
             }
         });
     }
@@ -205,12 +431,22 @@
             const songToPlay = $(event.currentTarget); // Not ideal, better to use the specific random list
         }
 
+        if (listType === "recent") {
+            const songToPlay = $(event.currentTarget);
+        }
+
+        if (listType === "followed") {
+            const songToPlay = $(event.currentTarget);
+        }
+
         let targetList;
 
         if (listType === "liked") {
             targetList = likedListPreview;
         } else if (listType === "recent") {
             targetList = recentListGlobal; // we’ll define this
+        } else if (listType === "followed")  {
+            targetList = followedArtistsSongs;
         } else {
             targetList = musicList;
         }
@@ -247,21 +483,24 @@
         });
     }
 
+    let listenedSeconds = 0;
+    let lastTime = 0;
+    let recentSaved = false;
+
     function playSong(index) {
-        const activeList = shuffleMode ? shuffledList : (currentActiveListName === "liked" ? likedListPreview : musicList);
+        const activeList = shuffleMode ? shuffledList : (currentActiveListName === "liked" ? likedListPreview : (currentActiveListName === "followed" ? followedArtistsSongs : (currentActiveListName === "recent" ? recentListGlobal :  musicList)));
         if (index < 0 || index >= activeList.length) return;
 
         currentIndex = index;
         const music = activeList[index];
         currentMusicId = music.id;
 
-        audio.onplay = () => {
-            setTimeout(() => {
-                saveRecentSong(userId, currentMusicId);
-            }, 1000);
-        };
+        listenedSeconds = 0;
+        lastTime = 0;
+        recentSaved = false;
 
         audio.src = `${apiBase}/music/stream/${music.id}`;
+        audio.play();
 
         $("#playerTitle").text(music.musicTitle);
         $("#playerArtist").text(music.musicArtist);
@@ -276,7 +515,7 @@
 
     function checkLikeStatus() {
         if (!token || currentIndex === -1) return;
-        const activeList = shuffleMode ? shuffledList : (currentActiveListName === "liked" ? likedListPreview : musicList);
+        const activeList = shuffleMode ? shuffledList : (currentActiveListName === "liked" ? likedListPreview : (currentActiveListName === "followed" ? followedArtistsSongs : (currentActiveListName === "recent" ? recentListGlobal :  musicList)));
         const musicId = activeList[currentIndex].id;
 
         $.ajax({
@@ -329,7 +568,7 @@
 
     function likeSong() {
         if (!token || currentIndex === -1) return;
-        const activeList = shuffleMode ? shuffledList : (currentActiveListName === "liked" ? likedListPreview : musicList);
+        const activeList = shuffleMode ? shuffledList : (currentActiveListName === "liked" ? likedListPreview : (currentActiveListName === "followed" ? followedArtistsSongs : (currentActiveListName === "recent" ? recentListGlobal :  musicList)));
         const musicId = activeList[currentIndex].id;
 
         $.ajax({
@@ -345,10 +584,8 @@
                 } else {
                     btn.removeClass("bi-heart-fill text-danger liked").addClass("bi-heart text-muted");
                     // Refresh liked preview if something was unliked
-                    if(currentActiveListName === "liked") fetchInitialData();
+                    if(currentActiveListName === "liked") fetchLikedSongs();
                 }
-
-                fetchLikedSongs();
             }
         });
     }
@@ -356,7 +593,7 @@
     function toggleShuffle() {
         shuffleMode = !shuffleMode;
         const btn = $("#shuffleBtn");
-        const baseList = currentActiveListName === "liked" ? likedListPreview : musicList;
+        const baseList = currentActiveListName === "liked" ? likedListPreview : (currentActiveListName === "followed" ? followedArtistsSongs : (currentActiveListName === "recent" ? recentListGlobal :  musicList));
 
         if (shuffleMode) {
             btn.addClass("text-primary-important").removeClass("text-muted");
@@ -369,13 +606,13 @@
     }
 
     function nextSong() {
-        const activeList = shuffleMode ? shuffledList : (currentActiveListName === "liked" ? likedListPreview : musicList);
+        const activeList = shuffleMode ? shuffledList : (currentActiveListName === "liked" ? likedListPreview : (currentActiveListName === "followed" ? followedArtistsSongs : (currentActiveListName === "recent" ? recentListGlobal :  musicList)));
         let nextIdx = (currentIndex + 1) % activeList.length;
         playSong(nextIdx);
     }
 
     function prevSong() {
-        const activeList = shuffleMode ? shuffledList : (currentActiveListName === "liked" ? likedListPreview : musicList);
+        const activeList = shuffleMode ? shuffledList : (currentActiveListName === "liked" ? likedListPreview : (currentActiveListName === "followed" ? followedArtistsSongs : (currentActiveListName === "recent" ? recentListGlobal :  musicList)));
         let prevIdx = (currentIndex - 1 + activeList.length) % activeList.length;
         playSong(prevIdx);
     }
@@ -393,13 +630,43 @@
         }
     });
 
+    audio.onseeked = () => {
+        // Reset lastTime so skip doesn't count as listening
+        lastTime = audio.currentTime;
+    };
+
+    audio.onpause = () => {
+        lastTime = audio.currentTime;
+    }
+
+    audio.onplay = () => {
+        lastTime = audio.currentTime;
+    };
+
     audio.ontimeupdate = () => {
-        if(audio.duration) {
-            let pct = (audio.currentTime / audio.duration) * 100;
-            $("#progressBar").css("width", pct + "%");
-            let mins = Math.floor(audio.currentTime / 60);
-            let secs = Math.floor(audio.currentTime % 60);
-            $("#currentTime").text(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
+        if(!audio.duration) return;
+
+        let current = audio.currentTime;
+        // Only count small continuous playback (no skipping)
+        let delta = current - lastTime;
+
+        if (delta > 0 && delta < 1) {
+            listenedSeconds += delta;
+        }
+
+        lastTime = current;
+
+        // UI update
+        let pct = (audio.currentTime / audio.duration) * 100;
+        $("#progressBar").css("width", pct + "%");
+
+        let mins = Math.floor(audio.currentTime / 60);
+        let secs = Math.floor(audio.currentTime % 60);
+        $("#currentTime").text(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
+
+        if (!recentSaved && listenedSeconds >= audio.duration / 2) {
+            saveRecentSong(userId, currentMusicId);
+            recentSaved = true;
         }
     };
 
@@ -407,6 +674,8 @@
         const percent = e.offsetX / e.currentTarget.offsetWidth;
         audio.currentTime = percent * audio.duration;
     }
+
+
 
     // Popover Logic
     const playlistPopover = new bootstrap.Popover(document.getElementById('playlistBtn'), {
@@ -464,9 +733,6 @@
             headers: { "Authorization": "Bearer " + token },
             contentType: "application/json",
             data: JSON.stringify({ userId, musicId }),
-            success: function() {
-                fetchRecentSongs();
-            }
         });
     }
 
@@ -520,13 +786,14 @@
                 "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
             },
             success: function(response) {
-                renderFollowingArtists(response.data);
+                renderFollowingArtists(response.data.slice(0,6));
             }
         });
     }
 
     function viewProfile(artist) {
         localStorage.setItem("selectedArtist", JSON.stringify(artist));
+        localStorage.setItem("backLocation", "user-home.html");
         window.location.href = "artist-profile.html";
     }
 
@@ -534,14 +801,39 @@
 
     function logout() { localStorage.clear(); window.location.href = "sign-in.html"; }
 
+    function startAI(userId) {
+        fetch("http://localhost:8080/api/v1/chat/start", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: userId })
+        });
+    }
+
     $(document).ready(() => {
         if (localStorage.getItem("token") == null) {
             window.location.href = "sign-in.html";
+            return;
         }
-        fetchFollowingArtists()
+
+        startAI(userId);
+
         fetchInitialData();
+        fetchFollowedArtistsSongs();
         fetchRecentSongs();
         fetchLikedSongs();
+        fetchFollowingArtists()
+
+        // Initial Greeting
+        document.getElementById("messages").innerHTML +=
+            "<p><b>HarmoniQ AI:</b> Hello! How can I help you Today?</p>";
+
+        $("#input").on("keydown", function(e) {
+            if(e.which === 13) {
+                send();
+            } else if (e.which === 27) {
+                toggleChat();
+            }
+        });
     });
 
 </script>
