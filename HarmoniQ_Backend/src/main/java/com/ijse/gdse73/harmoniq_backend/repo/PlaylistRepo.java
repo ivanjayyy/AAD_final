@@ -11,6 +11,5 @@ import java.util.Optional;
 public interface PlaylistRepo extends JpaRepository<Playlist, Long> {
     List<Playlist> findAllByUser(User user);
     Playlist findByPlaylistName(String playlistName);
-
-    boolean findByUserAndPlaylistName(User user, String playlistName);
+    Optional<Playlist> findByUserAndPlaylistName(User user, String playlistName);
 }

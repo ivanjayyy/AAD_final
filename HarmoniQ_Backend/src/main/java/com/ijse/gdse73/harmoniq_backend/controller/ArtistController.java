@@ -5,6 +5,7 @@ import com.ijse.gdse73.harmoniq_backend.dto.ArtistDTO;
 import com.ijse.gdse73.harmoniq_backend.dto.MusicDTO;
 import com.ijse.gdse73.harmoniq_backend.entity.Artist;
 import com.ijse.gdse73.harmoniq_backend.exception.CustomException;
+import com.ijse.gdse73.harmoniq_backend.repo.ArtistRepo;
 import com.ijse.gdse73.harmoniq_backend.service.ArtistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -29,6 +30,7 @@ import java.nio.file.Paths;
 public class ArtistController {
     private final ArtistService artistService;
     private final String artistDir = System.getProperty("user.dir") + "/uploads/artistProfile/";
+    private final ArtistRepo artistRepo;
 
     @PostMapping("/add")
     @PreAuthorize("hasRole('ADMIN')")
@@ -90,11 +92,17 @@ public class ArtistController {
 
         if (profilePic != null && !profilePic.isEmpty()) {
             String oldArtistProfileName = new File(existingDTO.getPfpPath()).getName();
-            Files.deleteIfExists(Paths.get(artistDir + oldArtistProfileName));
-
             String newArtistProfileName = profilePic.getOriginalFilename();
-            Files.write(Paths.get(artistDir + newArtistProfileName), profilePic.getBytes());
             updatedDTO.setPfpPath("/uploads/artistProfile/" + newArtistProfileName);
+
+            if (!updatedDTO.getPfpPath().equals(existingDTO.getPfpPath())) {
+                if (artistRepo.findByPfpPath(updatedDTO.getPfpPath()) != null) {
+                    throw new CustomException("Artist profile pic already exists");
+                }
+            }
+
+            Files.deleteIfExists(Paths.get(artistDir + oldArtistProfileName));
+            Files.write(Paths.get(artistDir + newArtistProfileName), profilePic.getBytes());
         }
 
         artistService.updateArtist(updatedDTO);

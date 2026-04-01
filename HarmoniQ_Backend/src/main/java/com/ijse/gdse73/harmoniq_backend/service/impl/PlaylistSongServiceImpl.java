@@ -39,10 +39,23 @@ public class PlaylistSongServiceImpl implements PlaylistSongService {
     }
 
     private MusicDTO convertToDto(Music music) {
+
+        modelMapper.typeMap(Music.class, MusicDTO.class)
+                .addMappings(mapper -> {
+                    mapper.skip(MusicDTO::setMusicArtist);
+                    mapper.skip(MusicDTO::setMusicGenreId);
+                });
+
         MusicDTO musicDTO = modelMapper.map(music, MusicDTO.class);
+
         if (music.getArtist() != null) {
             musicDTO.setMusicArtist(music.getArtist().getName());
         }
+
+        if (music.getGenre() != null) {
+            musicDTO.setMusicGenreId(music.getGenre().getId());
+        }
+
         return musicDTO;
     }
 
@@ -54,7 +67,7 @@ public class PlaylistSongServiceImpl implements PlaylistSongService {
         Music music = musicRepo.findById(playlistSongDTO.getMusicId()).orElseThrow(
                 () -> new CustomException("Music ID is not valid"));
 
-        if (playlistSongRepo.findByPlaylistAndMusic(playlist,music)) {
+        if (playlistSongRepo.findByPlaylistAndMusic(playlist,music).isPresent()) {
             throw new CustomException("This song is already in the playlist.");
         }
 

@@ -1,0 +1,95 @@
+body { background-color: #f8f9fa; color: #333; }
+.cursor-pointer { cursor: pointer; }
+.hover-bg:hover { background-color: #e9ecef !important; }
+.music-card { border: 1px solid #dee2e6; background: #fff; transition: 0.2s; border-radius: 12px; }
+#bottomPlayer.active { bottom: 0 !important; }
+
+.playlist-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 14px; }
+.playlist-item:hover { background-color: #f8f9fa; color: #0d6efd; }
+.popover-body { padding: 0; height: 200px; overflow-y: auto; width: 200px; }
+
+.text-primary-important { color: #0d6efd !important; }
+.liked { color: #dc3545 !important; }
+
+#volumeSlider {
+    height: 4px;
+}
+#volumeSlider::-webkit-slider-thumb {
+    width: 12px;
+    height: 12px;
+    background: #0d6efd;
+}
+
+/* The Floating Button */
+.chat-launcher {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    font-size: 24px;
+    z-index: 1000;
+}
+
+/* The Chat Window */
+.chat-container {
+    display: none; /* Hidden by default */
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 350px;
+    height: 500px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 1000;
+    border: 1px solid #eee;
+}
+
+/* Header Styling */
+.chat-header {
+    background: #007bff;
+    color: white;
+    padding: 15px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Messages Area */
+#messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: #f9f9f9;
+}
+
+/* Input Area */
+.chat-footer {
+    padding: 15px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 8px;
+}
+
+#input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.artist-item { transition: 0.2s; cursor: pointer; text-align: center; padding: 10px; border-radius: 10px; }
+.artist-item:hover { background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+.artist-img { width: 100px; height: 100px; object-fit: cover; border-radius: 50%; margin-bottom: 10px; border: 3px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }

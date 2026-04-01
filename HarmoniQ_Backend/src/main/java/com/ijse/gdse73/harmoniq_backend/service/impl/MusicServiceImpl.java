@@ -40,9 +40,17 @@ public class MusicServiceImpl implements MusicService {
             throw new CustomException("Genre not found");
         }
 
-//        if (musicRepo.findMusicByMusicTitle(musicDTO.getMusicTitle())) {
-//            throw new CustomException("Music already exists");
-//        }
+        if (musicRepo.findByMusicTitle(musicDTO.getMusicTitle()) != null) {
+            throw new CustomException("Music title already exists");
+        }
+
+        if (musicRepo.findByMusicPath(musicDTO.getMusicPath()) != null) {
+            throw new CustomException("Song already exists");
+        }
+
+        if (musicRepo.findByThumbnailPath(musicDTO.getThumbnailPath()) != null) {
+            throw new CustomException("Thumbnail already exists");
+        }
 
         Music music = Music.builder()
                 .fileName(musicDTO.getFileName())
@@ -59,7 +67,7 @@ public class MusicServiceImpl implements MusicService {
     @Override
     public MusicDTO getMusicById(Long id) {
         return musicRepo.findById(id)
-                .map(this::convertToDto) // Use a helper method for clean mapping
+                .map(this::convertToDto)
                 .orElse(null);
     }
 
@@ -67,13 +75,10 @@ public class MusicServiceImpl implements MusicService {
     public List<MusicDTO> getAllMusic() {
         return musicRepo.findAll()
                 .stream()
-                .map(this::convertToDto) // Map each entity to DTO
+                .map(this::convertToDto)
                 .toList();
     }
 
-    /**
-     * Helper method to handle complex mapping between Music Entity and MusicDTO
-     */
     private MusicDTO convertToDto(Music music) {
 
         modelMapper.typeMap(Music.class, MusicDTO.class)
@@ -98,7 +103,7 @@ public class MusicServiceImpl implements MusicService {
     @Override
     @Transactional
     public Music deleteMusic(Long id) {
-        Music music = musicRepo.findById(id).orElseThrow(() -> new RuntimeException("Music not found"));
+        Music music = musicRepo.findById(id).orElseThrow(() -> new CustomException("Music not found"));
         musicRepo.deleteById(id);
         return music;
     }
@@ -108,6 +113,8 @@ public class MusicServiceImpl implements MusicService {
         if (musicDTO == null) {
             throw new CustomException("MusicDTO is null");
         }
+
+        Music music = musicRepo.findById(musicDTO.getId()).orElseThrow(() -> new CustomException("Music not found"));
 
         Artist artist = artistRepo.findByName(musicDTO.getMusicArtist());
         if (artist == null) {
@@ -119,7 +126,25 @@ public class MusicServiceImpl implements MusicService {
             throw new CustomException("Genre not found");
         }
 
-        Music music = Music.builder()
+        if (!musicDTO.getMusicTitle().equals(music.getMusicTitle())) {
+            if (musicRepo.findByMusicTitle(musicDTO.getMusicTitle()) != null) {
+                throw new CustomException("Music title already exists");
+            }
+        }
+
+        if (!musicDTO.getMusicPath().equals(music.getMusicPath())) {
+            if (musicRepo.findByMusicPath(musicDTO.getMusicPath()) != null) {
+                throw new CustomException("Song already exists");
+            }
+        }
+
+        if (!musicDTO.getThumbnailPath().equals(music.getThumbnailPath())) {
+            if (musicRepo.findByThumbnailPath(musicDTO.getThumbnailPath()) != null) {
+                throw new CustomException("Thumbnail already exists");
+            }
+        }
+
+        Music updatedMusic = Music.builder()
                 .id(musicDTO.getId())
                 .fileName(musicDTO.getFileName())
                 .musicPath(musicDTO.getMusicPath())
@@ -129,6 +154,6 @@ public class MusicServiceImpl implements MusicService {
                 .genre(genre)
                 .build();
 
-        musicRepo.save(music);
+        musicRepo.save(updatedMusic);
     }
 }

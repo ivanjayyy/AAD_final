@@ -4,6 +4,7 @@ import com.ijse.gdse73.harmoniq_backend.dto.APIResponse;
 import com.ijse.gdse73.harmoniq_backend.dto.MusicDTO;
 import com.ijse.gdse73.harmoniq_backend.entity.Music;
 import com.ijse.gdse73.harmoniq_backend.exception.CustomException;
+import com.ijse.gdse73.harmoniq_backend.repo.MusicRepo;
 import com.ijse.gdse73.harmoniq_backend.service.MusicService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class MusicController {
     private final MusicService musicService;
     private final String musicDir = System.getProperty("user.dir") + "/uploads/music/";
     private final String thumbnailDir = System.getProperty("user.dir") + "/uploads/thumbnail/";
+    private final MusicRepo musicRepo;
 
     @PostMapping("/upload")
     @PreAuthorize("hasRole('ADMIN')")
@@ -164,28 +166,40 @@ public class MusicController {
 
         // 3. Handle Music File Update
         if (musicFile != null && !musicFile.isEmpty()) {
+            String newMusicName = musicFile.getOriginalFilename();
+            updatedDTO.setMusicPath("/uploads/music/" + newMusicName);
+            updatedDTO.setFileName(newMusicName);
+
+            if (!updatedDTO.getMusicPath().equals(existingMusic.getMusicPath())) {
+                if (musicRepo.findByMusicPath(updatedDTO.getMusicPath()) != null) {
+                    throw new CustomException("Song already exists");
+                }
+            }
+
             // Delete old file
             Files.deleteIfExists(Paths.get(musicDir + existingMusic.getFileName()));
 
             // Save new file
-            String newMusicName = musicFile.getOriginalFilename();
             Files.write(Paths.get(musicDir + newMusicName), musicFile.getBytes());
-
-            updatedDTO.setFileName(newMusicName);
-            updatedDTO.setMusicPath("/uploads/music/" + newMusicName);
         }
 
         // 4. Handle Thumbnail File Update
         if (thumbnail != null && !thumbnail.isEmpty()) {
-            // Delete old thumbnail
+            String newThumbnailName = thumbnail.getOriginalFilename();
             String oldThumbnailName = new File(existingMusic.getThumbnailPath()).getName();
+            updatedDTO.setThumbnailPath("/uploads/thumbnail/" + newThumbnailName);
+
+            if (!updatedDTO.getThumbnailPath().equals(existingMusic.getThumbnailPath())) {
+                if (musicRepo.findByThumbnailPath(updatedDTO.getThumbnailPath()) != null) {
+                    throw new CustomException("Thumbnail already exists");
+                }
+            }
+
+            // Delete old thumbnail
             Files.deleteIfExists(Paths.get(thumbnailDir + oldThumbnailName));
 
             // Save new thumbnail
-            String newThumbnailName = thumbnail.getOriginalFilename();
             Files.write(Paths.get(thumbnailDir + newThumbnailName), thumbnail.getBytes());
-
-            updatedDTO.setThumbnailPath("/uploads/thumbnail/" + newThumbnailName);
         }
 
         // 5. Update Database Record

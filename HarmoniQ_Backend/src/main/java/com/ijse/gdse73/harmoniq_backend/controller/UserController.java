@@ -7,6 +7,7 @@ import com.ijse.gdse73.harmoniq_backend.dto.UserProfilePicDTO;
 import com.ijse.gdse73.harmoniq_backend.exception.CustomException;
 import com.ijse.gdse73.harmoniq_backend.service.UserProfilePicService;
 import com.ijse.gdse73.harmoniq_backend.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -118,7 +119,7 @@ public class UserController {
 
     @PutMapping("/update")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<APIResponse> updateUser(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<APIResponse> updateUser(@RequestBody @Valid UserDTO userDTO) {
         userService.updateUser(userDTO);
         return ResponseEntity.ok(new APIResponse(
                 200, "User updated successfully", null

@@ -32,7 +32,7 @@ public class PlaylistServiceImpl implements PlaylistService {
 
         User user = userRepo.findUserById(playlistDTO.getUserId());
 
-        if (playlistRepo.findByUserAndPlaylistName(user,playlistDTO.getPlaylistName())) {
+        if (playlistRepo.findByUserAndPlaylistName(user,playlistDTO.getPlaylistName()).isPresent()) {
             throw new CustomException("Playlist already exists");
         }
 

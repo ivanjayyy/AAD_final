@@ -1,0 +1,72 @@
+body { background-color: #f8f9fa; color: #212529; padding-bottom: 120px; }
+.profile-header {
+    background: linear-gradient(to bottom, #0d6efd, #0a58ca);
+    color: white;
+    padding: 60px 0;
+    margin-bottom: 30px;
+    border-radius: 0 0 30px 30px;
+}
+.profile-main-img {
+    width: 180px;
+    height: 180px;
+    object-fit: cover;
+    border: 6px solid white;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+.song-card {
+    background: white;
+    border: none;
+    border-radius: 12px;
+    transition: 0.2s;
+    cursor: pointer;
+}
+.song-card:hover {
+    background: #f1f3f5;
+    transform: translateX(10px);
+}
+.song-thumb {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+.back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: white;
+    text-decoration: none;
+    background: rgba(255,255,255,0.2);
+    padding: 8px 15px;
+    border-radius: 20px;
+    backdrop-filter: blur(5px);
+}
+.back-btn:hover { color: #fff; background: rgba(255,255,255,0.3); }
+
+/* Bottom Player Styles */
+#bottomPlayer.active { bottom: 0 !important; }
+.cursor-pointer { cursor: pointer; }
+.text-primary-important { color: #0d6efd !important; }
+.playlist-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 14px; }
+.playlist-item:hover { background-color: #f8f9fa; color: #0d6efd; }
+.popover-body { padding: 0; height: 200px; overflow-y: auto; width: 200px; }
+
+/* Follow Button Style */
+.btn-follow {
+    border-radius: 25px;
+    padding: 8px 30px;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+#volumeSlider {
+    height: 4px;
+}
+#volumeSlider::-webkit-slider-thumb {
+    width: 12px;
+    height: 12px;
+    background: #0d6efd;
+}
+
+/* Liked Heart Style */
+.liked { color: #dc3545 !important; }

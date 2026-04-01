@@ -1,0 +1,56 @@
+body { background-color: #f8f9fa; color: #212529; }
+.cursor-pointer { cursor: pointer; }
+
+/* Modern Playlist Card Styling */
+.playlist-card {
+    background: white;
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(0,0,0,0.05) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.playlist-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.1) !important;
+    border-color: #0d6efd !important;
+}
+
+/* The New Icon Container */
+.icon-box {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 15px auto;
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2.5rem;
+    box-shadow: 0 4px 15px rgba(37, 117, 252, 0.3);
+    transition: 0.3s;
+}
+
+.playlist-card:hover .icon-box {
+    transform: scale(1.1) rotate(5deg);
+    background: linear-gradient(135deg, #0d6efd 0%, #00d4ff 100%);
+}
+
+.nav-link:hover { background-color: #f8f9fa; }
+.sidebar-sensor { width: 15px; z-index: 1060; }
+
+/* Text styling */
+.playlist-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 2px;
+}
+.playlist-subtitle {
+    font-size: 0.75rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}

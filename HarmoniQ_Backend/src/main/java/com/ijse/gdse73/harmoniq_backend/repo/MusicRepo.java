@@ -7,9 +7,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface MusicRepo extends JpaRepository<Music, Long> {
-    boolean findMusicByMusicTitle(String musicTitle);
-
     List<Music> findAllByArtist_Id(Long id);
-
     List<Music> findAllByArtist(Artist artist);
+
+    Music findByMusicTitle(String musicTitle);
+
+    Music findByMusicPath(String musicPath);
+
+    Music findByThumbnailPath(String thumbnailPath);
 }
