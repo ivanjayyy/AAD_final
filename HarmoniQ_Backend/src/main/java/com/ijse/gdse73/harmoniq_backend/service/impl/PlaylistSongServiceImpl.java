@@ -54,7 +54,7 @@ public class PlaylistSongServiceImpl implements PlaylistSongService {
         Music music = musicRepo.findById(playlistSongDTO.getMusicId()).orElseThrow(
                 () -> new CustomException("Music ID is not valid"));
 
-        if (playlistSongRepo.findByPlaylistIdAndMusicId(playlist.getId(), music.getId()).isPresent()) {
+        if (playlistSongRepo.findByPlaylistAndMusic(playlist,music)) {
             throw new CustomException("This song is already in the playlist.");
         }
 
@@ -78,8 +78,5 @@ public class PlaylistSongServiceImpl implements PlaylistSongService {
 
         // 2. Delete the entity from the table
         playlistSongRepo.delete(playlistSong);
-
-        // Alternatively, if you want to delete by ID directly:
-        // playlistSongRepo.deleteById(playlistSong.getId());
     }
 }

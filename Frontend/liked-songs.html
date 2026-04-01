@@ -148,13 +148,6 @@
         }
     });
 
-    document.addEventListener("keydown", function(e) {
-        if (e.key === "Escape") {
-            window.location.href = "user-home.html";
-            return;
-        }
-    });
-
     $(document).ready(function() {
         if (localStorage.getItem("token") == null) {
             window.location.href = "sign-in.html";
@@ -217,8 +210,12 @@
                 alert("Added to playlist! 🎶");
                 bootstrap.Popover.getInstance(document.getElementById('playlistBtn')).hide();
             },
-            error: function() {
-                alert("Failed to add song. It might already be in the playlist.");
+            error: (error) => {
+                let msg = "Add song to playlist failed"
+                if (error.responseJSON) {
+                    msg = error.responseJSON.data || error.responseJSON.message;
+                }
+                alert(msg);
             }
         });
     }
@@ -231,6 +228,20 @@
         if (vol == 0) icon.removeClass('bi-volume-up bi-volume-down').addClass('bi-volume-mute');
         else if (vol < 0.5) icon.removeClass('bi-volume-up bi-volume-mute').addClass('bi-volume-down');
         else icon.removeClass('bi-volume-down bi-volume-mute').addClass('bi-volume-up');
+    });
+
+    $('#volumeIcon').on('click', function() {
+        if (audio.volume > 0) {
+            $(this).data('last-vol', audio.volume);
+            audio.volume = 0;
+            $('#volumeSlider').val(0);
+            $(this).removeClass('bi-volume-up bi-volume-down').addClass('bi-volume-mute');
+        } else {
+            const lastVol = $(this).data('last-vol') || 1;
+            audio.volume = lastVol;
+            $('#volumeSlider').val(lastVol);
+            $(this).removeClass('bi-volume-mute').addClass(lastVol < 0.5 ? 'bi-volume-down' : 'bi-volume-up');
+        }
     });
 
     function renderSongs() {
@@ -287,6 +298,13 @@
             success: function() {
                 fetchLikedSongs();
                 closePlayer();
+            },
+            error: (error) => {
+                let msg = "Like song failed"
+                if (error.responseJSON) {
+                    msg = error.responseJSON.data || error.responseJSON.message;
+                }
+                alert(msg);
             }
         });
     }
@@ -307,6 +325,12 @@
         const percent = e.offsetX / e.currentTarget.offsetWidth;
         audio.currentTime = percent * audio.duration;
     }
+
+    document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape") {
+            window.location.href = "user-home.html";
+        }
+    });
 
     function closePlayer() { audio.pause(); $("#bottomPlayer").removeClass("active"); }
     audio.onended = () => nextSong();

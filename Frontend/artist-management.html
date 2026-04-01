@@ -78,6 +78,8 @@
     <h5 class="offcanvas-title text-primary fw-bold"><i class="bi bi-shield-lock-fill me-2"></i>Admin HQ</h5>
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
   </div>
+
+<!--  Navbar-->
   <div class="offcanvas-body d-flex flex-column p-0">
     <ul class="nav flex-column mb-auto">
       <li><a href="admin-dashboard.html" class="nav-link p-3 text-dark"><i class="bi bi-speedometer2 me-3"></i> Dashboard</a></li>
@@ -209,23 +211,6 @@
     fetchArtists()
   });
 
-  // Unified Image Preview Handler
-  function handleImagePreview(input, targetImgId) {
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = (e) => $(targetImgId).attr('src', e.target.result);
-      reader.readAsDataURL(input.files[0]);
-    }
-  }
-
-  // Real-time Search
-  $('#artistSearch').on('keyup', function() {
-    const value = $(this).val().toLowerCase();
-    $('#artistTable tbody tr').filter(function() {
-      $(this).toggle($(this).find('td:eq(2)').text().toLowerCase().indexOf(value) > -1);
-    });
-  });
-
   function fetchArtists() {
     $.ajax({
       url: `${baseUrl}/get-all`,
@@ -282,9 +267,10 @@
       processData: false,
       contentType: false,
       success: (response) => {
-        $('#addArtistModal').modal('hide');
+        alert("Artist added successfully!");
         $('#artistName, #artistBio, #profilePic').val('');
         $('#previewImage').attr('src', placeholderSVG);
+        $('#addArtistModal').modal('hide');
         fetchArtists();
       },
       error: (error) => {
@@ -293,7 +279,6 @@
           msg = error.responseJSON.data || error.responseJSON.message;
         }
         alert(msg);
-        // alert("Add failed")
       }
     });
   }
@@ -325,11 +310,18 @@
       processData: false,
       contentType: false,
       success: () => {
+        alert("Artist updated successfully!");
         bootstrap.Modal.getInstance(document.getElementById('updateArtistModal')).hide();
         $('#updateProfilePic').val('');
         fetchArtists();
       },
-      error: () => alert("Update failed")
+      error: (error) => {
+        let msg = "Update failed"
+        if (error.responseJSON) {
+          msg = error.responseJSON.data || error.responseJSON.message;
+        }
+        alert(msg);
+      }
     });
   }
 
@@ -337,9 +329,43 @@
     if (confirm("Delete this artist?")) {
       $.ajax({ url: `${baseUrl}/delete/${id}`, type: "DELETE", headers: {
           "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
-        },success: () => fetchArtists() });
+        },success: () => {
+          alert("Artist deleted successfully!");
+          fetchArtists()
+        },
+        error: (error) => {
+          let msg = "Delete failed"
+          if (error.responseJSON) {
+            msg = error.responseJSON.data || error.responseJSON.message;
+          }
+          alert(msg);
+        }});
     }
   }
+
+  // Real-time Search
+  $('#artistSearch').on('keyup', function() {
+    const value = $(this).val().toLowerCase();
+    $('#artistTable tbody tr').filter(function() {
+      $(this).toggle($(this).find('td:eq(2)').text().toLowerCase().indexOf(value) > -1);
+    });
+  });
+
+  // Image Preview Handler
+  function handleImagePreview(input, targetImgId) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (e) => $(targetImgId).attr('src', e.target.result);
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  $('#addArtistModal').on('hidden.bs.modal', function () {
+    $('#artistName').val('');
+    $('#artistBio').val('');
+    $('#profilePic').val('');
+    $('#previewImage').attr('src', placeholderSVG);
+  });
 
   function logout() {
     localStorage.clear();

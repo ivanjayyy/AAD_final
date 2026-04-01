@@ -3,6 +3,7 @@ package com.ijse.gdse73.harmoniq_backend.controller;
 import com.ijse.gdse73.harmoniq_backend.dto.APIResponse;
 import com.ijse.gdse73.harmoniq_backend.dto.GenreDTO;
 import com.ijse.gdse73.harmoniq_backend.service.GenreService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,7 +18,7 @@ public class GenreController {
 
     @PostMapping("/add")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<APIResponse> addNewGenre(@RequestBody GenreDTO genreDTO){
+    public ResponseEntity<APIResponse> addNewGenre(@RequestBody @Valid GenreDTO genreDTO){
         genreService.addNewGenre(genreDTO);
 
         return ResponseEntity.ok(new APIResponse(
@@ -27,7 +28,7 @@ public class GenreController {
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<APIResponse> updateGenre(@RequestBody GenreDTO genreDTO , @PathVariable Long id){
+    public ResponseEntity<APIResponse> updateGenre(@RequestBody @Valid GenreDTO genreDTO , @PathVariable Long id){
         genreService.updateGenre(id, genreDTO);
 
         return ResponseEntity.ok(new APIResponse(

@@ -20,6 +20,7 @@
 
 <div id="admin-sidebar-sensor" class="position-fixed top-0 start-0 vh-100" style="width: 15px; z-index: 1060;"></div>
 
+<!--navbar-->
 <div class="offcanvas offcanvas-start bg-white border-end" tabindex="-1" id="adminSidebar" style="width: 280px;">
   <div class="offcanvas-header border-bottom">
     <h5 class="offcanvas-title text-primary fw-bold"><i class="bi bi-shield-lock-fill me-2"></i>Admin HQ</h5>
@@ -97,6 +98,8 @@
   const sidebar = new bootstrap.Offcanvas(document.getElementById('adminSidebar'));
   $('#admin-sidebar-sensor').on('mouseenter', () => sidebar.show());
 
+  $(document).ready(fetchGenres);
+
   if (!localStorage.getItem("token")) window.location.href = "sign-in.html";
 
   function fetchGenres() {
@@ -123,20 +126,6 @@
     });
   }
 
-  function showAddModal() {
-    $("#genreModalTitle").text("Add Genre");
-    $("#modalGenreId").val("");
-    $("#modalGenreName").val("");
-    new bootstrap.Modal(document.getElementById("genreModal")).show();
-  }
-
-  function editGenre(id, name) {
-    $("#genreModalTitle").text("Edit Genre");
-    $("#modalGenreId").val(id);
-    $("#modalGenreName").val(name);
-    new bootstrap.Modal(document.getElementById("genreModal")).show();
-  }
-
   function saveGenre() {
     const id = $("#modalGenreId").val();
     const name = $("#modalGenreName").val().trim();
@@ -152,8 +141,16 @@
       contentType: "application/json",
       data: JSON.stringify({ name }),
       success: () => {
+        alert(id ? "Genre updated successfully!" : "Genre added successfully!");
         bootstrap.Modal.getInstance(document.getElementById("genreModal")).hide();
         fetchGenres();
+      },
+      error: (error) => {
+        let msg = "Genre submit failed"
+        if (error.responseJSON) {
+          msg = error.responseJSON.data || error.responseJSON.message;
+        }
+        alert(msg);
       }
     });
   }
@@ -164,8 +161,32 @@
       url: `http://localhost:8080/api/v1/genre/delete/${id}`,
       type: "DELETE",
       headers: { "Authorization": "Bearer " + localStorage.getItem("token") },
-      success: fetchGenres
+      success: (res) => {
+        alert("Genre deleted successfully!");
+        fetchGenres();
+      },
+      error: (error) => {
+        let msg = "Genre delete failed"
+        if (error.responseJSON) {
+          msg = error.responseJSON.data || error.responseJSON.message;
+        }
+        alert(msg);
+      }
     });
+  }
+
+  function showAddModal() {
+    $("#genreModalTitle").text("Add Genre");
+    $("#modalGenreId").val("");
+    $("#modalGenreName").val("");
+    new bootstrap.Modal(document.getElementById("genreModal")).show();
+  }
+
+  function editGenre(id, name) {
+    $("#genreModalTitle").text("Edit Genre");
+    $("#modalGenreId").val(id);
+    $("#modalGenreName").val(name);
+    new bootstrap.Modal(document.getElementById("genreModal")).show();
   }
 
   function logout() {
@@ -173,7 +194,6 @@
     window.location.href = "sign-in.html";
   }
 
-  $(document).ready(fetchGenres);
 </script>
 
 </body>

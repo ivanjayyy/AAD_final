@@ -167,14 +167,48 @@
                 <button class="btn btn-danger btn-sm px-3" onclick="deleteAccount()">
                   <i class="bi bi-trash me-2"></i>Delete Account
                 </button>
-                <button class="btn btn-primary px-4 fw-bold" onclick="updateUser()">
+                <button id="update-user" class="btn btn-primary px-4 fw-bold" onclick="getUserEmail()">
                   Save Changes
                 </button>
+                <small id="otpTimer" class="text-muted"></small>
               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- OTP Modal -->
+<div class="modal fade" id="otpModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow">
+
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">Verify OTP</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body text-center">
+
+        <p class="text-muted small">Enter the OTP sent to your email</p>
+
+        <input type="text"
+               id="otpInput"
+               class="form-control text-center fw-bold"
+               maxlength="6"
+               placeholder="Enter OTP"
+               style="letter-spacing: 5px; font-size: 20px;">
+
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <button class="btn btn-primary px-4 fw-bold" onclick="verifyOtp()">
+          Verify OTP
+        </button>
+      </div>
+
     </div>
   </div>
 </div>
@@ -197,6 +231,16 @@
 
   // Initialize Sidebar Hover
   $('#sidebar-sensor').on('mouseenter', () => sidebar.show());
+  let otpModal = new bootstrap.Modal(document.getElementById('otpModal'));
+
+  $(document).ready(() => {
+    if (localStorage.getItem("token") == null) {
+      window.location.href = "sign-in.html";
+    }
+    setupNavbar();
+    loadUser();
+    loadProfilePhoto();
+  });
 
   function setupNavbar() {
     const navContainer = $("#dynamicNavLinks");
@@ -261,8 +305,8 @@
       contentType: "application/json",
       data: JSON.stringify(updateData),
       success: function() {
-        alert("Profile Updated Successfully!");
-        loadUser();
+        alert("Profile Updated Successfully! Please Sign-In again.");
+        window.location.href = "sign-in.html";
       },
       error: (xhr) => {
         const msg = xhr.responseJSON ? xhr.responseJSON.message : "Update failed";
@@ -324,8 +368,12 @@
         );
       },
 
-      error: function () {
-        alert("Profile picture upload failed");
+      error: (error) => {
+        let msg = "upload profile pic failed"
+        if (error.responseJSON) {
+          msg = error.responseJSON.data || error.responseJSON.message;
+        }
+        alert(msg);
       }
     });
   }
@@ -342,14 +390,108 @@
     );
   }
 
-  $(document).ready(() => {
-    if (localStorage.getItem("token") == null) {
-      window.location.href = "sign-in.html";
+  function getUserEmail() {
+    const email = $('#email').val();
+
+    if (!email) {
+      alert("Enter email first");
+      return;
     }
-    setupNavbar();
-    loadUser();
-    loadProfilePhoto();
-  });
+
+    $.ajax({
+      url: `http://localhost:8080/api/v1/user/get/${userId}`,
+      type: "GET",
+      headers: {"Authorization": "Bearer " + token},
+      success: function (response) {
+        const user = response.data;
+        if (user.email === email) {
+          updateUser();
+        } else {
+          sendOtp();
+        }
+      },
+      error: () => {
+        alert("Session expired. Please login again.");
+        logout();
+      }
+    });
+  }
+
+  function sendOtp() {
+    const email = $('#email').val();
+
+    if (!email) {
+      alert("Enter email first");
+      return;
+    }
+
+    $('#update-user').prop('disabled', true);
+
+    // Call backend API (change URL if needed)
+    $.ajax({
+      url: "http://localhost:8080/api/v1/auth/send-otp",
+      method: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({ email: email }),
+      success: function () {
+        alert("OTP sent to your email!");
+        startOtpTimer();
+        otpModal.show();
+      },
+      error: function () {
+        alert("Failed to send OTP");
+        $('#update-user').prop('disabled', false);
+      }
+    });
+  }
+
+  function startOtpTimer() {
+    countdown = 60;
+
+    $('#otpTimer').text(`Resend available in ${countdown}s`);
+
+    timerInterval = setInterval(() => {
+      countdown--;
+
+      $('#otpTimer').text(`Resend available in ${countdown}s`);
+
+      if (countdown <= 0) {
+        clearInterval(timerInterval);
+        $('#otpTimer').text("");
+        $('#update-user').prop('disabled', false);
+      }
+    }, 1000);
+  }
+
+  function verifyOtp() {
+    const otp = $('#otpInput').val();
+    const email = $('#email').val();
+
+    if (!otp || !email) {
+      alert("Please enter both OTP and email");
+      return false;
+    }
+
+    $.ajax({
+      url: "http://localhost:8080/api/v1/auth/validate-otp",
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({
+        "email": email,
+        "otp": otp
+      }),
+      success: function (response) {
+        console.log("OTP validation successful:", response);
+        otpModal.hide();
+        updateUser();
+      },
+      error: function(error) {
+        const msg = error.responseJSON?.message || "OTP validation failed";
+        alert(msg);
+      }
+    });
+  }
+
 </script>
 
 </body>

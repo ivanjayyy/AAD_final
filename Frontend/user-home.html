@@ -588,6 +588,13 @@
                     // Refresh liked preview if something was unliked
                     fetchLikedSongs();
                 }
+            },
+            error: (error) => {
+                let msg = "Like song failed"
+                if (error.responseJSON) {
+                    msg = error.responseJSON.data || error.responseJSON.message;
+                }
+                alert(msg);
             }
         });
     }
@@ -718,6 +725,13 @@
             success: function() {
                 alert("Song added to playlist!");
                 bootstrap.Popover.getInstance(document.getElementById('playlistBtn')).hide();
+            },
+            error: (error) => {
+                let msg = "Add song to playlist failed"
+                if (error.responseJSON) {
+                    msg = error.responseJSON.data || error.responseJSON.message;
+                }
+                alert(msg);
             }
         });
     }
@@ -735,6 +749,9 @@
             headers: { "Authorization": "Bearer " + token },
             contentType: "application/json",
             data: JSON.stringify({ userId, musicId }),
+            success: function() {
+                fetchRecentSongs();
+            }
         });
     }
 
@@ -755,8 +772,12 @@
 
                 renderList("#recentSongContainer", limitedList, "recent");
             },
-            error: function(err) {
-                console.error("Failed to load recent songs", err);
+            error: (error) => {
+                let msg = "Load recent songs failed"
+                if (error.responseJSON) {
+                    msg = error.responseJSON.data || error.responseJSON.message;
+                }
+                alert(msg);
             }
         });
     }

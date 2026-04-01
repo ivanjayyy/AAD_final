@@ -1,9 +1,7 @@
 package com.ijse.gdse73.harmoniq_backend.controller;
 
 import com.ijse.gdse73.harmoniq_backend.service.ai.ChatService;
-import com.ijse.gdse73.harmoniq_backend.service.ai.GroqService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;

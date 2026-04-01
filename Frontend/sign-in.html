@@ -93,8 +93,11 @@
           }
         }
       },
-      error: function(error) {
-        const msg = error.responseJSON?.message || "Invalid credentials";
+      error: (error) => {
+        let msg = "Sign-In failed"
+        if (error.responseJSON) {
+          msg = error.responseJSON.message || error.responseJSON.data;
+        }
         alert(msg);
       }
     });

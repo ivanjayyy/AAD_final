@@ -3,6 +3,7 @@ package com.ijse.gdse73.harmoniq_backend.service.impl;
 import com.ijse.gdse73.harmoniq_backend.dto.GenreDTO;
 import com.ijse.gdse73.harmoniq_backend.dto.GenreWithTrackCountDTO;
 import com.ijse.gdse73.harmoniq_backend.entity.Genre;
+import com.ijse.gdse73.harmoniq_backend.exception.CustomException;
 import com.ijse.gdse73.harmoniq_backend.repo.GenreRepo;
 import com.ijse.gdse73.harmoniq_backend.service.GenreService;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ public class GenreServiceImpl implements GenreService {
         }
 
         if (genreRepo.findGenreByName(genreDTO.getName()) != null){
-            return;
+            throw new CustomException("Genre already exists");
         }
 
         genreRepo.save(modelMapper.map(genreDTO, Genre.class));
@@ -56,14 +57,18 @@ public class GenreServiceImpl implements GenreService {
     @Override
     public void updateGenre(Long id, GenreDTO genreDTO) {
         if (genreDTO == null){
-            throw new NullPointerException("GenreDTO cannot be null");
+            throw new NullPointerException("Genre new datalist is empty");
         }
 
-        if (genreRepo.findGenreByName(genreDTO.getName()) != null){
-            return;
+        Genre genre = genreRepo.findById(id).orElseThrow(() -> new CustomException("Genre not found"));
+
+        if (!genre.getName().equals(genreDTO.getName())){
+            if (genreRepo.findGenreByName(genreDTO.getName()) != null){
+                throw new CustomException("Genre already exists");
+            }
         }
 
-        genreDTO.setId(id);
-        genreRepo.save(modelMapper.map(genreDTO, Genre.class));
+        genre.setName(genreDTO.getName());
+        genreRepo.save(genre);
     }
 }

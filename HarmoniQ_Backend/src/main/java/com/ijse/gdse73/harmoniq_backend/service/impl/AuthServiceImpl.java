@@ -26,7 +26,7 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponseDTO signIn(SignInDTO signInDTO){
         // Find user by username from database
         User user = userRepository.findByUsername(signInDTO.getUsername()).orElseThrow(
-                () -> new UsernameNotFoundException(signInDTO.getUsername()));
+                () -> new UsernameNotFoundException(signInDTO.getUsername() + " is not valid"));
 
         // Match passwords (DB and Request)
         if (!passwordEncoder.matches(signInDTO.getPassword(),user.getPassword())){
@@ -41,6 +41,10 @@ public class AuthServiceImpl implements AuthService {
     public String signUp(SignUpDTO signUpDTO){
         if (userRepository.findByUsername(signUpDTO.getUsername()).isPresent()){
             throw new CustomException("Username already exists!");
+        }
+
+        if (userRepository.findByEmail(signUpDTO.getEmail()).isPresent()) {
+            throw new CustomException("This email already has an account!");
         }
 
         User user = User.builder()

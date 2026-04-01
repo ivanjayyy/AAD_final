@@ -110,51 +110,6 @@
         });
     }
 
-    $('#password').on('input', function () {
-        const password = $(this).val();
-        let strength = 0;
-
-        // Rules
-        if (password.length >= 6) strength++;
-        if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
-        if (password.match(/\d/)) strength++;
-        if (password.match(/[^a-zA-Z\d]/)) strength++;
-
-        let text = "";
-        let color = "";
-        let width = "0%";
-
-        switch (strength) {
-            case 0:
-            case 1:
-                text = "Weak";
-                color = "bg-danger";
-                width = "25%";
-                break;
-            case 2:
-                text = "Fair";
-                color = "bg-warning";
-                width = "50%";
-                break;
-            case 3:
-                text = "Good";
-                color = "bg-info";
-                width = "75%";
-                break;
-            case 4:
-                text = "Strong";
-                color = "bg-success";
-                width = "100%";
-                break;
-        }
-
-        $('#passwordStrength').text(text);
-        $('#strengthBar')
-            .removeClass("bg-danger bg-warning bg-info bg-success")
-            .addClass(color)
-            .css("width", width);
-    });
-
     function startOtpTimer() {
         countdown = 60;
 
@@ -229,12 +184,61 @@
                     window.location.href = "sign-in.html";
                 }
             },
-            error: function(error) {
-                const msg = error.responseJSON?.message || "Registration failed";
+            error: (error) => {
+                let msg = "Sign-Up failed"
+                if (error.responseJSON) {
+                    msg = error.responseJSON.data || error.responseJSON.message;
+                }
                 alert(msg);
+                // alert("Add failed")
             }
         });
     }
+
+    $('#password').on('input', function () {
+        const password = $(this).val();
+        let strength = 0;
+
+        // Rules
+        if (password.length >= 6) strength++;
+        if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+        if (password.match(/\d/)) strength++;
+        if (password.match(/[^a-zA-Z\d]/)) strength++;
+
+        let text = "";
+        let color = "";
+        let width = "0%";
+
+        switch (strength) {
+            case 0:
+            case 1:
+                text = "Weak";
+                color = "bg-danger";
+                width = "25%";
+                break;
+            case 2:
+                text = "Fair";
+                color = "bg-warning";
+                width = "50%";
+                break;
+            case 3:
+                text = "Good";
+                color = "bg-info";
+                width = "75%";
+                break;
+            case 4:
+                text = "Strong";
+                color = "bg-success";
+                width = "100%";
+                break;
+        }
+
+        $('#passwordStrength').text(text);
+        $('#strengthBar')
+            .removeClass("bg-danger bg-warning bg-info bg-success")
+            .addClass(color)
+            .css("width", width);
+    });
 </script>
 
 </body>

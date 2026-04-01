@@ -71,6 +71,7 @@
 
 <div id="sidebar-sensor" class="position-fixed top-0 start-0 vh-100 sidebar-sensor"></div>
 
+<!--navbar-->
 <div class="offcanvas offcanvas-start bg-white border-end shadow" tabindex="-1" id="navSidebar" style="width: 280px;">
     <div class="offcanvas-header border-bottom">
         <h5 class="offcanvas-title text-primary fw-bold">HarmoniQ 🎶</h5>
@@ -153,6 +154,13 @@
 
     $('#sidebar-sensor').on('mouseenter', () => sidebar.show());
 
+    $(document).ready(() => {
+        if (localStorage.getItem("token") == null) {
+            window.location.href = "sign-in.html";
+        }
+        loadPlaylists()
+    });
+
     function loadPlaylists(){
         $.ajax({
             url: "http://localhost:8080/api/v1/playlist/load/" + userId,
@@ -207,18 +215,31 @@
         });
     }
 
-    function openPlaylist(id, name) {
-        localStorage.setItem("selectedPlaylistId", id);
-        localStorage.setItem("selectedPlaylistName", name);
-        window.location.href = "user-playlist-songs.html";
-    }
+    function createPlaylist(){
+        const name = $("#playlistName").val();
+        if(!name) return alert("Please enter a name");
 
-    let currentPlaylistId = null;
-
-    function showUpdateModal(id, name) {
-        currentPlaylistId = id;
-        $("#updatePlaylistName").val(name);
-        new bootstrap.Modal(document.getElementById('updateModal')).show();
+        $.ajax({
+            url: "http://localhost:8080/api/v1/playlist/create",
+            method: 'POST',
+            contentType: 'application/json',
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+            },
+            data: JSON.stringify({ "playlistName": name, "userId": userId }),
+            success: function () {
+                $("#playlistName").val('');
+                bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
+                loadPlaylists();
+            },
+            error: (error) => {
+                let msg = "Create playlist failed"
+                if (error.responseJSON) {
+                    msg = error.responseJSON.data || error.responseJSON.message;
+                }
+                alert(msg);
+            }
+        });
     }
 
     function updatePlaylist() {
@@ -240,6 +261,13 @@
             success: function () {
                 bootstrap.Modal.getInstance(document.getElementById('updateModal')).hide();
                 loadPlaylists();
+            },
+            error: (error) => {
+                let msg = "Update playlist failed"
+                if (error.responseJSON) {
+                    msg = error.responseJSON.data || error.responseJSON.message;
+                }
+                alert(msg);
             }
         });
     }
@@ -259,24 +287,18 @@
         });
     }
 
-    function createPlaylist(){
-        const name = $("#playlistName").val();
-        if(!name) return alert("Please enter a name");
+    function openPlaylist(id, name) {
+        localStorage.setItem("selectedPlaylistId", id);
+        localStorage.setItem("selectedPlaylistName", name);
+        window.location.href = "user-playlist-songs.html";
+    }
 
-        $.ajax({
-            url: "http://localhost:8080/api/v1/playlist/create",
-            method: 'POST',
-            contentType: 'application/json',
-            headers: {
-                "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
-            },
-            data: JSON.stringify({ "playlistName": name, "userId": userId }),
-            success: function () {
-                $("#playlistName").val('');
-                bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
-                loadPlaylists();
-            }
-        });
+    let currentPlaylistId = null;
+
+    function showUpdateModal(id, name) {
+        currentPlaylistId = id;
+        $("#updatePlaylistName").val(name);
+        new bootstrap.Modal(document.getElementById('updateModal')).show();
     }
 
     function logout() {
@@ -284,12 +306,6 @@
         window.location.href = "sign-in.html";
     }
 
-    $(document).ready(() => {
-        if (localStorage.getItem("token") == null) {
-            window.location.href = "sign-in.html";
-        }
-        loadPlaylists()
-    });
 </script>
 
 </body>

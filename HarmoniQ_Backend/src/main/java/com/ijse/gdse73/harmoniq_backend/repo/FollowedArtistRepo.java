@@ -15,6 +15,11 @@ public interface FollowedArtistRepo extends JpaRepository<FollowedArtist, Long> 
 
     List<FollowedArtist> findAllByUser(User user);
 
-    @Query("SELECT fa.artist FROM FollowedArtist fa GROUP BY fa.artist ORDER BY COUNT(fa.user) DESC")
+    @Query("""
+    SELECT fa.artist
+    FROM FollowedArtist fa
+    GROUP BY fa.artist
+    ORDER BY COUNT(fa.artist) DESC
+""")
     List<Artist> findTopFollowedArtists(Pageable pageable);
 }

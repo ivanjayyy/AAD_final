@@ -27,14 +27,14 @@ public class PlaylistServiceImpl implements PlaylistService {
     @Override
     public void createPlaylist(PlaylistDTO playlistDTO) {
         if (playlistDTO == null) {
-            throw new CustomException("PlaylistDTO is null");
+            throw new CustomException("Playlist datalist is empty");
         }
 
         User user = userRepo.findUserById(playlistDTO.getUserId());
 
-//        if (playlistRepo.getPlaylistByUsernameAndPlaylistName(playlistDTO.getUsername(),playlistDTO.getPlaylistName())) {
-//            return;
-//        }
+        if (playlistRepo.findByUserAndPlaylistName(user,playlistDTO.getPlaylistName())) {
+            throw new CustomException("Playlist already exists");
+        }
 
         Playlist playlist = Playlist.builder()
                 .playlistName(playlistDTO.getPlaylistName())
@@ -81,10 +81,16 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     public void updatePlaylist(Long playlistId, PlaylistDTO playlistDTO) {
-        playlistRepo.findById(playlistId).ifPresent(playlist -> {
-            playlist.setPlaylistName(playlistDTO.getPlaylistName());
-            playlistRepo.save(playlist);
-        });
+        Playlist playlist = playlistRepo.findById(playlistId).orElseThrow(() -> new CustomException("Playlist not found"));
+
+        if (!playlist.getPlaylistName().equals(playlistDTO.getPlaylistName())) {
+            if (playlistRepo.findByPlaylistName(playlistDTO.getPlaylistName()) != null) {
+                throw new CustomException("Playlist already exists");
+            }
+        }
+
+        playlist.setPlaylistName(playlistDTO.getPlaylistName());
+        playlistRepo.save(playlist);
     }
 
     @Override
@@ -107,8 +113,8 @@ public class PlaylistServiceImpl implements PlaylistService {
 
         return playlistSongRepo.findMusicByPlaylistIdIn(playlistIds)
                 .stream()
-                .distinct() // Prevent duplicates if a song is in multiple playlists
-                .limit(10)  // Good for "preview" or "featured" sections
+                .distinct() // Prevent duplicates
+                .limit(10)
                 .map(music -> modelMapper.map(music, MusicDTO.class))
                 .toList();
     }

@@ -19,13 +19,18 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     public void addArtist(ArtistDTO artistDTO) {
+        if (artistDTO == null) {
+            throw new CustomException("Artist Datalist is empty");
+        }
+
         if (artistRepo.findByName(artistDTO.getName()) != null) {
             throw new CustomException("Artist already exists");
         }
 
-        if (artistRepo.findByPfpPath(artistDTO.getPfpPath())) {
+        if (artistRepo.findByPfpPath(artistDTO.getPfpPath()) != null) {
             throw new CustomException("Artist profile picture already exists");
         }
+
         artistRepo.save(modelMapper.map(artistDTO, Artist.class));
     }
 
@@ -47,10 +52,28 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     public void updateArtist(ArtistDTO artistDTO) {
         if (artistDTO == null) {
-            throw new CustomException("ArtistDTO is null");
+            throw new CustomException("Artist New Datalist is empty");
         }
 
-        artistRepo.save(modelMapper.map(artistDTO, Artist.class));
+        Artist artist = artistRepo.findById(artistDTO.getId()).orElseThrow(() -> new CustomException("Artist not found"));
+
+        if (!artistDTO.getName().equals(artist.getName())) {
+            if (artistRepo.findByName(artistDTO.getName()) != null) {
+                throw new CustomException("Artist name already exists");
+            }
+        }
+
+        if (!artistDTO.getPfpPath().equals(artist.getPfpPath())) {
+            if (artistRepo.findByPfpPath(artistDTO.getPfpPath()) != null) {
+                throw new CustomException("Artist profile pic already exists");
+            }
+        }
+
+        artist.setName(artistDTO.getName());
+        artist.setPfpPath(artistDTO.getPfpPath());
+        artist.setBio(artistDTO.getBio());
+
+        artistRepo.save(artist);
     }
 
     @Override

@@ -54,8 +54,8 @@ public class RecentSongServiceImpl implements RecentSongService {
 
         List<RecentSong> list = recentSongRepo.findByUserIdOrderByPlayedAtDesc(userId);
 
-        if (list.size() > 20) {
-            recentSongRepo.deleteAll(list.subList(20, list.size()));
+        if (list.size() > 6) {
+            recentSongRepo.deleteAll(list.subList(6, list.size()));
         }
     }
 
@@ -70,7 +70,7 @@ public class RecentSongServiceImpl implements RecentSongService {
     @Override
     public List<MusicDTO> loadRecentSongs(Long userId) {
         if (userId == null) {
-            throw new CustomException("User ID is null");
+            throw new CustomException("User ID is empty");
         }
 
         List<RecentSong> list = recentSongRepo.findByUserIdOrderByPlayedAtDesc(userId);
@@ -79,9 +79,5 @@ public class RecentSongServiceImpl implements RecentSongService {
                 .map(RecentSong::getMusic)
                 .map(this::convertToDto)
                 .toList();
-
-//        return list.stream().map(
-//                recentSong -> modelMapper.map(
-//                        recentSong.getMusic(), MusicDTO.class)).toList();
     }
 }

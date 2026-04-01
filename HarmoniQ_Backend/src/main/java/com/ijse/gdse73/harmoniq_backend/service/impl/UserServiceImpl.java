@@ -36,6 +36,19 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateUser(UserDTO userDTO) {
         User user = userRepo.findById(userDTO.getId()).orElseThrow(() -> new CustomException("User not found"));
+
+        if (!userDTO.getUsername().equals(user.getUsername())) {
+            if (userRepo.findByUsername(userDTO.getUsername()).isPresent()) {
+                throw new CustomException("Username already exists");
+            }
+        }
+
+        if (!userDTO.getEmail().equals(user.getEmail())) {
+            if (userRepo.findByEmail(userDTO.getEmail()).isPresent()) {
+                throw new CustomException("Email already exists");
+            }
+        }
+
         user.setUsername(userDTO.getUsername());
         user.setEmail(userDTO.getEmail());
         userRepo.save(user);

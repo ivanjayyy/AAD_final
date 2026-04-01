@@ -149,6 +149,69 @@
     fetchPlaylistSongs(activePlaylistId, initialName);
   });
 
+  // --- PLAYLIST MGMT ---
+  function loadSidebarPlaylists(activeId) {
+    $.ajax({
+      url: `${playlistApi}/load/${userId}`,
+      type: "GET",
+      headers: { "Authorization": "Bearer " + token },
+      success: function(response) {
+        const list = $("#sidebarPlaylistList").empty();
+        response.data.forEach(pl => {
+          const isActive = pl.id == activeId ? 'active' : '';
+          list.append(`
+            <div class="playlist-nav-item ${isActive}" onclick="switchPlaylist(${pl.id}, '${pl.playlistName}')">
+              <span class="text-truncate"><i class="bi bi-music-note-list me-2"></i>${pl.playlistName}</span>
+              <i class="bi bi-trash small delete-playlist-btn" onclick="event.stopPropagation(); deleteSpecificPlaylist(${pl.id})"></i>
+            </div>
+          `);
+        });
+      }
+    });
+  }
+
+  function removeFromCurrentPlaylist() {
+    if (!currentPlayingMusicId || !activePlaylistId) return;
+    if (!confirm("Remove song from this playlist?")) return;
+    $.ajax({
+      url: `${playlistSongApi}/remove`,
+      type: "DELETE",
+      headers: { "Authorization": "Bearer " + token },
+      contentType: 'application/json',
+      data: JSON.stringify({ playlistId: activePlaylistId, musicId: currentPlayingMusicId }),
+      success: function() {
+        alert("Song removed.");
+        fetchPlaylistSongs(activePlaylistId, localStorage.getItem("selectedPlaylistName"));
+        closePlayer();
+      },
+      error: (error) => {
+        let msg = "Remove song from playlist failed"
+        if (error.responseJSON) {
+          msg = error.responseJSON.data || error.responseJSON.message;
+        }
+        alert(msg);
+      }
+    });
+  }
+
+  function deleteSpecificPlaylist(id) {
+    if (!confirm("Delete this playlist?")) return;
+    $.ajax({
+      url: `${playlistApi}/delete/${id}`,
+      type: "DELETE",
+      headers: { "Authorization": "Bearer " + token },
+      success: function() { window.location.href = "user-playlists.html"; }
+    });
+  }
+
+  function switchPlaylist(id, name) {
+    activePlaylistId = id;
+    localStorage.setItem("selectedPlaylistId", id);
+    localStorage.setItem("selectedPlaylistName", name);
+    fetchPlaylistSongs(id, name);
+    loadSidebarPlaylists(id);
+  }
+
   // --- LIKE LOGIC ---
   function checkLikeStatus() {
     if (!token || currentPlayingIndex === -1) return;
@@ -190,6 +253,13 @@
             btn.removeClass("bi-heart-fill text-danger liked").addClass("bi-heart text-muted");
           }
         }
+      },
+      error: (error) => {
+        let msg = "Like song failed"
+        if (error.responseJSON) {
+          msg = error.responseJSON.data || error.responseJSON.message;
+        }
+        alert(msg);
       }
     });
   }
@@ -273,6 +343,14 @@
     playSong(nextIdx);
   }
 
+  function prevSong() {
+    const activeList = isShuffle ? shuffledSongs : currentPlaylistSongs;
+    let prevIdx = (currentPlayingIndex - 1 + activeList.length) % activeList.length;
+    playSong(prevIdx);
+  }
+
+  audio.onended = () => nextSong();
+
   // Volume Control Logic
   $('#volumeSlider').on('input', function() {
     const vol = $(this).val();
@@ -303,70 +381,6 @@
       $(this).removeClass('bi-volume-mute').addClass(lastVol < 0.5 ? 'bi-volume-down' : 'bi-volume-up');
     }
   });
-
-  function prevSong() {
-    const activeList = isShuffle ? shuffledSongs : currentPlaylistSongs;
-    let prevIdx = (currentPlayingIndex - 1 + activeList.length) % activeList.length;
-    playSong(prevIdx);
-  }
-
-  audio.onended = () => nextSong();
-
-  // --- PLAYLIST MGMT ---
-  function loadSidebarPlaylists(activeId) {
-    $.ajax({
-      url: `${playlistApi}/load/${userId}`,
-      type: "GET",
-      headers: { "Authorization": "Bearer " + token },
-      success: function(response) {
-        const list = $("#sidebarPlaylistList").empty();
-        response.data.forEach(pl => {
-          const isActive = pl.id == activeId ? 'active' : '';
-          list.append(`
-            <div class="playlist-nav-item ${isActive}" onclick="switchPlaylist(${pl.id}, '${pl.playlistName}')">
-              <span class="text-truncate"><i class="bi bi-music-note-list me-2"></i>${pl.playlistName}</span>
-              <i class="bi bi-trash small delete-playlist-btn" onclick="event.stopPropagation(); deleteSpecificPlaylist(${pl.id})"></i>
-            </div>
-          `);
-        });
-      }
-    });
-  }
-
-  function removeFromCurrentPlaylist() {
-    if (!currentPlayingMusicId || !activePlaylistId) return;
-    if (!confirm("Remove song from this playlist?")) return;
-    $.ajax({
-      url: `${playlistSongApi}/remove`,
-      type: "DELETE",
-      headers: { "Authorization": "Bearer " + token },
-      contentType: 'application/json',
-      data: JSON.stringify({ playlistId: activePlaylistId, musicId: currentPlayingMusicId }),
-      success: function() {
-        alert("Song removed.");
-        fetchPlaylistSongs(activePlaylistId, localStorage.getItem("selectedPlaylistName"));
-        closePlayer();
-      }
-    });
-  }
-
-  function deleteSpecificPlaylist(id) {
-    if (!confirm("Delete this playlist?")) return;
-    $.ajax({
-      url: `${playlistApi}/delete/${id}`,
-      type: "DELETE",
-      headers: { "Authorization": "Bearer " + token },
-      success: function() { window.location.href = "user-playlists.html"; }
-    });
-  }
-
-  function switchPlaylist(id, name) {
-    activePlaylistId = id;
-    localStorage.setItem("selectedPlaylistId", id);
-    localStorage.setItem("selectedPlaylistName", name);
-    fetchPlaylistSongs(id, name);
-    loadSidebarPlaylists(id);
-  }
 
   $("#playPauseBtn").on("click", () => {
     if(audio.paused) { audio.play(); $("#playPauseBtn").removeClass("bi-play-circle-fill").addClass("bi-pause-circle-fill"); }

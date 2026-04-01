@@ -44,6 +44,7 @@
 
 <div id="sidebar-sensor" class="position-fixed top-0 start-0 vh-100 sidebar-sensor"></div>
 
+<!--Navbar-->
 <div class="offcanvas offcanvas-start bg-white border-end shadow" tabindex="-1" id="navSidebar" style="width: 280px;">
     <div class="offcanvas-header border-bottom">
         <h5 class="offcanvas-title text-primary fw-bold">HarmoniQ 🎶</h5>
@@ -69,78 +70,183 @@
             <h2 class="fw-bold mb-0">Featured Artists</h2>
             <p class="text-muted">Discover the voices behind the music</p>
         </div>
-<!--        <div class="input-group w-25 d-none d-md-flex">-->
-<!--            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>-->
-<!--            <input type="text" class="form-control border-start-0" placeholder="Filter artists...">-->
-<!--        </div>-->
     </div>
 
-    <div class="row g-4" id="artistContainer">
+    <!-- FAMOUS ARTISTS -->
+    <div id="famousSection" class="mb-5 d-none">
+        <h4 class="fw-bold mb-3">🔥 Trending Artists</h4>
+        <div class="row g-4" id="famousContainer"></div>
+    </div>
+
+    <!-- FOLLOWED ARTISTS -->
+    <div id="followedSection" class="mb-5 d-none">
+        <h4 class="fw-bold mb-3">⭐ Following Artists</h4>
+        <div class="row g-4" id="followedContainer"></div>
+    </div>
+
+    <!-- ALL ARTISTS -->
+    <div>
+        <h4 class="fw-bold mb-3">🎙️ All Artists</h4>
+        <div class="row g-4" id="artistContainer"></div>
     </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+    const token = localStorage.getItem("token");
+    const payload = token ? JSON.parse(atob(token.split('.')[1])) : { sub: "Guest", id: null };
+    const userId = payload.id;
+
     const sidebar = new bootstrap.Offcanvas(document.getElementById('navSidebar'));
 
     // Reveal sidebar on left edge hover
     $('#sidebar-sensor').on('mouseenter', () => sidebar.show());
 
+    $(document).ready(() => {
+        if (localStorage.getItem("token") == null) {
+            window.location.href = "sign-in.html";
+            return;
+        }
+        fetchFollowingArtists();
+    });
+
     function fetchArtists() {
-        // Replace with your actual API endpoint
         $.ajax({
             url: "http://localhost:8080/api/v1/artist/get-all",
             type: "GET",
             headers: {
-                "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+                "Authorization": "Bearer " + localStorage.getItem("token")
             },
             success: function(response) {
                 renderArtists(response.data);
                 localStorage.setItem("artistList", JSON.stringify(response.data));
             },
-            error: function() {
-                // Mock data for testing if API is not ready
-                const mockData = [
-                    { id: 1, name: "Luna Ray", bio: "Indie pop sensation from the northern lights. Bringing ethereal vibes to your ears.", songCount: 12 },
-                    { id: 2, name: "Echo Bass", bio: "Electronic producer specializing in deep house and futuristic synth soundscapes.", songCount: 8 },
-                    { id: 3, name: "The Harmonics", bio: "Alternative rock band with a passion for soulful lyrics and heavy riffs.", songCount: 15 }
-                ];
-                renderArtists(mockData);
+            error: (error) => {
+                let msg = "Load Artists failed"
+                if (error.responseJSON) {
+                    msg = error.responseJSON.data || error.responseJSON.message;
+                }
+                alert(msg);
+            }
+        });
+    }
+
+    function fetchFollowingArtists() {
+        $.ajax({
+            url: "http://localhost:8080/api/v1/follow-artist/get-all/" + userId,
+            type: "GET",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token") // Is this line here?
+            },
+            success: function(response) {
+                const followedIds = response.data.map(artist => artist.id);
+                localStorage.setItem("followedArtists", JSON.stringify(followedIds));
+
+                // fetchFamousArtists();
+                fetchArtists();
+            }
+        });
+    }
+
+    function fetchFamousArtists() {
+        return $.ajax({
+            url: "http://localhost:8080/api/v1/follow-artist/get-famous-artists",
+            type: "GET",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            success: function(response) {
+                const famousIds = response.data.map(artist => artist.id);
+                localStorage.setItem("famousArtists", JSON.stringify(famousIds));
+
+                fetchArtists();
             }
         });
     }
 
     function renderArtists(artists) {
-        const container = $("#artistContainer");
-        container.empty();
+        const allContainer = $("#artistContainer");
+        const followedContainer = $("#followedContainer");
+        // const famousContainer = $("#famousContainer");
+
+        allContainer.empty();
+        followedContainer.empty();
+        // famousContainer.empty();
+
+        const followedIds = JSON.parse(localStorage.getItem("followedArtists")) || [];
+
+        let hasFollowed = false;
 
         artists.forEach(artist => {
-            // We stringify the artist object so it can be stored in localStorage
             const artistData = JSON.stringify(artist).replace(/'/g, "&apos;");
 
-            container.append(`
-            <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
-                <div class="card h-100 artist-card shadow-sm text-center p-4"
-                     style="cursor: pointer;"
-                     onclick='viewProfile(${artistData})'>
-                    <div class="mb-3">
-                        <img src="http://localhost:8080/api/v1/artist/profile-pic/${artist.id}"
-                             class="rounded-circle profile-img mx-auto"
-                             onerror="this.src='https://via.placeholder.com/150?text=Artist'">
-                    </div>
-                    <h5 class="fw-bold mb-1">${artist.name}</h5>
-                    <p class="bio-text mb-3 px-2">${artist.bio}</p>
-                    <div class="mt-auto">
-                        <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
-                             View Profile
-                        </span>
-                    </div>
+            const card = `
+        <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+            <div class="card h-100 artist-card shadow-sm text-center p-4"
+                 style="cursor: pointer;"
+                 onclick='viewProfile(${artistData})'>
+                <div class="mb-3">
+                    <img src="http://localhost:8080/api/v1/artist/profile-pic/${artist.id}"
+                         class="rounded-circle profile-img mx-auto"
+                         onerror="this.src='https://via.placeholder.com/150?text=Artist'">
+                </div>
+                <h5 class="fw-bold mb-1">${artist.name}</h5>
+                <p class="bio-text mb-3 px-2">${artist.bio}</p>
+                <div class="mt-auto">
+                    <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
+                         View Profile
+                    </span>
                 </div>
             </div>
-        `);
+        </div>
+        `;
+
+            // If followed → go to top section
+            if (followedIds.includes(artist.id)) {
+                followedContainer.append(card);
+                hasFollowed = true;
+            } else {
+                allContainer.append(card);
+            }
         });
+
+        // Show section only if user has followed artists
+        if (hasFollowed) {
+            $("#followedSection").removeClass("d-none");
+        }
     }
+
+    // function renderArtists(artists) {
+    //     const container = $("#artistContainer");
+    //     container.empty();
+    //
+    //     artists.forEach(artist => {
+    //         // We stringify the artist object so it can be stored in localStorage
+    //         const artistData = JSON.stringify(artist).replace(/'/g, "&apos;");
+    //
+    //         container.append(`
+    //         <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+    //             <div class="card h-100 artist-card shadow-sm text-center p-4"
+    //                  style="cursor: pointer;"
+    //                  onclick='viewProfile(${artistData})'>
+    //                 <div class="mb-3">
+    //                     <img src="http://localhost:8080/api/v1/artist/profile-pic/${artist.id}"
+    //                          class="rounded-circle profile-img mx-auto"
+    //                          onerror="this.src='https://via.placeholder.com/150?text=Artist'">
+    //                 </div>
+    //                 <h5 class="fw-bold mb-1">${artist.name}</h5>
+    //                 <p class="bio-text mb-3 px-2">${artist.bio}</p>
+    //                 <div class="mt-auto">
+    //                     <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
+    //                          View Profile
+    //                     </span>
+    //                 </div>
+    //             </div>
+    //         </div>
+    //     `);
+    //     });
+    // }
 
     // Helper function to save to localStorage and redirect
     function viewProfile(artist) {
@@ -153,13 +259,6 @@
         localStorage.clear();
         window.location.href = "sign-in.html";
     }
-
-    $(document).ready(() => {
-        if (localStorage.getItem("token") == null) {
-            window.location.href = "sign-in.html";
-        }
-        fetchArtists();
-    });
 </script>
 
 </body>

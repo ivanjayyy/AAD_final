@@ -309,6 +309,13 @@
                         btn.removeClass("bi-heart-fill text-danger liked").addClass("bi-heart text-muted");
                     }
                 }
+            },
+            error: (error) => {
+                let msg = "Like song failed"
+                if (error.responseJSON) {
+                    msg = error.responseJSON.data || error.responseJSON.message;
+                }
+                alert(msg);
             }
         });
     }
@@ -360,6 +367,13 @@
             success: function() {
                 alert("Song added to playlist! 🎶");
                 bootstrap.Popover.getInstance(document.getElementById('playlistBtn')).hide();
+            },
+            error: (error) => {
+                let msg = "Add song to playlist failed"
+                if (error.responseJSON) {
+                    msg = error.responseJSON.data || error.responseJSON.message;
+                }
+                alert(msg);
             }
         });
     }

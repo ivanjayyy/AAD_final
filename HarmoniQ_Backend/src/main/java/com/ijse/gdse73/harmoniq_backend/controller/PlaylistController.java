@@ -3,6 +3,7 @@ package com.ijse.gdse73.harmoniq_backend.controller;
 import com.ijse.gdse73.harmoniq_backend.dto.APIResponse;
 import com.ijse.gdse73.harmoniq_backend.dto.PlaylistDTO;
 import com.ijse.gdse73.harmoniq_backend.service.PlaylistService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,7 +20,7 @@ public class PlaylistController {
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<APIResponse> addPlaylist(@RequestBody PlaylistDTO playlistDTO){
+    public ResponseEntity<APIResponse> addPlaylist(@RequestBody @Valid PlaylistDTO playlistDTO){
         playlistService.createPlaylist(playlistDTO);
         return ResponseEntity.ok(new APIResponse(
                 200,"OK",null
@@ -48,7 +49,7 @@ public class PlaylistController {
 
     @PutMapping("/update/{playlistId}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<APIResponse> updatePlaylist(@PathVariable Long playlistId, @RequestBody PlaylistDTO playlistDTO) {
+    public ResponseEntity<APIResponse> updatePlaylist(@PathVariable Long playlistId, @RequestBody @Valid PlaylistDTO playlistDTO) {
         playlistService.updatePlaylist(playlistId, playlistDTO);
         return ResponseEntity.ok(new APIResponse(
                 200, "Playlist updated successfully", null

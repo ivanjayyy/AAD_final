@@ -48,6 +48,7 @@ public class FollowedArtistServiceImpl implements FollowedArtistService {
         if(existingFollowedArtist.isPresent()) {
             followedArtistRepo.delete(existingFollowedArtist.get());
             return "Unfollowed Artist";
+
         } else {
             FollowedArtist followedArtist = FollowedArtist.builder()
                     .user(user)
@@ -116,12 +117,13 @@ public class FollowedArtistServiceImpl implements FollowedArtistService {
 
     @Override
     public List<ArtistDTO> getFamousArtists() {
+
         Pageable topThree = PageRequest.of(0, 3);
 
         List<Artist> famousArtists = followedArtistRepo.findTopFollowedArtists(topThree);
 
         return famousArtists.stream()
-                .map(artist -> modelMapper.map(artist, ArtistDTO.class))
+                .map(this::convertToDto)
                 .toList();
     }
 

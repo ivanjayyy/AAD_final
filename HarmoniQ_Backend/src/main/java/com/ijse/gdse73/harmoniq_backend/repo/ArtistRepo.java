@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ArtistRepo extends JpaRepository<Artist, Long> {
     Artist findByName(String name);
-    boolean findByPfpPath(String pfpPath);
+    Artist findByPfpPath(String pfpPath);
 }
