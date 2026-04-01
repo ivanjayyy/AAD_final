@@ -1,9 +1,6 @@
 package com.ijse.gdse73.harmoniq_backend.controller;
 
-import com.ijse.gdse73.harmoniq_backend.dto.APIResponse;
-import com.ijse.gdse73.harmoniq_backend.dto.SignInDTO;
-import com.ijse.gdse73.harmoniq_backend.dto.SignUpDTO;
-import com.ijse.gdse73.harmoniq_backend.dto.ValidateOtpDTO;
+import com.ijse.gdse73.harmoniq_backend.dto.*;
 import com.ijse.gdse73.harmoniq_backend.service.AuthService;
 import com.ijse.gdse73.harmoniq_backend.service.email.EmailService;
 import com.ijse.gdse73.harmoniq_backend.service.email.OtpService;
@@ -34,6 +31,13 @@ public class AuthController {
     public ResponseEntity<APIResponse> userSignIn(@RequestBody @Valid SignInDTO SignInDTO){
         return ResponseEntity.ok(new APIResponse(
                 200,"User Sign-in Successfully",authService.signIn(SignInDTO)
+        ));
+    }
+
+    @PostMapping("reset-password")
+    public ResponseEntity<APIResponse> resetPassword(@RequestBody @Valid ResetPasswordDTO resetPasswordDTO) {
+        return ResponseEntity.ok(new APIResponse(
+                200,"Password reset Successfully",authService.resetPassword(resetPasswordDTO)
         ));
     }
 

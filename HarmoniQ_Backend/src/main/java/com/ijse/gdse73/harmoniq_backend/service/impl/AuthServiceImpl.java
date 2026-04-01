@@ -1,5 +1,6 @@
 package com.ijse.gdse73.harmoniq_backend.service.impl;
 
+import com.ijse.gdse73.harmoniq_backend.dto.ResetPasswordDTO;
 import com.ijse.gdse73.harmoniq_backend.dto.SignInDTO;
 import com.ijse.gdse73.harmoniq_backend.dto.AuthResponseDTO;
 import com.ijse.gdse73.harmoniq_backend.dto.SignUpDTO;
@@ -56,5 +57,24 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.save(user);
         return "User registered successfully!";
+    }
+
+    @Override
+    public String resetPassword(ResetPasswordDTO resetPasswordDTO) {
+        if (userRepository.findByUsername(resetPasswordDTO.getUsername()).isPresent()){
+            throw new CustomException("Username already exists!");
+        }
+
+        String userEmail = resetPasswordDTO.getEmail();
+        User user = userRepository.findByEmail(userEmail).orElseThrow(
+                () -> new CustomException("User not found")
+        );
+
+        user.setUsername(resetPasswordDTO.getUsername());
+        user.setPassword(passwordEncoder.encode(resetPasswordDTO.getPassword()));
+        userRepository.save(user);
+        return "Password reset successfully!";
+
+
     }
 }
